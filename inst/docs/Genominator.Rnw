@@ -1,0 +1,526 @@
+%\VignetteIndexEntry{The Genominator User Guide}
+%\VignetteDepends{Genominator}
+%\VignettePackage{Genominator}
+\documentclass[letterpaper,12pt]{article}
+
+<<echo=FALSE>>=
+options(width=70)
+@ 
+
+%%%%%%%%%%%%%%%%%%%%%%%% Standard Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{graphics}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+\usepackage{fancyvrb}
+\usepackage{caption}
+\usepackage{comment}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{color}
+
+%%%%%%%%%%%%%%%%%%%%%%%% Adapted from Sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\DefineVerbatimEnvironment{Rcode}{Verbatim}{fontshape=sl, frame=single, 
+  framesep=2mm, fontsize=\small, baselinestretch=.5}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%% My macros (which of course are borrowed from a million ... %%
+\def\argmax{\operatornamewithlimits{arg\,max}}
+\def\argmin{\operatornamewithlimits{arg\,min}}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\myurl}[1]{\href{http://#1}{\textcolor{red}{\texttt{#1}}}}
+\newcommand{\myem}[1]{\structure{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%% Page and Document Setup %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\addtolength{\oddsidemargin}{-0.875in}
+\addtolength{\topmargin}{-0.875in}
+\addtolength{\textwidth}{1.75in}
+\addtolength{\textheight}{1.75in}
+
+\captionsetup{margin=15pt,font=small,labelfont=bf}
+
+\renewcommand{\topfraction}{0.9}        % max fraction of floats at top
+\renewcommand{\bottomfraction}{0.8}     % max fraction of floats at bottom
+
+% Parameters for TEXT pages (not float pages):
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}             % 2 may work better
+\setcounter{dbltopnumber}{2}            % for 2-column pages
+\renewcommand{\dbltopfraction}{0.9}     % fit big float above 2-col. text
+\renewcommand{\textfraction}{0.07}      % allow minimal text w. figs
+
+% Parameters for FLOAT pages (not text pages):
+\renewcommand{\floatpagefraction}{0.7}          % require fuller float pages
+
+% N.B.: floatpagefraction MUST be less than topfraction !!
+\renewcommand{\dblfloatpagefraction}{0.7}       % require fuller float pages
+
+%%%%%%%%%%%%%%%%%%%%%%% options for sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\SweaveOpts{prefix.string=plots/docs}
+
+%%%%%%%%%%%%%%%%%%%%%% headers and footers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy} 
+\renewcommand{\footrulewidth}{\headrulewidth}
+
+%%%%%%%%%%%%%%%%%%%%%%%%% bibliography  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{plainnat}
+
+%%%%%%%%%%%%%%%%%%%%%%% opening %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Genominator}
+\author{James Bullard, Kasper Daniel Hansen}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+The \Rpackage{Genominator} package provides a streamlined interface to
+genomic data. The main goal of the package is to provide fast methods
+for summarizing regions of interest oriented along the genome. The
+package utilizes the \Rpackage{RSQLite} to store the data
+corresponding to an experiment. This data model is simply:
+
+\begin{verbatim}
+chr INTEGER, strand INTEGER (-1,0,1), location INTEGER, [name NUMERIC]*
+\end{verbatim}
+
+examples would be: 
+\begin{verbatim}
+chr INTEGER, strand INTEGER (-1,0,1), location INTEGER, counts INTEGER
+chr INTEGER, strand INTEGER (-1,0,1), location INTEGER, chip_1 REAL, chip_2 REAL
+\end{verbatim}
+
+The requirement of numeric variables in the data is purely an
+optimization. The goal in this setup is often to assign experimental
+data to buckets of interest a.k.a annotation. We define annotation as
+a data.frame with the following columns:
+
+\begin{verbatim}
+chr INTEGER, strand INTEGER (-1,0,1), start INTEGER, end INTEGER, [name TYPE]*
+\end{verbatim}
+
+A common example would be: 
+\begin{verbatim}
+chr INTEGER, strand INTEGER (-1,0,1), start INTEGER, end INTEGER, feature factor
+\end{verbatim}
+
+Annotation need not be stored in the database (and is currently not
+supported). Strand information is encoded as -1 : Reverse/Minus Strand, 0 :
+No Strand Information Available/Relevant, and 1 : Forward/Plus Strand.
+
+\section{Interface}
+In this setting there are often things we want to do to various
+classes of annotation. We are going to walk through a very simple
+example using simulated data to present the pipeline.
+
+<<>>=
+require(Genominator)
+
+## -- For Debugging / Timing 
+## require(RSQLite)
+## source("../../R/Genominator.R")
+## source("../../R/importAndManage.R")
+## source("../../R/plotRegion.R")
+## source("../../R/coverage.R")
+
+VERBOSE <- TRUE
+N <- 100000 # the number of observations. 
+K <- 100    # the number of annotation regions, not less than 10
+
+df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
+                 location = sample(1:1000, size = N, replace = TRUE),
+                 strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)),
+                 category = sample(1:3, size = N, replace = TRUE))
+
+head(df)
+eDataRaw <- importToExpData(df, filename = "my.db", tablename = "ex_tbl", 
+                            overwrite = TRUE, verbose = VERBOSE, columns = colnames(df))
+eData <- aggregateExpData(eDataRaw, tablename = "counts_tbl", deleteOriginal = FALSE, 
+                          overwrite = TRUE, verbose = VERBOSE)
+@ 
+
+Also, you can use the ``original'' table name. 
+<<>>=
+eData <- aggregateExpData(eDataRaw, verbose = VERBOSE)
+eData
+@ 
+
+You can ``ignore'' the extra columns when you do aggregation:
+<<>>=
+eDataSimple <- aggregateExpData(eDataRaw, by = c("chr", "location", "strand"), tablename = "simple", overwrite = TRUE, 
+                                verbose = TRUE)
+head(eDataSimple)
+@
+
+Now, we want to instanteate an expData object. This is done here for
+pedagogical reasons, the ``eData'' object above is more than fine, but
+by instanteating it here, we also put it in 'read' only mode. 
+<<>>=
+eData <- expData("my.db", tablename = "ex_tbl")
+@ 
+
+We can summarize these objects to get an idea of what we have. This
+would be the total number of counts in column ``counts.''
+<<>>=
+ss <- summarizeExpData(eData, what = "counts", verbose = VERBOSE)
+ss
+if (nrow(df) != ss) {
+    stop("Number of elements in database does not match data.frame.")
+}
+@ 
+
+The available functions are listed here: \myurl{www.sqlite.org/lang\_aggfunc.html}
+<<>>=
+summarizeExpData(eData, what = "counts", fxs = c("MIN", "MAX"), verbose = VERBOSE)
+@ 
+
+We can access genomic data using the function \Rfunction{getRegion}.
+<<>>=
+reg <- getRegion(eData, 1, strand = 1, whereClause = "category = 1")
+head(reg)
+baseCounts <- table(df[df$chr == 1 & df$strand == 1 & df$category == 1, "location"])
+if (!all(reg[,"location"] == sort(as.numeric(names(baseCounts)))))
+    stop("base counts don't match table.")
+@ 
+
+This function optionally takes a number of arguments. 
+<<>>=
+x <- getRegion(eData, chr = 2, start = 100, end = 105, strand = -1, verbose = VERBOSE)
+head(x)
+@ 
+
+Now we need to create a suitable annotation object. This can be
+simulated using the following code: 
+<<>>=
+annoData <- data.frame(chr = sample(1:16, size = K, replace = TRUE),
+                       strand = sample(c(1, -1), size = K, replace = TRUE),
+                       start = (st <- sample(1:1000, size = K, replace = TRUE)),
+                       end = st + rpois(K, 75),
+                       feature = c("gene", "intergenic")[sample(1:2, size = K, replace = TRUE)])
+rownames(annoData) <- paste("elt", 1:K, sep = ".")
+head(annoData)
+@ 
+Note that the annoData need to have distinct row names. This is done
+to maintain the link between annotation and returned data structures
+from the \Rpackage{Genominator} API. 
+
+Now that we have our two relevant data structures what are the kinds
+of operations we wish to perform? 
+\begin{itemize}
+\item summarize regions (means, lengths, sums, etc)
+\item fit models on each region
+\item perform things over classes of regions (genes, intergenic
+  regions, ncRNAs)
+\end{itemize}
+
+First, we demonstrate how we can summarize over regions of
+interest. Here we are going to compute the SUM and COUNT of each
+region. This is telling us the total number of sequencing reads at
+each location and the number of unique locations that were read.
+<<>>=
+head(summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("SUM", "TOTAL"), bindAnno = TRUE, 
+                           verbose = VERBOSE))
+@ 
+
+<<>>=
+head(summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("SUM"), bindAnno = TRUE, 
+                           verbose = VERBOSE, preserveColnames = TRUE))
+@ 
+
+In this case, an important distinction between the functions ``SUM''
+and ``TOTAL'' is not evident. This distinction is that ``SUM'' will
+return NA if any row in the dataset contains NA. Often we will add NA
+(or NULL in the database) when we join two datasets.
+
+We can split things up by their class using the splitBy argument
+<<>>=
+res <- summarizeByAnnotation(eData, annoData, what = "counts", fx = c("SUM", "COUNT"), 
+                             splitBy = "feature", verbose = VERBOSE)
+lapply(res, head)
+@ 
+
+Finally, we might want to join the relevant annotation up.
+<<>>=
+res <- summarizeByAnnotation(eData, annoData, what = "counts", fx = c("SUM", "COUNT"), 
+                             splitBy = "feature", bindAnno = TRUE, verbose = VERBOSE)
+lapply(res, head)
+@ 
+
+Unfortunately, the summarizeByAnnotation only implements a small set
+of SQL functions and a more general interface is provided. The cost is
+of course performance. 
+
+A common task with data which has been split up into regions of
+interest will be to fit some kind of model to the data within
+region. Due to the size of these data sets it is generally advisable
+to save some copy of the ``mapped'' data. 
+<<>>=
+a <- splitByAnnotation(eData, annoData[annoData$feature %in% "gene", ], verbose = VERBOSE)
+length(a)
+names(a)[1:10]
+@ 
+
+It is important to understand what \Rfunction{splitByAnnotation}
+returns and why the length of "a" above is not 10 as you might
+expect. When the region is empty that region is dropped. The names of
+the resulting list will correspond the names of the annotation object
+and can be used to subselect the annotation object. Additionally, the
+\Rfunction{applyMapped} can be used to map over the resulting list
+with the annotation.
+
+Ignoring strand information could be:
+<<>>=
+b <- splitByAnnotation(eData, annoData, ignoreStrand = TRUE, verbose = VERBOSE)
+length(b)
+names(b)[1:10]
+@ 
+
+Now we wish to compute a trivial function over the counts, such as a
+quantile.
+<<>>=
+sapply(a, function(x) { quantile(x[,"counts"], .9) })[1:10]
+@ 
+
+Often we wish to do the former, but include some information from the
+annotation. In this case we can use the function mentioned above to
+coordinately walk over both of the annotation and the results of
+mapping in lock-step.
+
+This function ensures that you are applying the right bit of
+annotation to the correct chunk of data.
+<<>>=
+applyMapped(a, annoData, FUN = function(region, anno) { 
+    counts <- region[,"counts"]
+    table(counts)
+})[1:10]
+@ 
+
+What we see is that some of our regions are not present. This is a
+byproduct of the fact that some of our regions have no data within
+their bounds. 
+
+When our data sets are large it is often more convenient to only
+select a subset of the data to use, this can often be significantly
+faster. 
+<<>>=
+sapply(splitByAnnotation(eData, annoData, what = "counts"), median)[1:10]
+@ 
+
+Often we wish to ``fill'' in regions which we are missing. In the case
+of a coding sequence there may be bases that have no reads which will
+not appear in our resulting object. We can ``expand'' a region to
+include these bases filling in 0 reads for them. There are different
+ways to do this expansion. For convenience, things are stratified by
+strand, therefore expansion will produce a list-of-lists where each
+sub-list has possibly two elements corresponding to each strand. If
+the original annotation query is stranded then expansion will produce
+a list where each sublist only has one element. Finally, we provide a
+feature to collapse across strand for the common case where one wishes
+to combine reads occurring on either strand within the region. In this
+cas the return value is a list where each element is an expanded
+matrix representing the reads which occurred on either strand. 
+
+<<>>=
+## This returns a list-of-lists 
+x1 <- splitByAnnotation(eData, annoData, expand = TRUE, verbose = VERBOSE, ignoreStrand = TRUE)
+names(x1[[1]])
+
+## this returns a list-of-lists, however they are of length 1
+x2 <- splitByAnnotation(eData, annoData, expand = TRUE, verbose = VERBOSE)
+names(x2[[1]])
+
+## this returns a list where we have combined the two sublists
+x3 <- splitByAnnotation(eData, annoData, expand = TRUE, verbose = VERBOSE, addOverStrand = TRUE)
+head(x3[[1]])
+
+checkContiguity <- function(a) { 
+    sapply(a, function(b) { 
+        if (is.list(b)) {
+            if (!all(do.call(c, lapply(b, function(c) {
+                diff(c[, "location"]) == 1
+            })))) {
+                FALSE
+            }
+            else {
+                TRUE
+            }
+        } else {
+            if (!all(diff(b[,"location"]) == 1))
+                FALSE
+            else 
+                TRUE
+        }
+    })
+}
+if (!all(checkContiguity(x1))) stop("Problem expanding!")
+if (!all(checkContiguity(x2))) stop("Problem expanding!")
+if (!all(checkContiguity(x3))) stop("Problem expanding!")
+@ 
+
+Finally, we often want to compute summarys of higher level entities,
+such as genes, pseudogenes, and intergenic regions. This we can do
+with the convenience function: \Rfunction{mergeWithAnnotation}. This
+function is really not much more than a wrapper around a join.
+
+<<>>=
+mergeWithAnnotation(eData, annoData, verbose = VERBOSE)[1:3,]
+@ 
+
+There are a number of parameters that can make this more natural. 
+<<fig=TRUE>>=
+par(mfrow=c(1,2))
+x <- lapply(mergeWithAnnotation(eData, annoData, splitBy = "feature", what = "counts", verbose = VERBOSE), 
+            function(x) { 
+                plot(density(x)) 
+            })
+@ 
+
+\section{Plotting with \Rpackage{GenomeGraph}}
+In this section we demonstrate how to visualize data using the
+\Rpackage{GenomeGraphs} package. The main idea is that we want to
+build a plotting function which we can use to plot regions. 
+The simplest case is the following: 
+
+<<>>=
+rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts")))
+args(rp)
+@ 
+
+This constructs a function which can be called to view particular
+pieces of data. 
+<<fig=TRUE>>=
+rp(1, 10, 1000)
+@ 
+
+\Rpackage{GenomeGraphs} provides a wealth of custimization options and
+means of plotting which for the most part are transferable using
+the list. 
+
+<<fig=TRUE>>=
+rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
+                             dp = DisplayPars(lwd = .45, color = "grey"))))
+rp(1, 400, 500)
+@ 
+
+Here we can plot our annotation using the annotation factory
+construct. This is probably a little advanced. An easier thing 
+is to use Ensembl to do the plotting of the annotation. Often, however,
+you will want to augment the annotation produced by Ensembl.
+
+<<fig=TRUE>>=
+annoFactory <- makeAnnoFactory.AnnoData(annoData, featureColumnName = "feature", 
+                                        groupColumnName = NULL, idColumnName = NULL,
+                                        dp = DisplayPars("gene" = "blue", 
+                                        "intergenic" = "green"))
+rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
+                             dp = DisplayPars(lwd=.2, color = "grey")),
+                             "track.2" = list(expData = eData, what = "counts", 
+                             fx = log2, DisplayPars(lwd=.3, color = "black"))),
+                        annoFactory = annoFactory)
+rp(annoData[1,"chr"], annoData[1, "start"] - 100, annoData[1, "end"] + 100)
+@ 
+
+\Rpackage{GenomeGraphs} also offers a nice way to plot annotation for
+a given region using data from Ensembl or other sources of annotation
+- in some cases you have to do a little work because of the way that
+Biomart indexes the annotation and the way the \Rpackage{Genominator}
+package works (in this case yeast annotation is stored with roman
+numerals denoting the chromosomes).
+
+<<eval=FALSE, fig=TRUE>>=
+require("biomaRt")
+mart <- useMart("ensembl", dataset = "scerevisiae_gene_ensembl")
+annoFactory <- makeAnnoFactory.Biomart(mart, chrFunction = function(chr) as.roman(chr))
+
+load(system.file("data", "chr1_yeast.rda", package = "Genominator"))
+head(chr1_yeast)
+yData <- importToExpData(chr1_yeast, filename = "my.db", tablename = "yeast", 
+                         overwrite = TRUE)
+
+rp <- makeRegionPlotter(list("track.-" = list(expData = yData, what = c("mRNA_1", "mRNA_2"),
+                             fx = rowMeans, strand = -1,
+                             dp = DisplayPars(lwd=.3, color = "grey"))),
+                        annoFactory = annoFactory)
+rp(1, 20000, 50000)
+@ 
+
+\section{Short Read Specifics}
+In the case of short read sequencing data the Genominator package
+offers a number of specific functionality which is often useful. The
+\Rfunction{computeCoverage} function can be used to assess the
+sequencing depth. 
+<<fig=TRUE>>=
+coverage <- computeCoverage(eData, annoData, effort = seq(100, 1000, by = 5), 
+                            cutoff = function(e, anno, group) e > 1,
+                            verbose = VERBOSE)
+plot(coverage, draw.legend = FALSE)
+@ 
+
+\section{Managing Data}
+\subsection{Merging}
+Often we want to incorporate other datasets which share many of the
+same features. It is natural to store a number of experimental repeats
+in columns of a table, however it is often the case that we recieve
+these over time, and that loading them in is not trivial. For this
+reason we provide a \Rfunction{mergeExpData} to bind to tables
+together. 
+
+<<>>=
+N <- 100000
+dfNew <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
+                    location = sample(1:1000, size = N, replace = TRUE),
+                    strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)),
+                    category = sample(1:3, size = N, replace = TRUE))
+@ 
+
+One thing we could do is: 
+<<eval=FALSE>>=
+merged <- merge(df, dfNew, by = c("chr", "location", "strand"), all = T)
+mData <- importToExpData(merged, filename = "my.db", tablename = "hand_merged",
+                         overwrite = TRUE, verbose = VERBOSE)
+@ 
+
+However, we might have some issues with memory for really big things
+and the merge function is typically *much* slower in R than in the
+database. Also, and very commonly, we have data from a previous
+experiment and we wish to augment the dataset with a new run. So in
+this case we can join the datasets in the following way. In this
+manner we can join ``lanes'' from a set of sequencing runs, or can
+join microarray experiments.
+
+<<>>=
+eData1 <- aggregateExpData(importToExpData(dfNew, filename = "my.db", tablename = "ex1", 
+                                           overwrite = TRUE, verbose = VERBOSE))
+eData2 <- aggregateExpData(importToExpData(df, filename = "my.db", tablename = "ex2", 
+                                           overwrite = TRUE, verbose = VERBOSE))
+
+ed <- joinExpData(list(eData1, eData2), fields = 
+                  list(ex1 = c(counts = "counts_1"), ex2 = c(counts = "counts_2")), 
+                  tablename = "allcounts",
+                  verbose = VERBOSE)
+
+summarizeExpData(ed, fxs = c("sum", "total", "avg"), verbose = VERBOSE)
+@ 
+
+
+\subsection{Collapsing}
+Another common thing which we often want to do is to collapse data
+according to groups. A good example of this is when we have multiple
+lanes and we want to aggregate the lanes in the database to facilitate
+future downstream computations.
+<<>>=
+head(collapseExpData(ed, tablename = "collapsed", collapse = "weighted.avg", overwrite = TRUE))
+head(collapseExpData(ed, tablename = "collapsed", collapse = "avg", overwrite = TRUE))
+head(collapseExpData(ed, tablename = "collapsed", collapse = "sum", overwrite = TRUE))
+@ 
+
+
+\section{Statistical Functions}
+
+\end{document}

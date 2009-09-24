@@ -1,0 +1,28 @@
+This is a short note, collecting thoughts on checking for consistency.
+
+We have observed that using ELAND for alignment, we have an offset
+error for reads on the reverse strand. For a yeast example, ELAND was
+run using only 25 bases (this is choosen at compile time) and the
+positions reported for hits on the reverse strand have to shifted
+(subtracted) 11 in order to be "correct".
+
+Here correct means that two reads at the same position and chromosome,
+but with different strand, lies opposite each other. This is easiest,
+but may not be the best representation since the base quality
+decreases.
+
+I checked it by taken a U0 hits on the reverse strand and ran BLAT
+from the UCSC genome browser. It can be a bit hard to figure out which
+strand you hit, but click "details" (and not "browser") and you get
+the information (ie. strand and start). The UCSC genome browser report
+position relative to the 5' end of the forward strand.
+
+This might be automated if there is a "quick" way to see if we have
+two reads with the same position and chr, but different strand.
+
+A BLAT example: I get 
+  chr6:57880-57915, reverse strand
+from BLAT, whereas I have
+  chr06.fsa 57891 R
+from ELAND. The conclusion is that I need to subtract 11 from the
+  ELAND reported positions.

@@ -1,0 +1,8 @@
+require(Genominator)
+tbl1 <- data.frame(chr = 1, strand = 1, location = c(1,1,2,2,3,3,3,4,5,5))
+tbl2 <- data.frame(chr = 1, strand = 1, location = c(2,3,3,3,3,3,5,5,5,6,6,6,6))
+exp1 <- importToExpData(tbl1, "__temp__.db", tablename = "tbl1", overwrite = TRUE)
+exp2 <- importToExpData(tbl2, "__temp__.db", tablename = "tbl2", overwrite = TRUE)
+exp1 <- aggregateExpData(exp1, tablename = NULL, overwrite = TRUE, colname = "tbl1")
+exp2 <- aggregateExpData(exp2, tablename = NULL, overwrite = TRUE, colname = "tbl2")
+exp <- joinExpData(list(exp1, exp2), verbose = TRUE)

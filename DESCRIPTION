@@ -1,0 +1,10 @@
+Package: Genominator
+Version: 1.0.1
+Title: Analyze genomic data
+Author: James Bullard, Kasper Daniel Hansen
+Maintainer: James Bullard <bullard@berkeley.edu>
+Depends: methods, RSQLite
+Suggests: biomaRt, GenomeGraphs
+Description: Tools for storing, accessing, and visualizing genomic data.  
+License: Artistic-2.0
+LazyLoad: yes

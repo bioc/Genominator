@@ -1,0 +1,39 @@
+                        Dear Emacs, please make this -*-Text-*- mode!
+        **************************************************
+        *                                                *
+        *              1.0 SERIES NEWS                   *
+        *                                                *
+        **************************************************
+
+
+                CHANGES IN GenomeGraphs Version 1.0
+
+NEW FEATURES
+o Changed underlying database model where now the database exists in two modes, either a read or write mode. This should be somewhat transparent to the end user.
+o Added importFromAlignedRead which allows the importing of objects read using readAligned from ShortRead package.
+o Added support for arbitrary index columns, this support allows for
+the inclusion of more complex types of reads, e.g. reads of different
+lengths or paired end reads. This support is preliminary, but should
+allow for a mix of represntations.
+o Added '$' and '[' methods to expData objects to directly query the
+database. 
+o Fixed vignette to more correctly describe splitByAnnotation.
+o Added ability to filter the reads when importing an Eland export file.
+o Added whereClause to summarizeExpData.
+o Added sample = FALSE argument to plot function for goodness of fit plots.
+  This allows one to plot fewer than all of the points for smaller pdfs. 
+o Added regionGoodnessOfFit.df to work with matrices or data.frames. 
+o Added in-memory ordering to importToExpData; this speeds things up
+  considerably when indexing.
+
+	       	    
+
+BUG FIXES
+o Fixed bug where colnames are trashed when preserveColnames = T and
+bindAnno = T
+o Modified fix below when we include "what" argument. 
+o Fixed bug in splitByAnnotation when expand = TRUE and addOverStrands = TRUE and only
+  one strand was present in the sequencing reads. 
+o Fixed bug in splitByAnnotation when expand = TRUE where reads were
+  lost.
+

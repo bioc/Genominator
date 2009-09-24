@@ -1,0 +1,7 @@
+##
+## export anything w/out a . in front. 
+##
+exportPattern("^[^\\.]")
+exportClass("ExpData.db")
+exportMethods("initialize", "show", "head")
+importFrom("utils", "head")
