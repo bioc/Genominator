@@ -9,7 +9,8 @@ setClass("ExpData.db",
                         .tmpFile    = "character",
                         .pool       = "environment"
                         ),
-         prototype(columns = c("chr", "location", "strand")))
+         prototype(columns = c("chr", "location", "strand"),
+                   .pool = new.env(hash=TRUE, parent = emptyenv())))
 
 setMethod("show", "ExpData.db", function(object) {
     cat("table:", object@tablename, "\n")
@@ -30,14 +31,17 @@ setMethod("head", "ExpData.db", function(x, ...) {
 })
 
 setMethod("initialize", signature(.Object = "ExpData.db"),
-          function(.Object, db = "", tablename = "", pragmas = NULL, columns = NULL, mode = c('r', 'w')) {
+          function(.Object, db, tablename = "", pragmas = NULL, columns = NULL,
+                   mode = c('r', 'w')) {
+            if (missing(db))
+              stop("Must specify db argument.")
+            
             db <- Sys.glob(db)
             
             .Object@mode <- match.arg(mode)
             .Object@db <- db
             .Object@tablename <- tablename
-            .Object@.pool <- new.env(parent=emptyenv())
-            
+             
             if (.Object@mode == 'r')
               .Object@.tmpFile <- tempfile()
             
@@ -47,13 +51,20 @@ setMethod("initialize", signature(.Object = "ExpData.db"),
             ##
             ## this is a simple sharing mechanism so that we don't have to think about
             ## instanteating expData objects and overloading the number of connections
-            ## a database can have. 
+            ## a database can have.
+
+            ## XXX : think about the fact that you can't see the schema
+            ##       and the fact that something you do might make the db unsafe w/multiple
+            ##       threads accessing it. 
             ##
-            ## if (exists(.Object@db, .Object@pool)) {
-            ##               ## refresh each time we call this function, could have stale
-            ##               ## handles if you are borrowing the connection from an object. 
-            ##               dbDisconnect(getDB(.Object))
-            ##             }
+
+            if (length(.Object@db) != 0 && .Object@db != "") {
+              if (exists(.Object@db, envir = .Object@.pool)) {
+                ## refresh each time we call this function, could have stale
+                ## handles if you are borrowing the connection from an object. 
+                dbDisconnect(getDB(.Object))
+              }
+            }
             
             if (.Object@mode == 'r') 
               v <- .Object@.tmpFile
@@ -61,7 +72,6 @@ setMethod("initialize", signature(.Object = "ExpData.db"),
               v <- .Object@db
 
             ## connect.
-            ## assign(.Object@db, dbConnect(dbDriver("SQLite"), v), .Object@pool)
             assign(.Object@db, dbConnect(dbDriver("SQLite"), v), .Object@.pool)
 
             ## now set the pragmas
