@@ -4,7 +4,7 @@ Title: Analyze genomic data
 Author: James Bullard, Kasper Daniel Hansen
 Maintainer: James Bullard <bullard@berkeley.edu>
 Depends: methods, RSQLite
-Suggests: biomaRt, GenomeGraphs
+Suggests: biomaRt, GenomeGraphs, ShortRead
 Description: Tools for storing, accessing, and visualizing genomic data.  
 License: Artistic-2.0
 LazyLoad: yes
