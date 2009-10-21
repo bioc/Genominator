@@ -96,7 +96,7 @@ VERBOSE <- TRUE ## For all Genominator calls.
 
 \section{Introduction}
 
-The \Rpaackage{Genominator} provides an interface to storing and
+The \Rpackage{Genominator} provides an interface to storing and
 retrieving genomic data, together with some additional functionality
 aimed at high-throughput sequence data.  The intent is that retrieval
 and summarization will be fast enough to enable online experimentation
