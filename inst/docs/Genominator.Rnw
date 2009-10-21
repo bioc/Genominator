@@ -128,6 +128,7 @@ require(Genominator)
 ## source("../../R/importAndManage.R")
 ## source("../../R/plotRegion.R")
 ## source("../../R/coverage.R")
+## source("../../R/goodnessOfFit.R")
 
 VERBOSE <- TRUE
 N <- 100000 # the number of observations. 
@@ -135,34 +136,34 @@ K <- 100    # the number of annotation regions, not less than 10
 
 df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                  location = sample(1:1000, size = N, replace = TRUE),
-                 strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)),
-                 category = sample(1:3, size = N, replace = TRUE))
+                 strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)))
+
 
 head(df)
-eDataRaw <- importToExpData(df, filename = "my.db", tablename = "ex_tbl", 
-                            overwrite = TRUE, verbose = VERBOSE, columns = colnames(df))
+eDataRaw <- importToExpData(df, filename = "my.db", tablename = "ex_tbl", overwrite = TRUE, verbose = VERBOSE)
+eDataRaw
+
 eData <- aggregateExpData(eDataRaw, tablename = "counts_tbl", deleteOriginal = FALSE, 
                           overwrite = TRUE, verbose = VERBOSE)
+eData
 @ 
 
-Also, you can use the ``original'' table name. 
+Also, you can use the ``original'' table name. Note that the display
+of ``eDataRaw'' in this instance is broken as the underlying database
+has been changed and some properties of the object are set at
+instanteation. In general, it is advisable to carry out the steps
+involved in building a database and then in separate scripts carry out
+various analyses.
 <<>>=
 eData <- aggregateExpData(eDataRaw, verbose = VERBOSE)
 eData
 @ 
 
-You can ``ignore'' the extra columns when you do aggregation:
-<<>>=
-eDataSimple <- aggregateExpData(eDataRaw, by = c("chr", "location", "strand"), tablename = "simple", overwrite = TRUE, 
-                                verbose = TRUE)
-head(eDataSimple)
-@
-
 Now, we want to instanteate an expData object. This is done here for
 pedagogical reasons, the ``eData'' object above is more than fine, but
 by instanteating it here, we also put it in 'read' only mode. 
 <<>>=
-eData <- expData("my.db", tablename = "ex_tbl")
+eData <- ExpData("my.db", tablename = "ex_tbl")
 @ 
 
 We can summarize these objects to get an idea of what we have. This
@@ -182,7 +183,7 @@ summarizeExpData(eData, what = "counts", fxs = c("MIN", "MAX"), verbose = VERBOS
 
 We can access genomic data using the function \Rfunction{getRegion}.
 <<>>=
-reg <- getRegion(eData, 1, strand = 1, whereClause = "category = 1")
+reg <- getRegion(eData, 1, strand = 1)
 head(reg)
 baseCounts <- table(df[df$chr == 1 & df$strand == 1 & df$category == 1, "location"])
 if (!all(reg[,"location"] == sort(as.numeric(names(baseCounts)))))
@@ -323,7 +324,7 @@ the original annotation query is stranded then expansion will produce
 a list where each sublist only has one element. Finally, we provide a
 feature to collapse across strand for the common case where one wishes
 to combine reads occurring on either strand within the region. In this
-cas the return value is a list where each element is an expanded
+case the return value is a list where each element is an expanded
 matrix representing the reads which occurred on either strand. 
 
 <<>>=
@@ -381,87 +382,6 @@ x <- lapply(mergeWithAnnotation(eData, annoData, splitBy = "feature", what = "co
             })
 @ 
 
-\section{Plotting with \Rpackage{GenomeGraph}}
-In this section we demonstrate how to visualize data using the
-\Rpackage{GenomeGraphs} package. The main idea is that we want to
-build a plotting function which we can use to plot regions. 
-The simplest case is the following: 
-
-<<>>=
-rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts")))
-args(rp)
-@ 
-
-This constructs a function which can be called to view particular
-pieces of data. 
-<<fig=TRUE>>=
-rp(1, 10, 1000)
-@ 
-
-\Rpackage{GenomeGraphs} provides a wealth of custimization options and
-means of plotting which for the most part are transferable using
-the list. 
-
-<<fig=TRUE>>=
-rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
-                             dp = DisplayPars(lwd = .45, color = "grey"))))
-rp(1, 400, 500)
-@ 
-
-Here we can plot our annotation using the annotation factory
-construct. This is probably a little advanced. An easier thing 
-is to use Ensembl to do the plotting of the annotation. Often, however,
-you will want to augment the annotation produced by Ensembl.
-
-<<fig=TRUE>>=
-annoFactory <- makeAnnoFactory.AnnoData(annoData, featureColumnName = "feature", 
-                                        groupColumnName = NULL, idColumnName = NULL,
-                                        dp = DisplayPars("gene" = "blue", 
-                                        "intergenic" = "green"))
-rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
-                             dp = DisplayPars(lwd=.2, color = "grey")),
-                             "track.2" = list(expData = eData, what = "counts", 
-                             fx = log2, DisplayPars(lwd=.3, color = "black"))),
-                        annoFactory = annoFactory)
-rp(annoData[1,"chr"], annoData[1, "start"] - 100, annoData[1, "end"] + 100)
-@ 
-
-\Rpackage{GenomeGraphs} also offers a nice way to plot annotation for
-a given region using data from Ensembl or other sources of annotation
-- in some cases you have to do a little work because of the way that
-Biomart indexes the annotation and the way the \Rpackage{Genominator}
-package works (in this case yeast annotation is stored with roman
-numerals denoting the chromosomes).
-
-<<eval=FALSE, fig=TRUE>>=
-require("biomaRt")
-mart <- useMart("ensembl", dataset = "scerevisiae_gene_ensembl")
-annoFactory <- makeAnnoFactory.Biomart(mart, chrFunction = function(chr) as.roman(chr))
-
-load(system.file("data", "chr1_yeast.rda", package = "Genominator"))
-head(chr1_yeast)
-yData <- importToExpData(chr1_yeast, filename = "my.db", tablename = "yeast", 
-                         overwrite = TRUE)
-
-rp <- makeRegionPlotter(list("track.-" = list(expData = yData, what = c("mRNA_1", "mRNA_2"),
-                             fx = rowMeans, strand = -1,
-                             dp = DisplayPars(lwd=.3, color = "grey"))),
-                        annoFactory = annoFactory)
-rp(1, 20000, 50000)
-@ 
-
-\section{Short Read Specifics}
-In the case of short read sequencing data the Genominator package
-offers a number of specific functionality which is often useful. The
-\Rfunction{computeCoverage} function can be used to assess the
-sequencing depth. 
-<<fig=TRUE>>=
-coverage <- computeCoverage(eData, annoData, effort = seq(100, 1000, by = 5), 
-                            cutoff = function(e, anno, group) e > 1,
-                            verbose = VERBOSE)
-plot(coverage, draw.legend = FALSE)
-@ 
-
 \section{Managing Data}
 \subsection{Merging}
 Often we want to incorporate other datasets which share many of the
@@ -475,8 +395,8 @@ together.
 N <- 100000
 dfNew <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                     location = sample(1:1000, size = N, replace = TRUE),
-                    strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)),
-                    category = sample(1:3, size = N, replace = TRUE))
+                    strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)))
+
 @ 
 
 One thing we could do is: 
@@ -520,7 +440,33 @@ head(collapseExpData(ed, tablename = "collapsed", collapse = "avg", overwrite = 
 head(collapseExpData(ed, tablename = "collapsed", collapse = "sum", overwrite = TRUE))
 @ 
 
+\section{Coverage}
 
-\section{Statistical Functions}
+In the case of short read sequencing data the Genominator package
+offers a number of specific functionality which is often useful. The
+\Rfunction{computeCoverage} function can be used to assess the
+sequencing depth. 
+<<fig=TRUE>>=
+coverage <- computeCoverage(eData, annoData, effort = seq(100, 1000, by = 5), 
+                            cutoff = function(e, anno, group) e > 1,
+                            verbose = VERBOSE)
+plot(coverage, draw.legend = FALSE)
+@ 
+
+\section{Statistical Functions: Goodness of Fit}
+
+You can conduct a goodness of fit analysis to the Poisson model across
+lanes using the following function. 
+
+<<fig=TRUE>>=
+plot(regionGoodnessOfFit(ed, annoData))
+@ 
+
+<<fig=TRUE>>=
+plot(regionGoodnessOfFit(as.data.frame(matrix(rpois(1000, 100), ncol = 10)),
+                         groups = rep(c("A", "B"), 5), denominator = rep(1, 10)))
+@ 
+
+
 
 \end{document}

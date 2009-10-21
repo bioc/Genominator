@@ -1,0 +1,170 @@
+%\VignetteIndexEntry{Plotting with Genominator}
+%\VignetteDepends{Genominator}
+%\VignettePackage{Genominator}
+\documentclass[letterpaper,12pt]{article}
+
+<<echo=FALSE>>=
+options(width=70)
+@ 
+
+%%%%%%%%%%%%%%%%%%%%%%%% Standard Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{graphics}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+\usepackage{fancyvrb}
+\usepackage{caption}
+\usepackage{comment}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{color}
+
+%%%%%%%%%%%%%%%%%%%%%%%% Adapted from Sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\DefineVerbatimEnvironment{Rcode}{Verbatim}{fontshape=sl, frame=single, 
+  framesep=2mm, fontsize=\small, baselinestretch=.5}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%% My macros (which of course are borrowed from a million ... %%
+\def\argmax{\operatornamewithlimits{arg\,max}}
+\def\argmin{\operatornamewithlimits{arg\,min}}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\myurl}[1]{\href{http://#1}{\textcolor{red}{\texttt{#1}}}}
+\newcommand{\myem}[1]{\structure{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%% Page and Document Setup %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\addtolength{\oddsidemargin}{-0.875in}
+\addtolength{\topmargin}{-0.875in}
+\addtolength{\textwidth}{1.75in}
+\addtolength{\textheight}{1.75in}
+
+\captionsetup{margin=15pt,font=small,labelfont=bf}
+
+\renewcommand{\topfraction}{0.9}        % max fraction of floats at top
+\renewcommand{\bottomfraction}{0.8}     % max fraction of floats at bottom
+
+% Parameters for TEXT pages (not float pages):
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}             % 2 may work better
+\setcounter{dbltopnumber}{2}            % for 2-column pages
+\renewcommand{\dbltopfraction}{0.9}     % fit big float above 2-col. text
+\renewcommand{\textfraction}{0.07}      % allow minimal text w. figs
+
+% Parameters for FLOAT pages (not text pages):
+\renewcommand{\floatpagefraction}{0.7}          % require fuller float pages
+
+% N.B.: floatpagefraction MUST be less than topfraction !!
+\renewcommand{\dblfloatpagefraction}{0.7}       % require fuller float pages
+
+%%%%%%%%%%%%%%%%%%%%%%% options for sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\SweaveOpts{prefix.string=plots/docs}
+
+%%%%%%%%%%%%%%%%%%%%%% headers and footers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy} 
+\renewcommand{\footrulewidth}{\headrulewidth}
+
+%%%%%%%%%%%%%%%%%%%%%%%%% bibliography  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{plainnat}
+
+%%%%%%%%%%%%%%%%%%%%%%% opening %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Plotting using Genominator and GenomeGraphs (Beta)}
+\author{James Bullard, Kasper Daniel Hansen}
+\begin{document}
+\maketitle
+
+In this vignette we demonstrate how to visualize data using the
+\Rpackage{GenomeGraphs} package. The main idea is that we want to
+build a plotting function which we can use to plot regions. The
+simplest case is the following:
+
+First, we make a database:
+<<>>=
+require(Genominator)
+
+VERBOSE <- FALSE
+N <- 100000 # the number of observations. 
+K <- 100    # the number of annotation regions, not less than 10
+
+df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
+                 location = sample(1:1000, size = N, replace = TRUE),
+                 strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)))
+eData <- aggregateExpData(importToExpData(df, filename = "pmy.db", overwrite = TRUE, tablename = "ex_tbl"))
+
+annoData <- data.frame(chr = sample(1:16, size = K, replace = TRUE),
+                       strand = sample(c(1, -1), size = K, replace = TRUE),
+                       start = (st <- sample(1:1000, size = K, replace = TRUE)),
+                       end = st + rpois(K, 75),
+                       feature = c("gene", "intergenic")[sample(1:2, size = K, replace = TRUE)])
+rownames(annoData) <- paste("elt", 1:K, sep = ".")
+@ 
+
+<<>>=
+rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts")))
+args(rp)
+@ 
+
+This constructs a function which can be called to view particular
+pieces of data. 
+<<fig=TRUE>>=
+rp(1, 10, 1000)
+@ 
+
+\Rpackage{GenomeGraphs} provides a wealth of custimization options and
+means of plotting which for the most part are transferable using
+the list. 
+
+<<fig=TRUE>>=
+rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
+                             dp = DisplayPars(lwd = .45, color = "grey"))))
+rp(1, 400, 500)
+@ 
+
+Here we can plot our annotation using the annotation factory
+construct. This is probably a little advanced. An easier thing 
+is to use Ensembl to do the plotting of the annotation. Often, however,
+you will want to augment the annotation produced by Ensembl.
+
+<<fig=TRUE>>=
+annoFactory <- makeAnnoFactory.AnnoData(annoData, featureColumnName = "feature", 
+                                        groupColumnName = NULL, idColumnName = NULL,
+                                        dp = DisplayPars("gene" = "blue", 
+                                        "intergenic" = "green"))
+rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
+                             dp = DisplayPars(lwd=.2, color = "grey")),
+                             "track.2" = list(expData = eData, what = "counts", 
+                             fx = log2, DisplayPars(lwd=.3, color = "black"))),
+                        annoFactory = annoFactory)
+rp(annoData[1,"chr"], annoData[1, "start"] - 100, annoData[1, "end"] + 100)
+@ 
+
+\Rpackage{GenomeGraphs} also offers a nice way to plot annotation for
+a given region using data from Ensembl or other sources of annotation
+- in some cases you have to do a little work because of the way that
+Biomart indexes the annotation and the way the \Rpackage{Genominator}
+package works (in this case yeast annotation is stored with roman
+numerals denoting the chromosomes).
+
+<<fig=TRUE>>=
+require("biomaRt")
+mart <- useMart("ensembl", dataset = "scerevisiae_gene_ensembl")
+annoFactory <- makeAnnoFactory.Biomart(mart, chrFunction = function(chr) as.roman(chr))
+
+load(system.file("data", "chr1_yeast.rda", package = "Genominator"))
+head(chr1_yeast)
+yData <- importToExpData(chr1_yeast, filename = "my.db", tablename = "yeast", 
+                         overwrite = TRUE)
+
+rp <- makeRegionPlotter(list("track.-" = list(expData = yData, what = c("mRNA_1", "mRNA_2"),
+                             fx = rowMeans, strand = -1,
+                             dp = DisplayPars(lwd=.3, color = "grey"))),
+                        annoFactory = annoFactory)
+rp(1, 20000, 50000)
+@ 
+\end{document}
