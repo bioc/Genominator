@@ -1,27 +1,27 @@
 
-setClass("ExpData.db",
-         representation(db          = "character",
-                        tablename   = "character",
-                        tableSchema = "character",
-                        columns     = "character",
-                        mode        = "character",
-                        chrMap      = "character",
-                        .tmpFile    = "character",
-                        .pool       = "environment"
+setClass("ExpData",
+         representation(db           = "character",
+                        tablename    = "character",
+                        tableSchema  = "character",
+                        indexColumns = "character",
+                        mode         = "character",
+                        chrMap       = "character",
+                        .tmpFile     = "character",
+                        .pool        = "environment"
                         ),
-         prototype(columns = c("chr", "location", "strand"),
+         prototype(indexColumns = c("chr", "location", "strand"),
                    .pool = new.env(hash=TRUE, parent = emptyenv())))
 
-setMethod("show", "ExpData.db", function(object) {
-    cat("table:", object@tablename, "\n")
-    cat("database file:", object@db, "\n")
-    cat("columns:", object@columns, "\n")
-    cat("mode:", object@mode, "\n")
+setMethod("show", "ExpData", function(object) {
+    cat("table:", getTablename(object), "\n")
+    cat("database file:", getDBName(object), "\n")
+    cat("index columns:", getIndexColumns(object), "\n")
+    cat("mode:", getMode(object), "\n")
     cat("schema:\n")
-    print(object@tableSchema)
+    print(getSchema(object))
 })
 
-setMethod("head", "ExpData.db", function(x, ...) {
+setMethod("head", "ExpData", function(x, ...) {
     args <- list(...)
     if (length(args) == 1 && is.numeric(args[[1]]))
         n <- args[[1]]
@@ -30,8 +30,8 @@ setMethod("head", "ExpData.db", function(x, ...) {
     dbGetQuery(getDB(x), sprintf("SELECT * FROM %s LIMIT %s;", getTablename(x), n))
 })
 
-setMethod("initialize", signature(.Object = "ExpData.db"),
-          function(.Object, db, tablename = "", pragmas = NULL, columns = NULL,
+setMethod("initialize", signature(.Object = "ExpData"),
+          function(.Object, db, tablename = "", pragmas = NULL, indexColumns = NULL,
                    mode = c('r', 'w')) {
             if (missing(db))
               stop("Must specify db argument.")
@@ -45,8 +45,8 @@ setMethod("initialize", signature(.Object = "ExpData.db"),
             if (.Object@mode == 'r')
               .Object@.tmpFile <- tempfile()
             
-            if (!is.null(columns))
-              .Object@columns <- columns
+            if (!is.null(indexColumns))
+              .Object@indexColumns <- indexColumns
 
             ##
             ## this is a simple sharing mechanism so that we don't have to think about
@@ -57,7 +57,6 @@ setMethod("initialize", signature(.Object = "ExpData.db"),
             ##       and the fact that something you do might make the db unsafe w/multiple
             ##       threads accessing it. 
             ##
-
             if (length(.Object@db) != 0 && .Object@db != "") {
               if (exists(.Object@db, envir = .Object@.pool)) {
                 ## refresh each time we call this function, could have stale
@@ -95,47 +94,22 @@ setMethod("initialize", signature(.Object = "ExpData.db"),
             return(.Object)
           })
 
-setMethod("$", signature = "ExpData.db", definition = function(x, name) {
-    dbGetQuery(getDB(x), sprintf("SElECT %s from %s", name, getTablename(x)))
-})
 
-##
-## The semantics here is slightly off because there are really no
-## "rownames", however there should be a way to make this more
-## general.
-##
-setMethod("[", signature = "ExpData.db", definition = function (x, i, j, ..., drop = TRUE) {
-  if (!missing(j))
-    cols <- switch(class(j), "character" = j, "integer" = getColnames(x, all = TRUE)[j], "logical" = getColnames(x, all = TRUE)[j])
-  if (!missing(i)) {
-    whereClause <- sprintf("WHERE %s", i)
-  } else {
-    whereClause <- ""
-  }
-  q <- sprintf("SELECT %s FROM %s %s", paste(cols, collapse = ", "), getTablename(x), whereClause)
-  if ("verbose" %in% names(list(...)))
-    print(q)
-  dbGetQuery(getDB(x), q)
-})
-
-expData <- function(db, tablename, columns = NULL, pragmas = "pragma temp_store = MEMORY;", mode = c('r', 'w')) {
-    if (missing(tablename)) {
-      tbls <- dbListTables(dbConnect(dbDriver("SQLite"), db))
-      warning(paste("Unable to instanteate an ExpData.db without tablename, available tables are:",
-                    paste(tbls[-grep("__.*__", tbls)], collapse = ", "), "\n"))
-    }
-    else {
-        if (is.null(columns)) 
-            new("ExpData.db", db = db, tablename = tablename, pragmas = pragmas,
-                mode = mode)
-        else
-            new("ExpData.db", db = db, tablename = tablename, pragmas = pragmas,
-                columns = columns, mode = mode)
-    }
+ExpData <- function(db, tablename, mode = c('r', 'w'), indexColumns = NULL, pragmas = NULL) {
+  if (is.null(indexColumns)) 
+    new("ExpData", db = db, tablename = tablename, pragmas = pragmas,
+        mode = mode)
+  else
+    new("ExpData", db = db, tablename = tablename, pragmas = pragmas,
+        indexColumns = indexColumns, mode = mode)
 }
 
 getIndexColumns <- function(expData) {
-    return(expData@columns)
+    return(expData@indexColumns)
+}
+
+getMode <- function(expData) {
+  return(expData@mode)
 }
 
 getDB <- function(expData) {
@@ -150,8 +124,12 @@ getTablename <- function(expData) {
     expData@tablename
 }
 
+getSchema <- function(expData) {
+  expData@tableSchema
+}
+
 getColnames <- function(expData, all = TRUE) {
-  cc <- names(expData@tableSchema)
+  cc <- names(getSchema(expData))
   if (all) {
     return(cc)
   } else {
@@ -159,9 +137,32 @@ getColnames <- function(expData, all = TRUE) {
   }
 }
 
-getSchema <- function(expData) {
-  expData@tableSchema
+listTables <- function(db) { 
+  return(dbListTables(dbConnect(dbDriver("SQLite"), db)))
 }
+
+setMethod("$", signature = "ExpData", definition = function(x, name) {
+    dbGetQuery(getDB(x), sprintf("SElECT %s from %s", name, getTablename(x)))
+})
+
+##
+## The semantics here is slightly off because there are really no
+## "rownames", however there should be a way to make this more
+## general.
+##
+setMethod("[", signature = "ExpData", definition = function (x, i, j, ..., drop = TRUE) {
+  if (!missing(j))
+    cols <- switch(class(j), "character" = j, "integer" = getColnames(x, all = TRUE)[j], "logical" = getColnames(x, all = TRUE)[j])
+  if (!missing(i)) {
+    whereClause <- sprintf("WHERE %s", i)
+  } else {
+    whereClause <- ""
+  }
+  q <- sprintf("SELECT %s FROM %s %s", paste(cols, collapse = ", "), getTablename(x), whereClause)
+  if ("verbose" %in% names(list(...)))
+    print(q)
+  dbGetQuery(getDB(x), q)
+})
 
 getRegion <- function(expData, chr, start, end, strand, what = "*",
                       whereClause = "", verbose = FALSE) {

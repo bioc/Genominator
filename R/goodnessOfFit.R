@@ -1,47 +1,55 @@
 ##
 ## Compute goodness of fit statistics.
 ##
-regionGoodnessOfFit.df <- function(regionSums, denominator = colSums(regionSums), groups = rep("A", ncol(regionSums))) {
-    if (length(groups) != ncol(regionSums) & length(groups) != length(denominator))
-        stop("Arguments groups must be same length as regionSums and denominator.")
-    sameSample <- split(1:ncol(regionSums), groups)
-    denominator <- split(denominator, groups)
+setGeneric("regionGoodnessOfFit", function(obj, ...) standardGeneric("regionGoodnessOfFit"))
 
-    res <- lapply(1:length(sameSample), function(i) {
-        idx <- sameSample[[i]]
-        lc <- denominator[[i]]
-        x <- regionSums[,idx]
-        lambda <- rowSums(x)/sum(lc)
-        E <- outer(lambda, lc)
-        chi <- rowSums((x - E)^2/E)
-        pval <- 1 - pchisq(chi, ncol(x) - 1)
-        cbind(chi = chi, pval = pval)
-    })
-    names(res) <- names(sameSample)
-    
-    if (length(groups) > 1) {
-        res <- res[groups[!duplicated(groups)]]
-    }
-    
-    res <- list(stats = res, dfs = sapply(sameSample, length) - 1)
-    class(res) <- "genominator.goodness.of.fit"
-    return(res)
-}
+setMethod("regionGoodnessOfFit", "data.frame",
+          definition = function(obj, denominator = colSums(obj), groups = rep("A", ncol(obj))) {
+              if (length(groups) != ncol(obj) & length(groups) != length(denominator))
+                  stop("Arguments groups must be same length as obj and denominator.")
+              sameSample <- split(1:ncol(obj), groups)
+              denominator <- split(denominator, groups)
 
-regionGoodnessOfFit <- function(expData, annoData, groups = "group",
-                                what = setdiff(getColnames(expData), getIndexColumns(expData)),
-                                denominator = c("regions", "lanes"), verbose = FALSE) {
-  if (length(groups) != length(what) & length(groups) != 1)
-    warning("Arguments groups and what are of different lengths.")
-  regionSums <- summarizeByAnnotation(expData = expData, annoData = annoData,
-                                      what = what, verbose = verbose)
-  denominator <- match.arg(denominator)
-  denominator <- switch(denominator,
-                        "regions" = colSums(regionSums),
-                        "lanes" = summarizeExpData(expData = expData,
-                        what = what, verbose = verbose))
-  regionGoodnessOfFit.df(regionSums, denominator, groups, what)
-}
+              res <- lapply(1:length(sameSample), function(i) {
+                  idx <- sameSample[[i]]
+                  lc <- denominator[[i]]
+                  x <- obj[,idx]
+                  lambda <- rowSums(x)/sum(lc)
+                  E <- outer(lambda, lc)
+                  chi <- rowSums((x - E)^2/E)
+                  pval <- 1 - pchisq(chi, ncol(x) - 1)
+                  cbind(chi = chi, pval = pval)
+              })
+              names(res) <- names(sameSample)
+              
+              if (length(groups) > 1) {
+                  res <- res[groups[!duplicated(groups)]]
+              }
+              
+              res <- list(stats = res, dfs = sapply(sameSample, length) - 1)
+              class(res) <- "genominator.goodness.of.fit"
+              return(res)
+          })
+
+setMethod("regionGoodnessOfFit", "ExpData",
+          definition = function(obj, annoData, groups, what = setdiff(getColnames(obj), getIndexColumns(obj)),
+          denominator = c("regions", "lanes"), verbose = FALSE) {
+
+              if (missing(groups)) {
+                  groups <- rep("group", length(what))
+              }
+              
+              if (length(groups) != length(what) & length(groups) != 1)
+                  warning("Arguments groups and what are of different lengths.")
+              regionSums <- summarizeByAnnotation(expData = obj, annoData = annoData,
+                                                  what = what, verbose = verbose)
+              denominator <- match.arg(denominator)
+              denominator <- switch(denominator,
+                                    "regions" = colSums(regionSums),
+                                    "lanes" = summarizeExpData(expData = obj,
+                                    what = what, verbose = verbose))
+              regionGoodnessOfFit(regionSums, denominator = denominator, groups = groups)
+          })
 
 plot.genominator.goodness.of.fit <- function(x, chisq = FALSE, plotCol = TRUE, sample = FALSE,
                                              nsamples = 5000, xlab = "theoretical quantiles",

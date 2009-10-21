@@ -40,7 +40,7 @@ importToExpData <- function(df, filename, tablename, overwrite = FALSE, verbose 
   allCols <- colnames(df)
   
   if (missing(columns))
-    COLS <- attr(getClass("ExpData.db")@prototype, "columns")
+    COLS <- attr(getClass("ExpData")@prototype, "indexColumns")
   else
     COLS <- columns
   
@@ -87,7 +87,7 @@ importToExpData <- function(df, filename, tablename, overwrite = FALSE, verbose 
   ## clean up -- we will reconnect in the line below.
   dbDisconnect(db)
   
-  return(expData(filename, tablename, columns = COLS, mode = 'w'))
+  return(ExpData(filename, tablename, indexColumns = COLS, mode = 'w'))
 }
 
 aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename = NULL, deleteOriginal = FALSE,
@@ -138,7 +138,7 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
     .timeAndPrint(dbGetQuery(getDB(expData), statement), "creating index", print = verbose)
 
     ## return a new expData.
-    return(expData(getDBName(expData), tablename, columns = by, mode = 'w'))
+    return(ExpData(getDBName(expData), tablename, indexColumns = by, mode = 'w'))
 }
 
 collapseExpData <- function(expData, tablename = NULL, what = getColnames(expData, all = FALSE),
@@ -218,7 +218,7 @@ collapseExpData <- function(expData, tablename = NULL, what = getColnames(expDat
     .timeAndPrint(dbGetQuery(getDB(expData), statement), "creating index", print = verbose)
 
     ## return a new expData.
-    return(expData(getDBName(expData), tablename, mode = 'w'))
+    return(ExpData(getDBName(expData), tablename, mode = 'w'))
 }
 
 ##-- Infer the column types. pretty lame.
@@ -356,6 +356,6 @@ joinExpData <- function(expDataList, fields = NULL, tablename = "aggtable",
   .timeAndPrint(dbGetQuery(db, statement), "Indexing", print = verbose)
 
   ## Return pointer to new expData
-  return(expData(db = getDBName(expDataList[[1]]), tablename = tablename, mode = 'w'))
+  return(ExpData(db = getDBName(expDataList[[1]]), tablename = tablename, mode = 'w'))
 }
 

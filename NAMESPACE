@@ -2,6 +2,6 @@
 ## export anything w/out a . in front. 
 ##
 exportPattern("^[^\\.]")
-exportClass("ExpData.db")
+exportClass("ExpData")
 exportMethods("initialize", "show", "head")
 importFrom("utils", "head")
