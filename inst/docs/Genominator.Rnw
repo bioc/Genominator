@@ -79,7 +79,42 @@ options(width=70)
 \begin{document}
 \maketitle
 
+<<initialize,echo=FALSE,results=hide>>=
+options(width = 70)
+require(Genominator)
+VERBOSE <- TRUE ## For all Genominator calls.
+@ 
+
+<<debug>>=
+## -- For Debugging / Timing 
+## require(RSQLite)
+## source("../../R/Genominator.R")
+## source("../../R/importAndManage.R")
+## source("../../R/plotRegion.R")
+## source("../../R/coverage.R")
+@ 
+
 \section{Introduction}
+
+The \Rpaackage{Genominator} provides an interface to storing and
+retrieving genomic data, together with some additional functionality
+aimed at high-throughput sequence data.  The intent is that retrieval
+and summarization will be fast enough to enable online experimentation
+with the data.
+
+We have used to package to analyze tiling arrays and (perhaps more
+appropriate) RNA-Seq data consisting of more than 400 million reads.
+The canonical use case at the core of the package is summarizing the
+data over a large number of genomic regions.  For example counting the
+number of reads that lands in all annotated exons in human.
+
+Data is stored in an SQLite database and as such, the package makes it
+possible to work with very large datasets in limited memory.  However,
+working with SQLite databases is limited by I/O (disk speed), and
+substantial performance gains are possible by using a fast disk.
+
+\section{The Data model}
+
 The \Rpackage{Genominator} package provides a streamlined interface to
 genomic data. The main goal of the package is to provide fast methods
 for summarizing regions of interest oriented along the genome. The
@@ -90,16 +125,24 @@ corresponding to an experiment. This data model is simply:
 chr INTEGER, strand INTEGER (-1,0,1), location INTEGER, [name NUMERIC]*
 \end{verbatim}
 
-examples would be: 
+Specifically it means that each data unit has an associated
+\texttt{chr} (has to be an integer), \texttt{strand} (has to be either
+-1,0, or 1 -- 1 encoding the forward strand and 0 encoding that the
+data has no strand information) as well as a \texttt{location}.  In
+addition we allow an unlimited number of additional numeric variables.
+
+Examples would be 
 \begin{verbatim}
 chr INTEGER, strand INTEGER (-1,0,1), location INTEGER, counts INTEGER
 chr INTEGER, strand INTEGER (-1,0,1), location INTEGER, chip_1 REAL, chip_2 REAL
 \end{verbatim}
 
-The requirement of numeric variables in the data is purely an
-optimization. The goal in this setup is often to assign experimental
-data to buckets of interest a.k.a annotation. We define annotation as
-a data.frame with the following columns:
+The requirement that the additional variables should be numerical is
+purely an optimization. 
+
+The goal in this setup is often to summarize experimental data in a
+number of buckets of interest a.k.a annotation. We define annotation
+as a data.frame with the following columns:
 
 \begin{verbatim}
 chr INTEGER, strand INTEGER (-1,0,1), start INTEGER, end INTEGER, [name TYPE]*
@@ -115,29 +158,18 @@ supported). Strand information is encoded as -1 : Reverse/Minus Strand, 0 :
 No Strand Information Available/Relevant, and 1 : Forward/Plus Strand.
 
 \section{Interface}
+
 In this setting there are often things we want to do to various
 classes of annotation. We are going to walk through a very simple
 example using simulated data to present the pipeline.
 
-<<>>=
-require(Genominator)
-
-## -- For Debugging / Timing 
-## require(RSQLite)
-## source("../../R/Genominator.R")
-## source("../../R/importAndManage.R")
-## source("../../R/plotRegion.R")
-## source("../../R/coverage.R")
-## source("../../R/goodnessOfFit.R")
-
-VERBOSE <- TRUE
+<<createExpData>>=
 N <- 100000 # the number of observations. 
 K <- 100    # the number of annotation regions, not less than 10
 
 df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                  location = sample(1:1000, size = N, replace = TRUE),
                  strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)))
-
 
 head(df)
 eDataRaw <- importToExpData(df, filename = "my.db", tablename = "ex_tbl", overwrite = TRUE, verbose = VERBOSE)
@@ -161,7 +193,7 @@ eData
 
 Now, we want to instanteate an expData object. This is done here for
 pedagogical reasons, the ``eData'' object above is more than fine, but
-by instanteating it here, we also put it in 'read' only mode. 
+by instantiating it here, we also put it in 'read' only mode. 
 <<>>=
 eData <- ExpData("my.db", tablename = "ex_tbl")
 @ 
@@ -186,8 +218,9 @@ We can access genomic data using the function \Rfunction{getRegion}.
 reg <- getRegion(eData, 1, strand = 1)
 head(reg)
 baseCounts <- table(df[df$chr == 1 & df$strand == 1 & df$category == 1, "location"])
-if (!all(reg[,"location"] == sort(as.numeric(names(baseCounts)))))
+if (!all(reg[,"location"] == sort(as.numeric(names(baseCounts))))) {
     stop("base counts don't match table.")
+}
 @ 
 
 This function optionally takes a number of arguments. 
