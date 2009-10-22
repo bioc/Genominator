@@ -5,7 +5,8 @@
 Combine multiple data sets
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+This function takes a dataset with data from multiple experiments, and combines the data across multiple experiments according to a 
+user-specified function.
 }
 \usage{
 collapseExpData(expData, tablename = NULL, what = getColnames(expData, all = FALSE), groups = "COL", collapse = c("sum", "avg", "weighted.avg"), overwrite = FALSE, deleteOriginal = FALSE, verbose = FALSE)
@@ -13,39 +14,35 @@ collapseExpData(expData, tablename = NULL, what = getColnames(expData, all = FAL
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{expData}{
-%%     ~~Describe \code{expData} here~~
+An object of class \code{ExpData}.
 }
   \item{tablename}{
-%%     ~~Describe \code{tablename} here~~
+Name of database table to write output data to.
 }
   \item{what}{
-%%     ~~Describe \code{what} here~~
+Data columns to apply \code{collapse} function to.
 }
   \item{groups}{
-%%     ~~Describe \code{groups} here~~
+Vector of length \code{what} indicating how columns should be grouped when applying \code{collapse} function.
 }
   \item{collapse}{
-%%     ~~Describe \code{collapse} here~~
+Function to apply to grouped columns.
 }
   \item{overwrite}{
-%%     ~~Describe \code{overwrite} here~~
+Logical indicating whether database referred to in \code{tablename} argument should be overwritten.
 }
   \item{deleteOriginal}{
-%%     ~~Describe \code{deleteOriginal} here~~
+Logical indicating whether original database in \code{ExpData} object should be deleted.
 }
   \item{verbose}{
-%%     ~~Describe \code{verbose} here~~
+Logical indicating whether details should be printed.
 }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+Returns an object of class \code{ExpData}.
 }
 \references{
 %% ~put references to the literature/web site here ~

@@ -23,10 +23,12 @@ annotation regions of interest.
 Vector of names of columns of \code{expData} to be included in output.
 }
   \item{ignoreStrand}{
-Logical indicating whether strand should be ignored.
+Logical indicating whether strand should be ignored.  If \code{TRUE}, data that falls into the annotation region,
+regardless of strand, is included.  
 }
   \item{expand}{
-%%     ~~Describe \code{expand} here~~
+Logical indicating whether positions with no data should be included in output.  If \code{TRUE}, lines are added
+to the output to give a value for each position, even if this value is 0.
 }
   \item{addOverStrands}{
 %%     ~~Describe \code{addOverStrands} here~~
@@ -39,11 +41,7 @@ Logical indicating whether details should be printed.
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+Returns a list of length equal to the number of annotation entries split upon.  
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -59,7 +57,7 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+See \code{Genominator} vignette for more information.
 }
 \examples{
 ##---- Should be DIRECTLY executable !! ----

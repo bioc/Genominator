@@ -24,10 +24,10 @@ annotation regions of interest.
 Vector of names of data columns to be summarized.
 }
   \item{fxs}{
-Vector of strings giving the names of SQLite functions to call on the data column.
+Vector of strings giving the names of SQLite functions to call on the data column(s).
 }
   \item{ignoreStrand}{
-Logical indicating whether strand should be taken into account in aggregation.
+Logical indicating whether strand should be taken into account in aggregation.  If \code{TRUE} strand will be ignored.
 }
   \item{splitBy}{
 String indicating column of \code{annoData} object on which to split results.
@@ -64,8 +64,8 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-See also \code{\link{expData-class}}.
+See \code{Genominator} vignette for more information.
+See also \code{\link{ExpData-class}}.
 }
 \examples{
 ##---- Should be DIRECTLY executable !! ----

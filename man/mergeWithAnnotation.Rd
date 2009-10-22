@@ -56,7 +56,7 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+See \code{Genominator} vignette for more information.
 }
 \examples{
 ##---- Should be DIRECTLY executable !! ----

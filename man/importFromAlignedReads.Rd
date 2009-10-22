@@ -5,7 +5,8 @@
 Import aligned reads to database
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+This function takes a named list of \code{AlignedRead} objects and creates an \code{ExpData} object from them, with one column
+for each list element.  Column names are taken from list names, which must be unique.
 }
 \usage{
 importFromAlignedReads(alignedReads, chrMap, filename, tablename, overwrite = TRUE, verbose = FALSE, ...)
@@ -13,36 +14,33 @@ importFromAlignedReads(alignedReads, chrMap, filename, tablename, overwrite = TR
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{alignedReads}{
-%%     ~~Describe \code{alignedReads} here~~
+A list of objects of class \code{AlignedRead}, where list elements have unique names.  
 }
   \item{chrMap}{
-%%     ~~Describe \code{chrMap} here~~
+A vector of chromosome names from the aligned output.  On importation to the database, chromosome names will be converted to integers
+corresponding to position within the \code{chrMap} vector.
 }
   \item{filename}{
-%%     ~~Describe \code{filename} here~~
+The filename of the database to which the data will be imported.
 }
   \item{tablename}{
-%%     ~~Describe \code{tablename} here~~
+Name of database table to write output data to.
 }
   \item{overwrite}{
-%%     ~~Describe \code{overwrite} here~~
+Logical indicating whether database table referred to in \code{tablename} argument should be overwritten.
 }
   \item{verbose}{
-%%     ~~Describe \code{verbose} here~~
+Logical indicating whether details should be printed.
 }
   \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
+Additional arguments to be passed to lower-level functions.
 }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+Outputs an object of class \code{ExpData} with a column for each element of the \code{alignedReads} list.
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -58,7 +56,8 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+See \code{Genominator} vignette for more information.
+See also \code{\link{ExpData-class}}, \code{\link{AlignedRead-class}} and \code{\link{ShortRead-package}}.
 }
 \examples{
 ##---- Should be DIRECTLY executable !! ----

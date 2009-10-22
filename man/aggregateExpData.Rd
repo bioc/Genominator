@@ -22,16 +22,16 @@ Vector containing column names used to define unique entries.
 Name of database table to write output data to.
 }
   \item{deleteOriginal}{
-Logical indicating whether original database in \code{ExpData} object should be deleted.
+Logical indicating whether original database table in \code{ExpData} object should be deleted.
 }
   \item{overwrite}{
-Logical indicating whether database referred to in \code{tablename} argument should be overwritten.
+Logical indicating whether database table referred to in \code{tablename} argument should be overwritten.
 }
   \item{verbose}{
 Logical indicating whether details should be printed.
 }
   \item{colname}{
-Name of column for recording aggregation output (by default, counts).
+Name of column for recording aggregation output (by default, \code{counts}).
 }
   \item{aggregator}{
 SQLite code used for aggregating.  See \code{Details} for more information.
@@ -57,7 +57,7 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+See \code{Genominator} vignette for more information.
 }
 
 \examples{

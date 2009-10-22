@@ -41,7 +41,7 @@ of multiple criteria.
 Returns a vector with results of summarization.
 }
 \references{
-%% ~put references to the literature/web site here ~
+The available \code{SQLite} functions are listed here: \url{www.sqlite.org/lang\_aggfunc.html}
 }
 \author{
 James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
@@ -54,7 +54,7 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+See \code{Genominator} vignette for more information.
 }
 \examples{
 ##---- Should be DIRECTLY executable !! ----
