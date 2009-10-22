@@ -1,9 +1,10 @@
 \name{applyMapped}
 \alias{applyMapped}
-%- Also NEED an '\alias' for EACH other topic documented here.
+
 \title{
-NEED TITLE HERE
+Apply a function over mapped data.
 }
+
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }

@@ -1,6 +1,6 @@
 \name{mergeWithAnnotation}
 \alias{mergeWithAnnotation}
-%- Also NEED an '\alias' for EACH other topic documented here.
+
 \title{
 NEED TITLE HERE
 }
@@ -10,7 +10,7 @@ NEED TITLE HERE
 \usage{
 mergeWithAnnotation(expData, annoData, what = "*", ignoreStrand = FALSE, splitBy = NULL, verbose = FALSE)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{expData}{
 An object of class \code{ExpData}.
@@ -58,13 +58,8 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 \seealso{
 See \code{Genominator} vignette for more information.
 }
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
+\examples{
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
+
 \keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

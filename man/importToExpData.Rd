@@ -1,6 +1,6 @@
 \name{importToExpData}
 \alias{importToExpData}
-%- Also NEED an '\alias' for EACH other topic documented here.
+
 \title{
 Import data to database
 }
@@ -46,11 +46,6 @@ Returns an object of class \code{ExpData}.
 James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
   Hansen \email{khansen@stat.berkeley}
 }
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
 See \code{Genominator} vignette for more information.  See also \code{\link{ExpData-class}}.
@@ -58,7 +53,5 @@ See \code{Genominator} vignette for more information.  See also \code{\link{ExpD
 
 \examples{
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
+
 \keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

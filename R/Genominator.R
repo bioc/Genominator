@@ -151,16 +151,31 @@ setMethod("$", signature = "ExpData", definition = function(x, name) {
 ## general.
 ##
 setMethod("[", signature = "ExpData", definition = function (x, i, j, ..., drop = TRUE) {
-  if (!missing(j))
-    cols <- switch(class(j), "character" = j, "integer" = getColnames(x, all = TRUE)[j], "logical" = getColnames(x, all = TRUE)[j])
-  if (!missing(i)) {
-    whereClause <- sprintf("WHERE %s", i)
+  if (!missing(j)) {
+      cols <- switch(class(j),
+                     "character" = j,
+                     "integer" = getColnames(x, all = TRUE)[j],
+                     "numeric" = getColnames(x, all = TRUE)[j],
+                     "logical" = getColnames(x, all = TRUE)[j],
+                     stop("Column subsetting object needs to be either a character, a numeric/integer or a logical."))
+      whichClause <- paste(cols, collapse = ", ")
   } else {
-    whereClause <- ""
+      whichClause <- "*"
   }
-  q <- sprintf("SELECT %s FROM %s %s", paste(cols, collapse = ", "), getTablename(x), whereClause)
+  if (!missing(i)) {
+      whereClause <- switch(class(i),
+                            "character" = stop("ExpData objects do not have rownames, subsetting makes no sense."),
+                            "integer" = sprintf("WHERE _ROWID_ in (%s)", paste(i, collapse = ", ")),
+                            "numeric" = sprintf("WHERE _ROWID_ in (%s)", paste(i, collapse = ", ")),
+                            "logical" = sprintf("WHERE _ROWID_ in (%s)", paste(which(i), collapse = ", ")),
+                            stop("Row subsetting object needs to be either a numeric/integer or a logical.")
+                            )
+  } else {
+      whereClause <- ""
+  }
+  q <- sprintf("SELECT %s FROM %s %s", whichClause, getTablename(x), whereClause)
   if ("verbose" %in% names(list(...)))
-    print(q)
+      print(q)
   dbGetQuery(getDB(x), q)
 })
 
