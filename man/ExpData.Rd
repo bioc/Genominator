@@ -73,7 +73,7 @@ the constructor function \code{ExpData(db = "filename.db", tablename
     \item{$}{\code{signature(x = "ExpData")}: selects a column of the table.}
     \item{head}{\code{signature(x = "ExpData")}: prints the first 10
       rows of the object.}
-    \item{initialize}{\code{signature(.Object = "ExpData")}: FIXME }
+	    \item{initialize}{\code{signature(.Object = "ExpData")}: The initialize method; use the constructor function \code{ExpData} instead.}
     \item{regionGoodnessOfFit}{\code{signature(obj = "ExpData")}: FIXME }
     \item{show}{\code{signature(object = "ExpData")}: the show method.}
 	 }

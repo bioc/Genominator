@@ -43,7 +43,9 @@ Logical indicating whether details should be printed.
 }
 
 \details{
-  FIXME
+FIXED  This function can be thought of as similar to \code{tapply}, operating over the entries in the data set,
+applying the function specified in the \code{collapse} argument, grouping the data as indicated in the \code{groups}
+argument.  
 }
 
 \value{

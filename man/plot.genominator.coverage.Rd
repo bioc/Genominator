@@ -15,7 +15,7 @@ plot.genominator.coverage(x, type = "l", col = NULL, draw.totals = TRUE, draw.le
 
 \arguments{
   \item{x}{
-An object of class \code{genominator.coverage}.
+An object of class \code{genominator.coverage}, as returned by \code{\link{computeCoverage}}.
 }
   \item{type}{
 Plot type.  See \code{\link{plot}}.
@@ -42,13 +42,12 @@ This method is used for its side effect.
 }
 
 \author{
-Jim Bullard <bullard@berkeley.edu> and Kasper Daniel Hansen <khansen@stat.berkeley.edu>.
+James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
+  Hansen \email{khansen@stat.berkeley}
 }
 
 \seealso{
-}
-
-\examples{
+See \code{Genominator} vignette for more information.  See also \code{\link{computeCoverage}}.
 }
 
 \keyword{ ~kwd1 }

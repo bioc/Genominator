@@ -33,7 +33,7 @@ Logical indicating whether positions with no data should be included in output. 
 to the output to give a value for each position, even if this value is 0.
 }
 \item{addOverStrands}{
-  FIXME
+Logical indicating whether data should be added across strands.  Only applies when \code{expand} is \code{TRUE}.
 }
 \item{verbose}{
 Logical indicating whether details should be printed.
@@ -41,12 +41,14 @@ Logical indicating whether details should be printed.
 }
 
 \details{
-  This function retrives the data contained in the regions of the
-  annoData object.  The return object may be significant in size.
+  This function retrieves the data contained in the regions of the
+  \code{annoData} object.  The return object may be significant in size.
 }
 
 \value{
-Returns a list of length equal to the number of annotation entries split upon.  
+Returns a list of length equal to the number of annotation entries split upon.  Each list element
+is either a matrix of data, or a list with data matrices for each strand included (if \code{expand} is \code{TRUE}
+and \code{addOverStrands} is \code{FALSE}).
 }
 
 \author{

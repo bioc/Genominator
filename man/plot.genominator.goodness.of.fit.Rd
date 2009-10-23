@@ -1,6 +1,5 @@
 \name{plot.genominator.goodness.of.fit}
 \alias{plot.genominator.goodness.of.fit}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Create goodness-of-fit quantile-quantile plot
 }
@@ -15,7 +14,7 @@ plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE, sample = FALS
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-An object of class \code{genominator.goodness.of.fit}.
+An object of class \code{genominator.goodness.of.fit}, as returned by \code{\link{regionGoodnessOfFit}}.
 }
   \item{chisq}{
 Logical indicating whether chi-squared statistics should be plotted (as opposed to p-values from a chi-squared distribution).
@@ -50,84 +49,22 @@ A numerical value giving the amount by which plotting text
 Additional arguments for lower-level functions.
 }
 }
+
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
+
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
+This method is used for its side effect.
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\author{
+James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
+  Hansen \email{khansen@stat.berkeley}
+}
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+See \code{Genominator} vignette for more information.  See also \code{\link{regionGoodnessOfFit}}.
 }
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (x, chisq = FALSE, plotCol = TRUE, sample = FALSE, nsamples = 5000, 
-    xlab = "theoretical quantiles", ylab = "observed quantiles", 
-    main = names(x), pch = 16, cex = 0.75, ...) 
-{
-    op <- par(no.readonly = TRUE)
-    dfs <- x$dfs
-    x <- x$stats
-    args <- list(...)
-    a <- sqrt(length(x))
-    b <- a
-    if (!is.integer(a)) {
-        a <- floor(a)
-        b <- length(x)/a
-    }
-    par(mfrow = c(a, b))
-    g <- mapply(function(mat, name) {
-        if (chisq) {
-            y <- sort(mat[, "chi"])
-            xx <- sort(rchisq(length(y), df = dfs[name]))
-        }
-        else {
-            y <- sort(mat[, "pval"])
-            xx <- seq(0, 1, length = length(y))
-        }
-        if (sample & length(y) > nsamples) {
-            idx <- sort(sample(1:length(y), size = nsamples))
-            y <- y[idx]
-            xx <- xx[idx]
-        }
-        if (plotCol) {
-            colors <- rep("black", length(y))
-            colors[floor(length(colors) * 0.95):length(colors)] <- "red"
-            colors[floor(length(colors) * 0.99):length(colors)] <- "violet"
-            colors[floor(length(colors) * 0.999):length(colors)] <- "orange"
-            plot(xx, y, xlab = xlab, ylab = ylab, main = name, 
-                col = colors, pch = pch, cex = cex, ...)
-        }
-        else {
-            plot(xx, y, xlab = xlab, ylab = ylab, main = name, 
-                pch = pch, cex = cex, ...)
-        }
-        abline(0, 1, col = "blue")
-    }, x, names(x))
-    par(op)
-  }
-}
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
 \keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

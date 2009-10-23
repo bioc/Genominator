@@ -55,23 +55,16 @@ annotation regions of interest.
 }
 
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-
-\references{
-%% ~put references to the literature/web site here ~
+Returns an object of class \code{genominator.coverage}.
 }
 
 \author{
-  Jim Bullard <bullard@berkeley.edu>, Kasper Daniel Hansen <khansen@stat.berkeley.edu>
+James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
+  Hansen \email{khansen@stat.berkeley}
 }
 
 \seealso{
-  See the package vignettes for details.
+  See the \code{Genominator} vignette for details.
 }
 
 \keyword{ ~kwd1 }

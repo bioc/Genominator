@@ -2,10 +2,11 @@
 \alias{mergeWithAnnotation}
 
 \title{
-  FIXME
+  Combine data with annotation
 }
 \description{
-  FIXME
+This function creates a data frame containing the data and the corresponding annotation information for each data row
+included in the annotation.
 }
 
 \usage{
@@ -21,29 +22,30 @@ A data frame which must contain the columns \code{chr}, \code{start}, \code{end}
 annotation regions of interest.  
 }
   \item{what}{
-%%     ~~Describe \code{what} here~~
+Which columns of \code{expData} to include.
 }
   \item{ignoreStrand}{
-%%     ~~Describe \code{ignoreStrand} here~~
+Logical indicating whether strand should be ignored.  If \code{TRUE}, data from either strand that falls into an
+annotation region is included.
 }
   \item{splitBy}{
-%%     ~~Describe \code{splitBy} here~~
+Field on which merged data frame should be split before returning.
 }
   \item{verbose}{
-%%     ~~Describe \code{verbose} here~~
+Logical indicating whether details should be printed.
 }
 }
 
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+Generally this function is good for creating a list of data split by some annotation feature, which can then
+be applied across.  
 }
 
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+If \code{splitBy} is \code{NULL}, returns a data frame containing the data from \code{expData}
+that fall into regions defined by \code{annoData}, and which includes the annotation information, with columns
+as specified by \code{what}.  If \code{splitBy} is non-\code{NULL}, returns a list of data frames with an element for each
+unique value of \code{splitBy} field.
 }
 
 \author{
