@@ -28,8 +28,7 @@ annotation regions of interest.
 of \code{annoData}.
 }
 \item{bindAnno}{
-Logical indicating whether annotation information should be included in the output.  Currently implemented for output
-that is conformable into a data frame.
+Logical indicating whether annotation information should be included in the output.  If \code{TRUE} it assumes the output of \code{FUN} is conformable into a \code{data.frame}. 
 }
 }
 
