@@ -6,7 +6,7 @@
 \alias{$,ExpData-method}
 \alias{head,ExpData-method}
 \alias{initialize,ExpData-method}
-\alias{regionGoodnessOfFit,ExpData-method}
+%% \alias{regionGoodnessOfFit,ExpData-method}
 \alias{show,ExpData-method}
 \alias{ExpData}
 \alias{getDB}

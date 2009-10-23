@@ -1,7 +1,14 @@
 ##
 ## export anything w/out a . in front. 
 ##
-exportPattern("^[^\\.]")
+## exportPattern("^[^\\.]")
 exportClass("ExpData")
 exportMethods("initialize", "show", "head")
 importFrom("utils", "head")
+
+export("aggregateExpData", "applyMapped", "collapseExpData",
+       "computeCoverage", "getRegion", "importFromAlignedReads",
+       "importToExpData", "joinExpData", "mergeWithAnnotation",
+       "plot.genominator.coverage",
+       "plot.genominator.goodness.of.fit", "regionGoodnessOfFit",
+       "splitByAnnotation","summarizeByAnnotation","summarizeExpData")
