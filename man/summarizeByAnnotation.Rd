@@ -1,17 +1,19 @@
 \name{summarizeByAnnotation}
 \alias{summarizeByAnnotation}
-%- Also NEED an '\alias' for EACH other topic documented here.
+
 \title{
 Summarize data based on genome annotation.
 }
+
 \description{
 This function creates a summarization of columns of the data using specified SQLite functions,
 applying these summarization function to regions defined in an annotation data frame.
 }
+
 \usage{
 summarizeByAnnotation(expData, annoData, what = getColnames(expData, all = FALSE), fxs = c("TOTAL"), ignoreStrand = FALSE, splitBy = NULL, bindAnno = FALSE, preserveColnames = TRUE, verbose = FALSE)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{expData}{
 An object of class \code{ExpData}.
@@ -42,38 +44,35 @@ Logical indicating whether column names should be preserved.  Only possible when
 Logical indicating whether details should be printed.
 }
 }
+
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+  Most of the computation is done using SQLite. Depending on the use
+  case, this approach may be significantly faster and use much less
+  memory than the alternative: use \code{splitByAnnotation} to retrive
+  a list with all the data and then use R to summarize over each element
+  of the list.  It is (naturally) constrained to the use of operations
+  expressible in (SQLite) SQL.
 }
+
 \value{
-If \code{splitBy} is not specified, returns a data frame containing results of aggregation functions performed on each region
-defined in \code{annoData}.  If \code{splitBy} is specified, returns a list of data frames with one entry for each unique value of the 
+If \code{splitBy} is not specified, returns a data frame containing
+results of aggregation functions performed on each region 
+defined in \code{annoData}.  If \code{splitBy} is specified, returns a
+list of data frames with one entry for each unique value of the  
 column which was split on.
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
+
+\references{ The SQLite website
+  \url{http://www.sqlite.org/lang_aggfunc.html} has details on what
+  mathematical functions are implemented.  }
+
 \author{
 James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
   Hansen \email{khansen@stat.berkeley}
 }
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-See \code{Genominator} vignette for more information.
-See also \code{\link{ExpData-class}}.
+See \code{Genominator} vignette for more information, as well as the \code{\link{ExpData-class}}.
 }
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-}
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
 \keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

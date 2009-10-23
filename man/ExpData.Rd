@@ -46,6 +46,12 @@ the constructor function \code{ExpData(db = "filename.db", tablename
   }
 }
 
+\section{Details}{
+  For all practical purposes, the class may be considered to point to a
+  specific table in an SQLite database.  A connection to the database is
+  openend automatically and a pool of connections is maintained.
+  }
+
 \section{Methods}{
   \describe{
     \item{\code{ExpData(db, tablename, mode, indexColumns, pragma)}}{A constructor
@@ -67,15 +73,18 @@ the constructor function \code{ExpData(db = "filename.db", tablename
     \item{$}{\code{signature(x = "ExpData")}: selects a column of the table.}
     \item{head}{\code{signature(x = "ExpData")}: prints the first 10
       rows of the object.}
-    \item{initialize}{\code{signature(.Object = "ExpData")}: ... }
-    \item{regionGoodnessOfFit}{\code{signature(obj = "ExpData")}: ... }
+    \item{initialize}{\code{signature(.Object = "ExpData")}: FIXME }
+    \item{regionGoodnessOfFit}{\code{signature(obj = "ExpData")}: FIXME }
     \item{show}{\code{signature(object = "ExpData")}: the show method.}
 	 }
 }
+
 \author{Jim Bullard <bullard@berkeley.edu> and Kasper Daniel Hansen <khansen@stat.berkeley.edu>}
+
 \seealso{
   The package vignettes.
 }
+
 \examples{
 showClass("ExpData")
 }

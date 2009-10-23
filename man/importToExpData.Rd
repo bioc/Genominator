@@ -33,15 +33,11 @@ Logical indicating whether details should be printed.
 Vector of column names of columns to be imported.
 }
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
+
 \value{
 Returns an object of class \code{ExpData}.
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
+
 \author{
 James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
   Hansen \email{khansen@stat.berkeley}
@@ -49,9 +45,6 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 
 \seealso{
 See \code{Genominator} vignette for more information.  See also \code{\link{ExpData-class}}.
-}
-
-\examples{
 }
 
 \keyword{ ~kwd1 }

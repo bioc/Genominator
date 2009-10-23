@@ -1,14 +1,14 @@
 \name{importFromAlignedReads}
 \alias{importFromAlignedReads}
-%- Also NEED an '\alias' for EACH other topic documented here.
+
 \title{
 Import aligned reads to database
 }
 
-\description{
-This function takes a named list of \code{AlignedRead} objects and creates an \code{ExpData} object from them, with one column
-for each list element.  Column names are taken from list names, which must be unique.
-}
+\description{ This function takes a named list of \code{AlignedRead}
+objects (from the \pkg{ShortRead} package) and creates an \code{ExpData}
+object from them, with one column for each list element.  Column names
+are taken from list names, which must be unique.  }
 
 \usage{
 importFromAlignedReads(alignedReads, chrMap, filename, tablename, overwrite = TRUE, verbose = FALSE, ...)
@@ -40,7 +40,7 @@ Additional arguments to be passed to lower-level functions.
 }
 
 \value{
-Outputs an object of class \code{ExpData} with a column for each element of the \code{alignedReads} list.
+Outputs an object of class \code{ExpData} with a column for each element of the \code{alignedRead} list.
 }
 
 \author{
@@ -52,9 +52,6 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 See \code{Genominator} vignette for more information.
 See also \code{\link{ExpData-class}} and
 \code{\link[ShortRead]{AlignedRead-class}}. 
-}
-
-\examples{
 }
 
 \keyword{ ~kwd1 }

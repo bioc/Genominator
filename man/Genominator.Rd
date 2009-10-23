@@ -17,10 +17,7 @@
 
   It interfaces well with the GenomeGraphs package.
   
-  We welcome feedback, but do not expect much in the way of support.
-  
-  The package is still under development, so all man packages are
-  missing. For more information see the vignette(s).
+  Read the package vignettes for extensive use cases.
 }
 \author{James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
   Hansen \email{khansen@stat.berkeley}}

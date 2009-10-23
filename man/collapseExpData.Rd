@@ -43,22 +43,16 @@ Logical indicating whether details should be printed.
 }
 
 \details{
+  FIXME
 }
 
 \value{
 Returns an object of class \code{ExpData}.
 }
 
-\author{
-James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
-  Hansen \email{khansen@stat.berkeley}
-}
+\author{ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
+Hansen \email{khansen@stat.berkeley} }
 
-\seealso{
-See \code{Genominator} vignette for more information.
-}
-
-\examples{
-}
+\seealso{ See \code{Genominator} vignette for more information.  }
 
 \keyword{ ~kwd1 }

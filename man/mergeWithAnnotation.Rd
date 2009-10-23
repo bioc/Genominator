@@ -2,11 +2,12 @@
 \alias{mergeWithAnnotation}
 
 \title{
-NEED TITLE HERE
+  FIXME
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  FIXME
 }
+
 \usage{
 mergeWithAnnotation(expData, annoData, what = "*", ignoreStrand = FALSE, splitBy = NULL, verbose = FALSE)
 }
@@ -32,9 +33,11 @@ annotation regions of interest.
 %%     ~~Describe \code{verbose} here~~
 }
 }
+
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
+
 \value{
 %%  ~Describe the value returned
 %%  If it is a LIST, use
@@ -42,24 +45,14 @@ annotation regions of interest.
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
+
 \author{
 James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
   Hansen \email{khansen@stat.berkeley}
 }
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
 See \code{Genominator} vignette for more information.
-}
-
-\examples{
 }
 
 \keyword{ ~kwd1 }
