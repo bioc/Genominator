@@ -3,10 +3,6 @@
 %\VignettePackage{Genominator}
 \documentclass[letterpaper,12pt]{article}
 
-<<echo=FALSE>>=
-options(width=70)
-@ 
-
 %%%%%%%%%%%%%%%%%%%%%%%% Standard Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{epsfig}
 \usepackage{graphicx}
@@ -64,7 +60,7 @@ options(width=70)
 \renewcommand{\dblfloatpagefraction}{0.7}       % require fuller float pages
 
 %%%%%%%%%%%%%%%%%%%%%%% options for sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\SweaveOpts{prefix.string=plots/docs}
+\SweaveOpts{prefix.string=plots/genominator}
 
 %%%%%%%%%%%%%%%%%%%%%% headers and footers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{fancy} 

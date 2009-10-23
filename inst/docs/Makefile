@@ -3,10 +3,13 @@
 ## 
 file=Genominator
 pfile=plotting
+sfile=withShortRead
 
 all : $(file:=.pdf) plotting
 
 plotting : $(pfile:=.pdf)
+
+shortread : $(sfile:=.pdf)
 
 %.tex : %.Rnw
 	R CMD Sweave $<
