@@ -53,4 +53,4 @@ Hansen \email{khansen@stat.berkeley} }
 See \code{Genominator} vignette for more information.
 }
 
-\keyword{ ~kwd1 }
+\keyword{manip}

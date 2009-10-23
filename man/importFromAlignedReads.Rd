@@ -54,4 +54,4 @@ See also \code{\link{ExpData-class}} and
 \code{\link[ShortRead]{AlignedRead-class}}. 
 }
 
-\keyword{ ~kwd1 }
+\keyword{manip}

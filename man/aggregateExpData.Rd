@@ -60,4 +60,4 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 See \code{Genominator} vignette for more information.
 }
 
-\keyword{ ~kwd1 }
+\keyword{manip}

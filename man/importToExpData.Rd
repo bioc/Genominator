@@ -47,4 +47,4 @@ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
 See \code{Genominator} vignette for more information.  See also \code{\link{ExpData-class}}.
 }
 
-\keyword{ ~kwd1 }
+\keyword{manip}
