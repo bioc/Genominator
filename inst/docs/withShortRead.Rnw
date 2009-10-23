@@ -1,0 +1,163 @@
+%\VignetteIndexEntry{Working with the ShortRead Package}
+%\VignetteDepends{Genominator, ShortRead, yeastRNASeq}
+%\VignettePackage{Genominator}
+\documentclass[letterpaper,12pt]{article}
+
+<<echo=FALSE>>=
+options(width=70)
+@ 
+
+%%%%%%%%%%%%%%%%%%%%%%%% Standard Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{graphics}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+\usepackage{fancyvrb}
+\usepackage{caption}
+\usepackage{comment}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{color}
+
+%%%%%%%%%%%%%%%%%%%%%%%% Adapted from Sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\DefineVerbatimEnvironment{Rcode}{Verbatim}{fontshape=sl, frame=single, 
+  framesep=2mm, fontsize=\small, baselinestretch=.5}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%% My macros (which of course are borrowed from a million ... %%
+\def\argmax{\operatornamewithlimits{arg\,max}}
+\def\argmin{\operatornamewithlimits{arg\,min}}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\myurl}[1]{\href{http://#1}{\textcolor{red}{\texttt{#1}}}}
+\newcommand{\myem}[1]{\structure{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%% Page and Document Setup %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\addtolength{\oddsidemargin}{-0.875in}
+\addtolength{\topmargin}{-0.875in}
+\addtolength{\textwidth}{1.75in}
+\addtolength{\textheight}{1.75in}
+
+\captionsetup{margin=15pt,font=small,labelfont=bf}
+
+\renewcommand{\topfraction}{0.9}        % max fraction of floats at top
+\renewcommand{\bottomfraction}{0.8}     % max fraction of floats at bottom
+
+% Parameters for TEXT pages (not float pages):
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}             % 2 may work better
+\setcounter{dbltopnumber}{2}            % for 2-column pages
+\renewcommand{\dbltopfraction}{0.9}     % fit big float above 2-col. text
+\renewcommand{\textfraction}{0.07}      % allow minimal text w. figs
+
+% Parameters for FLOAT pages (not text pages):
+\renewcommand{\floatpagefraction}{0.7}          % require fuller float pages
+
+% N.B.: floatpagefraction MUST be less than topfraction !!
+\renewcommand{\dblfloatpagefraction}{0.7}       % require fuller float pages
+
+%%%%%%%%%%%%%%%%%%%%%%% options for sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\SweaveOpts{prefix.string=plots/docs}
+
+%%%%%%%%%%%%%%%%%%%%%% headers and footers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy} 
+\renewcommand{\footrulewidth}{\headrulewidth}
+
+%%%%%%%%%%%%%%%%%%%%%%%%% bibliography  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{plainnat}
+
+%%%%%%%%%%%%%%%%%%%%%%% opening %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Working with the ShortRead Package}
+\author{James Bullard, Kasper Daniel Hansen}
+\begin{document}
+\maketitle
+
+In this document we show how to use the Genominator package with
+ShortRead. In this document, we will demonstrate some analysis --
+maybe even some useful first steps when analyzing RNA-Seq data. 
+
+<<initialize,echo=TRUE,results=hide>>=
+require(Genominator)
+require(ShortRead)
+require(yeastRNASeq)
+@ 
+
+We will use some data sets from the yeastRNASeq data package. Lets
+first see what this package contains:
+<<>>=
+data(package="yeastRNASeq")
+@ 
+
+At first, we will focus on the AlignedRead objects. This object
+represents about .5 million reads for 4 lanes of Solexa
+sequencing.
+
+<<>>=
+data("yeastAligned")
+yeastAligned[[1]]
+@ 
+
+The first step is to make a database:
+<<>>=
+eData <- importFromAlignedReads(yeastAligned, chrMap = levels(chromosome(yeastAligned[[1]])),
+                                filename = "my.db", tablename = "raw")
+@ 
+
+Certainly, the most cryptic portion of this call is the chromosome
+map. The Genominator package demands that all chromosomes be stored as
+integer values. Therefore, we must to convert the ``chromosome names''
+to integers. We do this by specifying a rule (essentially
+match(chromosome(yeastAligned[[1]]), chrMap) is what is called). In
+this case, we are fortunate because we don't have to do any
+re-ordering of the ``chromosome names,'' often we are not so lucky.
+
+<<>>=
+head(eData, 4)
+@ 
+
+The result is an ExpData object which has been aggregated over,
+i.e. each position in the genome which was represented by > 0 reads at
+its 5' most end will have that number of reads. We can now take
+advantage of all of the functionality of the Genominator package,
+using the yeastAnnotation.
+
+<<>>=
+data(yeastAnno)
+head(yeastAnno)
+@ 
+
+Once again, we have to deal with the fact that people like to
+represent chromosomes in different ways. In this case, sgd represents
+chromosomes with roman numerals. Additionally, we prepare the
+annotation object to be consumable by the Genominator functions.
+
+<<>>=
+yeastAnno$chr <- match(yeastAnno$chr, c(as.character(as.roman(1:16)), "MT", "2-micron"))
+yeastAnno$start <- yeastAnno$start_position
+yeastAnno$end <- yeastAnno$end_position
+rownames(yeastAnno) <- yeastAnno$ensembl
+yeastAnno <- yeastAnno[, c("chr", "start", "end", "strand", "gene_biotype")]
+head(yeastAnno)
+@ 
+
+<<>>=
+geneCounts <- summarizeByAnnotation(eData, yeastAnno, ignoreStrand = TRUE)
+head(geneCounts)
+@ 
+
+We can see how ``good'' the replicates are by assessing whether it
+fits the Poisson model of constant gene expression across lanes with
+variable sequencing effort. 
+<<fig=TRUE>>=
+plot(regionGoodnessOfFit(geneCounts, groups = gsub("_[0-9]_f", "", colnames(geneCounts))),
+     chisq = TRUE)
+@ 
+
+\end{document}
