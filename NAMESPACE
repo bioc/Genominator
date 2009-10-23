@@ -6,7 +6,7 @@ exportClass("ExpData")
 exportMethods("initialize", "show", "head")
 importFrom("utils", "head")
 
-export("aggregateExpData", "applyMapped", "collapseExpData",
+export("ExpData", "aggregateExpData", "applyMapped", "collapseExpData",
        "computeCoverage", "getRegion", "importFromAlignedReads",
        "importToExpData", "joinExpData", "mergeWithAnnotation",
        "plot.genominator.coverage",
