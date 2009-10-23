@@ -78,6 +78,9 @@ options(width=70)
 \author{James Bullard, Kasper Daniel Hansen}
 \begin{document}
 \maketitle
+\textcolor{red}{This vignette is preliminary, and should be viewed as
+  subject to change. A number of the functions are not directly
+  exported by the package -- there is a reason for that.}
 
 In this vignette we demonstrate how to visualize data using the
 \Rpackage{GenomeGraphs} package. The main idea is that we want to
@@ -106,7 +109,7 @@ rownames(annoData) <- paste("elt", 1:K, sep = ".")
 @ 
 
 <<>>=
-rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts")))
+rp <- Genominator:::makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts")))
 args(rp)
 @ 
 
@@ -121,7 +124,7 @@ means of plotting which for the most part are transferable using
 the list. 
 
 <<fig=TRUE>>=
-rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
+rp <- Genominator:::makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
                              dp = DisplayPars(lwd = .45, color = "grey"))))
 rp(1, 400, 500)
 @ 
@@ -132,14 +135,14 @@ is to use Ensembl to do the plotting of the annotation. Often, however,
 you will want to augment the annotation produced by Ensembl.
 
 <<fig=TRUE>>=
-annoFactory <- makeAnnoFactory.AnnoData(annoData, featureColumnName = "feature", 
-                                        groupColumnName = NULL, idColumnName = NULL,
-                                        dp = DisplayPars("gene" = "blue", 
-                                        "intergenic" = "green"))
-rp <- makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
-                             dp = DisplayPars(lwd=.2, color = "grey")),
+annoFactory <- Genominator:::makeAnnoFactory.AnnoData(annoData, featureColumnName = "feature", 
+                                                      groupColumnName = NULL, idColumnName = NULL,
+                                                      dp = DisplayPars("gene" = "blue", 
+                                                        "intergenic" = "green"))
+rp <- Genominator:::makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
+                               dp = DisplayPars(lwd=.2, color = "grey")),
                              "track.2" = list(expData = eData, what = "counts", 
-                             fx = log2, DisplayPars(lwd=.3, color = "black"))),
+                               fx = log2, DisplayPars(lwd=.3, color = "black"))),
                         annoFactory = annoFactory)
 rp(annoData[1,"chr"], annoData[1, "start"] - 100, annoData[1, "end"] + 100)
 @ 
@@ -154,17 +157,17 @@ numerals denoting the chromosomes).
 <<fig=TRUE>>=
 require("biomaRt")
 mart <- useMart("ensembl", dataset = "scerevisiae_gene_ensembl")
-annoFactory <- makeAnnoFactory.Biomart(mart, chrFunction = function(chr) as.roman(chr))
+annoFactory <- Genominator:::makeAnnoFactory.Biomart(mart, chrFunction = function(chr) as.roman(chr))
 
 load(system.file("data", "chr1_yeast.rda", package = "Genominator"))
 head(chr1_yeast)
 yData <- importToExpData(chr1_yeast, filename = "my.db", tablename = "yeast", 
                          overwrite = TRUE)
 
-rp <- makeRegionPlotter(list("track.-" = list(expData = yData, what = c("mRNA_1", "mRNA_2"),
-                             fx = rowMeans, strand = -1,
-                             dp = DisplayPars(lwd=.3, color = "grey"))),
-                        annoFactory = annoFactory)
+rp <- Genominator:::makeRegionPlotter(list("track.-" = list(expData = yData, what = c("mRNA_1", "mRNA_2"),
+                                             fx = rowMeans, strand = -1,
+                                             dp = DisplayPars(lwd=.3, color = "grey"))),
+                                      annoFactory = annoFactory)
 rp(1, 20000, 50000)
 @ 
 \end{document}
