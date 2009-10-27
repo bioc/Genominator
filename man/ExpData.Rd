@@ -49,7 +49,7 @@ the constructor function \code{ExpData(db = "filename.db", tablename
 \section{Details}{
   For all practical purposes, the class may be considered to point to a
   specific table in an SQLite database.  A connection to the database is
-  openend automatically and a pool of connections is maintained.
+  opened automatically and a pool of connections is maintained.
   }
 
 \section{Methods}{
@@ -61,7 +61,7 @@ the constructor function \code{ExpData(db = "filename.db", tablename
     \item{\code{getDBName}}{Returns the filename of the database associated with
       the ExpData object.}
     \item{\code{getTablename}}{Returns the tablename of the ExpData object}
-    \item{\code{getSchema}}{Returns the schema of the table associted with the
+    \item{\code{getSchema}}{Returns the schema of the table associated with the
       ExpData object.}
     \item{\code{getIndexColumns}}{Returns the indexColumns of the object.}
     \item{\code{getColnames}}{Returns all columns (argument \code{all = TRUE})

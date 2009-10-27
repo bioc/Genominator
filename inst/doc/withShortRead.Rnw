@@ -135,7 +135,7 @@ head(yeastAnno)
 
 Once again, we have to deal with the fact that people like to
 represent chromosomes in different ways. In this case, sgd represents
-chromosomes with roman numerals. Additionally, we prepare the
+chromosomes with Roman numerals. Additionally, we prepare the
 annotation object to be consumable by the Genominator functions.
 
 <<>>=

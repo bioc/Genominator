@@ -179,7 +179,7 @@ eData
 Also, you can use the ``original'' table name. Note that the display
 of ``eDataRaw'' in this instance is broken as the underlying database
 has been changed and some properties of the object are set at
-instanteation. In general, it is advisable to carry out the steps
+instantiation. In general, it is advisable to carry out the steps
 involved in building a database and then in separate scripts carry out
 various analyses.
 <<>>=
@@ -187,7 +187,7 @@ eData <- aggregateExpData(eDataRaw, verbose = VERBOSE)
 eData
 @ 
 
-Now, we want to instanteate an expData object. This is done here for
+Now, we want to instantiate an expData object. This is done here for
 pedagogical reasons, the ``eData'' object above is more than fine, but
 by instantiating it here, we also put it in 'read' only mode. 
 <<>>=
@@ -393,7 +393,7 @@ if (!all(checkContiguity(x2))) stop("Problem expanding!")
 if (!all(checkContiguity(x3))) stop("Problem expanding!")
 @ 
 
-Finally, we often want to compute summarys of higher level entities,
+Finally, we often want to compute summaries of higher level entities,
 such as genes, pseudogenes, and intergenic regions. This we can do
 with the convenience function: \Rfunction{mergeWithAnnotation}. This
 function is really not much more than a wrapper around a join.
@@ -415,7 +415,7 @@ x <- lapply(mergeWithAnnotation(eData, annoData, splitBy = "feature", what = "co
 \subsection{Merging}
 Often we want to incorporate other datasets which share many of the
 same features. It is natural to store a number of experimental repeats
-in columns of a table, however it is often the case that we recieve
+in columns of a table, however it is often the case that we receive
 these over time, and that loading them in is not trivial. For this
 reason we provide a \Rfunction{mergeExpData} to bind to tables
 together. 

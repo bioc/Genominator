@@ -48,7 +48,7 @@ Logical indicating whether details should be printed.
 \details{
   Most of the computation is done using SQLite. Depending on the use
   case, this approach may be significantly faster and use much less
-  memory than the alternative: use \code{splitByAnnotation} to retrive
+  memory than the alternative: use \code{splitByAnnotation} to retrieve
   a list with all the data and then use R to summarize over each element
   of the list.  It is (naturally) constrained to the use of operations
   expressible in (SQLite) SQL.

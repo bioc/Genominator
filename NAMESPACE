@@ -1,11 +1,27 @@
 ##
+## imports
+##
+import("methods")
+
+importMethodsFrom("DBI", "dbConnect", "dbDisconnect", "dbDriver",
+                  "dbGetQuery", "dbListTables", "dbWriteTable")
+
+importFrom("graphics", "abline", "legend", "matplot", "par", "plot",
+           "segments")
+
+importFrom("stats", "convolve", "dnbinom", "dpois", "na.omit",
+           "pchisq", "pnorm", "quantile", "rbinom", "rchisq",
+           "rnbinom", "rpois", "runif")
+
+importFrom("utils", "head", "read.table")
+
+
+##
 ## export anything w/out a . in front. 
 ##
 ## exportPattern("^[^\\.]")
 exportClass("ExpData")
 exportMethods("initialize", "show", "head")
-importFrom("utils", "head")
-
 export("ExpData", "aggregateExpData", "applyMapped", "collapseExpData",
        "computeCoverage", "getRegion", "importFromAlignedReads",
        "importToExpData", "joinExpData", "mergeWithAnnotation",

@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Plotting with Genominator}
-%\VignetteDepends{Genominator}
+%\VignetteDepends{Genominator, biomaRt}
 %\VignettePackage{Genominator}
 \documentclass[letterpaper,12pt]{article}
 
@@ -119,7 +119,7 @@ pieces of data.
 rp(1, 10, 1000)
 @ 
 
-\Rpackage{GenomeGraphs} provides a wealth of custimization options and
+\Rpackage{GenomeGraphs} provides a wealth of customization options and
 means of plotting which for the most part are transferable using
 the list. 
 
@@ -151,7 +151,7 @@ rp(annoData[1,"chr"], annoData[1, "start"] - 100, annoData[1, "end"] + 100)
 a given region using data from Ensembl or other sources of annotation
 - in some cases you have to do a little work because of the way that
 Biomart indexes the annotation and the way the \Rpackage{Genominator}
-package works (in this case yeast annotation is stored with roman
+package works (in this case yeast annotation is stored with Roman
 numerals denoting the chromosomes).
 
 <<fig=TRUE>>=

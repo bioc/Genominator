@@ -5,7 +5,7 @@ file=Genominator
 pfile=plotting
 sfile=withShortRead
 
-all : $(file:=.pdf) plotting
+all : $(file:=.pdf) plotting shortread
 
 plotting : $(pfile:=.pdf)
 
