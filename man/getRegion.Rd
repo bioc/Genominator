@@ -1,11 +1,11 @@
 \name{getRegion}
 \alias{getRegion}
 \title{
-Select a region from an \code{ExpData} object.
+  Select a region from an \code{ExpData} object.
 }
 
 \description{
-This function selects a subset of the data that falls into a particular contiguous genomic region.  
+  This function selects a subset of the data that falls into a particular contiguous genomic region.  
 }
 
 \usage{
@@ -42,23 +42,28 @@ getRegion(expData, chr, start, end, strand, what = "*", whereClause = "", verbos
 }
 
 \details{ The argument \code{whereClause} should be a string indicating
-a subset of the data to be selected, using SQL syntax.  For example, if
-you have a column called \code{category}, you could specify
-\code{category = 1} to select only those data entries where category has
-a value of 1.  This function operates as a database query, and this
-argument can include logical combinations of multiple criteria.  }
+  a subset of the data to be selected, using SQL syntax.  For example, if
+  you have a column called \code{category}, you could specify
+  \code{category = 1} to select only those data entries where category has
+  a value of 1.  This function operates as a database query, and this
+  argument can include logical combinations of multiple criteria.  }
 
 \value{
-Returns a data frame containing the data from the desired region, with the desired columns.
+  Returns a data frame containing the data from the desired region, with the desired columns.
 }
 
 \author{
-James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
+  James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
   Hansen \email{khansen@stat.berkeley}
 }
 
 \seealso{
-See \code{Genominator} vignette for more information.
+  See \code{Genominator} vignette for more information.
 }
-
+\examples{
+    ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
+    c1 <- getRegion(ed, chr = 1)
+    dim(c1)
+    head(c1)
+}
 \keyword{manip}

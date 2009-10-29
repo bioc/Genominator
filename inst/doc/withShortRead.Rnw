@@ -107,7 +107,7 @@ yeastAligned[[1]]
 The first step is to make a database:
 <<>>=
 eData <- importFromAlignedReads(yeastAligned, chrMap = levels(chromosome(yeastAligned[[1]])),
-                                filename = "my.db", tablename = "raw")
+                                filename = "my.db", tablename = "raw", overwrite = TRUE)
 @ 
 
 Certainly, the most cryptic portion of this call is the chromosome

@@ -32,8 +32,8 @@ setMethod("regionGoodnessOfFit", "data.frame",
           })
 
 setMethod("regionGoodnessOfFit", "ExpData",
-          definition = function(obj, annoData, groups, what = setdiff(getColnames(obj), getIndexColumns(obj)),
-          denominator = c("regions", "lanes"), verbose = FALSE) {
+          definition = function(obj, annoData, groups = rep("A", length(what)), what = getColnames(obj, all = FALSE),
+                                denominator = c("regions", "lanes"), verbose = FALSE) {
 
               if (missing(groups)) {
                   groups <- rep("group", length(what))
@@ -43,11 +43,15 @@ setMethod("regionGoodnessOfFit", "ExpData",
                   warning("Arguments groups and what are of different lengths.")
               regionSums <- summarizeByAnnotation(expData = obj, annoData = annoData,
                                                   what = what, verbose = verbose)
-              denominator <- match.arg(denominator)
-              denominator <- switch(denominator,
-                                    "regions" = colSums(regionSums),
-                                    "lanes" = summarizeExpData(expData = obj,
-                                    what = what, verbose = verbose))
+              if (!is.numeric(denominator)) {
+                denominator <- match.arg(denominator)
+                denominator <- switch(denominator,
+                                      "regions" = colSums(regionSums),
+                                      "lanes" = summarizeExpData(expData = obj,
+                                        what = what, verbose = verbose))
+              } else {
+                stopifnot(length(denominator) == groups)
+              }
               regionGoodnessOfFit(regionSums, denominator = denominator, groups = groups)
           })
 

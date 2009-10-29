@@ -2,69 +2,80 @@
 \alias{computeCoverage}
 
 \title{
-Compute effort-coverage values
+  Compute effort-coverage values
 }
 
 \description{
-Compute fraction coverage obtained for a certain degree of sequencing effort.
+  Compute fraction coverage obtained for a certain degree of sequencing effort.
 }
-
 \usage{
-computeCoverage(expData, annoData, cutoff = function(x, anno, group) x > 10, effort = seq(1e+05, 5e+07, length = 20), smooth = "min", groups = "all", what = getColnames(expData, all = FALSE), totals = summarizeExpData(expData, what = what, verbose = verbose), ignoreStrand = FALSE, verbose = FALSE, ...)
+  computeCoverage(expData, annoData, cutoff = function(x, anno, group) x
+  > 10, effort = seq(1e+05, 5e+07, length = 20), smooth =
+  function(probs) probs, groups = rep("ALL", length(what)), what = getColnames(expData, all = FALSE), totals = summarizeExpData(expData, what = what, verbose = verbose), ignoreStrand = FALSE, verbose = FALSE, ...)
 }
 
 \arguments{
   \item{expData}{
     An \code{ExpData} object.
-}
+  }
   \item{annoData}{
-A data frame which must contain the columns \code{chr}, \code{start}, \code{end} and \code{strand} which specifies
-annotation regions of interest.  
-}
+    A data frame which must contain the columns \code{chr}, \code{start}, \code{end} and \code{strand} which specifies
+    annotation regions of interest.   
+  }
   \item{cutoff}{
-%%     ~~Describe \code{cutoff} here~~
-}
+    A predicate which determines when a region of annotation has been
+    "sequenced". This function takes three arguments x = number of reads
+    in region, anno = the annotation description of the region, group =
+    the group it is in. 
+  }
   \item{effort}{
-%%     ~~Describe \code{effort} here~~
-}
+    Effort is a vector of how much sequencing has been done. 
+  }
   \item{smooth}{
-%%     ~~Describe \code{smooth} here~~
-}
+    A function which takes as input the vector of probabilities and must
+    return the probabilities. 
+  }
   \item{groups}{
-%%     ~~Describe \code{groups} here~~
-}
+    The different groups for which to calculate coverage.
+  }
   \item{what}{
-%%     ~~Describe \code{what} here~~
-}
+    The different columns, must be the same length as the groups.
+  }
   \item{totals}{
-%%     ~~Describe \code{totals} here~~
-}
+    The lane totals, or some other totals. This allows us to estimate
+    the sampling probability vector. 
+  }
   \item{ignoreStrand}{
-%%     ~~Describe \code{ignoreStrand} here~~
-}
+    Whether or not to add over strands. 
+  }
   \item{verbose}{
-%%     ~~Describe \code{verbose} here~~
-}
+    Do you want to see output. 
+  }
   \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
+    Extra argument passed to cutoff.
+  }
 }
-}
-
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+  This argument is pretty general as different ways of specifying the
+  arguments allows one to compute "coverage" under a lot of different
+  definitions. 
 }
-
 \value{
-Returns an object of class \code{genominator.coverage}.
+  Returns an object of class \code{genominator.coverage}. Pretty much
+  you'll want to call plot on this object. 
 }
 
 \author{
-James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
+  James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
   Hansen \email{khansen@stat.berkeley}
 }
-
 \seealso{
-  See the \code{Genominator} vignette for details.
+  See the \code{\link{plot.genominator.coverage}} \code{Genominator} vignette for details.
 }
-
-\keyword{ ~kwd1 }
+\examples{
+ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
+data("yeastAnno")
+a <- computeCoverage(ed, yeastAnno, effort = 2^(5:18), cutoff = function(x, ...) x > 1, smooth = FALSE)
+names(a)
+}
+\keyword{misc}

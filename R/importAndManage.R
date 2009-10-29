@@ -9,7 +9,8 @@
 }
 
 importFromAlignedReads <- function(alignedReads, chrMap, filename, tablename,
-                                   overwrite = TRUE, verbose = FALSE, ...) {
+                                   overwrite = TRUE, deleteIntermediates = TRUE,
+                                   verbose = FALSE, ...) {
     if (!require(ShortRead))
         stop("ShortRead package must be installed.")
     if (!all(sapply(alignedReads, class) == "AlignedRead"))
@@ -28,7 +29,8 @@ importFromAlignedReads <- function(alignedReads, chrMap, filename, tablename,
                               tablename = name, overwrite = TRUE, verbose = verbose)
         aggregateExpData(ed, colname = name, verbose = verbose, overwrite = TRUE)
     }, laneNames, alignedReads)
-    joinExpData(expDatas, tablename = tablename, overwrite = overwrite, verbose = verbose)
+    joinExpData(expDatas, tablename = tablename, overwrite = overwrite, verbose = verbose,
+                deleteOriginals = deleteIntermediates)
 }
 
 ##
