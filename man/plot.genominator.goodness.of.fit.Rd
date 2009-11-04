@@ -54,9 +54,9 @@ plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE,
 \details{
   This function constructs a quantile-quantile plot comparing the
   distribution of observed statistics to either the uniform 0,1
-  distribution or the appropriate chisquared distribution. This plotting
-  function provides a tool to assess whether replicate lanes, flowcells,
-  sample-preparations, etc. fit the model described in
+  distribution or the appropriate chi-squared distribution. This plotting
+  function provides a tool to assess whether replicate lanes, flow cells,
+  sample preparations, etc. fit the model described in
   \code{\link{regionGoodnessOfFit}}. 
 }
 \value{
