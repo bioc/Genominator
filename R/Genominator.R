@@ -443,12 +443,12 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
     if (print) {
         if (!is.null(q))
             cat(q, "\n")
-        cat(txt, ":")
+        cat(txt, ": ", sep = "")
     }
     time <- round(system.time(exp)[3], 4)
 
     if (print) {
-        cat(time, "\n")
+        cat(time, "sec\n")
     }
 }
 
