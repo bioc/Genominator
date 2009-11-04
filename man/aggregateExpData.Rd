@@ -11,7 +11,7 @@
 }
 
 \usage{
-aggregateExpData(expData, by = getIndexColumns(expData), tablename = NULL, deleteOriginal = FALSE, overwrite = FALSE, verbose = FALSE, colname = "counts", aggregator = paste("count(", by[1], ")", sep = ""))
+aggregateExpData(expData, by = getIndexColumns(expData), tablename = NULL, deleteOriginal = FALSE, overwrite = FALSE, verbose = getOption("verbose"), colname = "counts", aggregator = paste("count(", by[1], ")", sep = ""))
 }
 
 \arguments{
@@ -63,8 +63,7 @@ aggregateExpData(expData, by = getIndexColumns(expData), tablename = NULL, delet
 N  <- 10000 # the number of observations. 
 df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                  location = sample(1:1000, size = N, replace = TRUE),
-                 strand = as.integer(sample(c(1,-1), size = N, replace =
-  TRUE)))
+                 strand = sample(c(1L,-1L), size = N, replace = TRUE))
 eDataRaw <- aggregateExpData(importToExpData(df, filename = tempfile(), tablename = "ex_tbl", overwrite = TRUE))
 }
 

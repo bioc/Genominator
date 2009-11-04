@@ -14,7 +14,7 @@ computeCoverage <- function (expData, annoData,
                              what    = getColnames(expData, all = FALSE),
                              totals  = summarizeExpData(expData, what = what, verbose = verbose),
                              ignoreStrand = FALSE,
-                             verbose = FALSE, ...) 
+                             verbose = getOption("verbose"), ...) 
 {
     if (!is.list(annoData))
         stop("annoData must either be a data.frame, or a list of data.frames.")

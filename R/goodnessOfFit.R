@@ -32,8 +32,10 @@ setMethod("regionGoodnessOfFit", "data.frame",
           })
 
 setMethod("regionGoodnessOfFit", "ExpData",
-          definition = function(obj, annoData, groups = rep("A", length(what)), what = getColnames(obj, all = FALSE),
-                                denominator = c("regions", "lanes"), verbose = FALSE) {
+          definition = function(obj, annoData, groups = rep("A", length(what)),
+                                what = getColnames(obj, all = FALSE),
+                                denominator = c("regions", "lanes"),
+                                verbose = getOption("verbose")) {
 
               if (missing(groups)) {
                   groups <- rep("group", length(what))
@@ -106,7 +108,8 @@ plot.genominator.goodness.of.fit <- function(x, chisq = FALSE, plotCol = TRUE, s
 ## This function operates on a vector
 ##
 tabularGoodnessOfFit <- function(v, dfx = function(y) dpois(y, mean(v)),
-                                 levels = 10, bins = NULL, verbose = FALSE) {
+                                 levels = 10, bins = NULL,
+                                 verbose = getOption("verbose")) {
     levs <- unique(floor(quantile(v, seq(0, 1, length = levels))))
 
     if (length(levs) <= 2)

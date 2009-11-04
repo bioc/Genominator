@@ -10,7 +10,7 @@
 }
 
 \usage{
-joinExpData(expDataList, fields = NULL, tablename = "aggtable", overwrite = TRUE, deleteOriginals = FALSE, verbose = FALSE)
+joinExpData(expDataList, fields = NULL, tablename = "aggtable", overwrite = TRUE, deleteOriginals = FALSE, verbose = getOption("verbose"))
 }
 
 \arguments{
@@ -50,11 +50,11 @@ joinExpData(expDataList, fields = NULL, tablename = "aggtable", overwrite = TRUE
 \examples{
     N  <- 10000 # the number of observations. 
     df1 <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
-                     location = sample(1:1000, size = N, replace = TRUE),
-                      strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)))
+                      location = sample(1:1000, size = N, replace = TRUE),
+                      strand = sample(c(1L,-1L), size = N, replace = TRUE))
     df2 <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                       location = sample(1:1000, size = N, replace = TRUE),
-                      strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)))
+                      strand = sample(c(1L,-1L), size = N, replace = TRUE))
 
      eDataRaw1 <- aggregateExpData(importToExpData(df1, filename = "my.db", tablename = "ex_tbl_1", overwrite = TRUE))
      eDataRaw2 <- aggregateExpData(importToExpData(df1, filename = "my.db", tablename = "ex_tbl_2", overwrite = TRUE))

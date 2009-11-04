@@ -9,7 +9,7 @@
 }
 
 \usage{
-getRegion(expData, chr, start, end, strand, what = "*", whereClause = "", verbose = FALSE)
+getRegion(expData, chr, start, end, strand, what = "*", whereClause = "", verbose = getOption("verbose"))
 }
 
 \arguments{

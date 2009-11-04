@@ -9,7 +9,7 @@
 }
 \usage{
 splitByAnnotation(expData, annoData, what = "*", ignoreStrand = FALSE, expand = FALSE, 
-                  addOverStrands = FALSE, verbose = FALSE)
+                  addOverStrands = FALSE, verbose = getOption("verbose"))
 }
 \arguments{
   \item{expData}{

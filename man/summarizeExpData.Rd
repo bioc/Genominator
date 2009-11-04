@@ -9,7 +9,7 @@
 }
 \usage{
 summarizeExpData(expData, what = getColnames(expData, all = FALSE), fxs = c("TOTAL"),
-                 preserveColnames = TRUE, whereClause = "", verbose = FALSE)
+                 preserveColnames = TRUE, whereClause = "", verbose = getOption("verbose"))
 }
 \arguments{
   \item{expData}{

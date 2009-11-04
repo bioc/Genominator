@@ -14,8 +14,8 @@
 \usage{
 collapseExpData(expData, tablename = NULL, what = getColnames(expData,
                 all = FALSE), groups = "COL", collapse = c("sum", "avg",
-                "weighted.avg"), overwrite = FALSE, deleteOriginal = FALSE, verbose =
-                FALSE)
+                "weighted.avg"), overwrite = FALSE, deleteOriginal = FALSE,
+                verbose = getOption("verbose"))
 }
 \arguments{
   \item{expData}{

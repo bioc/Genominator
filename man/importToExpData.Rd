@@ -10,7 +10,7 @@
 }
 
 \usage{
-importToExpData(df, filename, tablename, overwrite = FALSE, verbose = FALSE, columns = NULL)
+importToExpData(df, filename, tablename, overwrite = FALSE, verbose = getOption("verbose"), columns = NULL)
 }
 
 \arguments{
@@ -50,8 +50,7 @@ importToExpData(df, filename, tablename, overwrite = FALSE, verbose = FALSE, col
 N  <- 10000 # the number of observations. 
 df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                  location = sample(1:1000, size = N, replace = TRUE),
-                 strand = as.integer(sample(c(1,-1), size = N, replace =
-  TRUE)))
+                 strand = sample(c(1L,-1L), size = N, replace = TRUE))
 eDataRaw <- importToExpData(df, filename = tempfile(), tablename = "ex_tbl", overwrite = TRUE)
 }
 

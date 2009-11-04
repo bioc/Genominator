@@ -17,7 +17,7 @@ colSums(obj), groups = rep("A", ncol(obj)))
 
 \S4method{regionGoodnessOfFit}{ExpData}(obj, annoData, groups = rep("A",
 length(what)), what = getColnames(obj, all = FALSE), denominator =
-c("regions", "lanes"), verbose = FALSE)
+c("regions", "lanes"), verbose = getOption("verbose"))
 }
 \arguments{
   \item{obj}{

@@ -12,7 +12,7 @@
 
 \usage{
 importFromAlignedReads(alignedReads, chrMap, filename, tablename,
-overwrite = TRUE, deleteIntermediates = TRUE, verbose = FALSE, ...)
+overwrite = TRUE, deleteIntermediates = TRUE, verbose = getOption("verbose"), ...)
 }
 
 \arguments{

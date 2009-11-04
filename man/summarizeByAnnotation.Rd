@@ -11,7 +11,7 @@
 }
 
 \usage{
-summarizeByAnnotation(expData, annoData, what = getColnames(expData, all = FALSE), fxs = c("TOTAL"), ignoreStrand = FALSE, splitBy = NULL, bindAnno = FALSE, preserveColnames = TRUE, verbose = FALSE)
+summarizeByAnnotation(expData, annoData, what = getColnames(expData, all = FALSE), fxs = c("TOTAL"), ignoreStrand = FALSE, splitBy = NULL, bindAnno = FALSE, preserveColnames = TRUE, verbose = getOption("verbose"))
 }
 
 \arguments{

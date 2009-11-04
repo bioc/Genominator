@@ -10,7 +10,7 @@
 }
 
 \usage{
-mergeWithAnnotation(expData, annoData, what = "*", ignoreStrand = FALSE, splitBy = NULL, verbose = FALSE)
+mergeWithAnnotation(expData, annoData, what = "*", ignoreStrand = FALSE, splitBy = NULL, verbose = getOption("verbose"))
 }
 
 \arguments{

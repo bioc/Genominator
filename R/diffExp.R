@@ -1,5 +1,5 @@
 computeDiffExpT <- function(expData, annoData, groups, what = getColnames(expData, all = FALSE), 
-                            verbose = FALSE, addTo = 0, ...) {
+                            verbose = getOption("verbose"), addTo = 0, ...) {
     if (length(groups) != length(what)) 
         stop("groups must be a factor with the same length as what")
     
