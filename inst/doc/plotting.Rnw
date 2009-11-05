@@ -91,13 +91,13 @@ First, we make a database:
 <<>>=
 require(Genominator)
 
-VERBOSE <- FALSE
+options(verbose = FALSE)
 N <- 100000 # the number of observations. 
 K <- 100    # the number of annotation regions, not less than 10
 
 df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                  location = sample(1:1000, size = N, replace = TRUE),
-                 strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)))
+                 strand = sample(c(1L,-1L), size = N, replace = TRUE))
 eData <- aggregateExpData(importToExpData(df, filename = "pmy.db", overwrite = TRUE, tablename = "ex_tbl"))
 
 annoData <- data.frame(chr = sample(1:16, size = K, replace = TRUE),

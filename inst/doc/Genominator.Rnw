@@ -77,8 +77,6 @@
 
 <<initialize,echo=FALSE,results=hide>>=
 options(width = 70)
-require(Genominator)
-VERBOSE <- TRUE ## For all Genominator calls.
 @ 
 
 <<debug>>=
@@ -101,81 +99,108 @@ with the data.
 We have used to package to analyze tiling arrays and (perhaps more
 appropriate) RNA-Seq data consisting of more than 400 million reads.
 The canonical use case at the core of the package is summarizing the
-data over a large number of genomic regions.  For example counting the
+data over a large number of genomic regions, for example counting the
 number of reads that lands in all annotated exons in human.
 
-Data is stored in an SQLite database and as such, the package makes it
+Data is stored in a SQLite database, and as such the package makes it
 possible to work with very large datasets in limited memory.  However,
 working with SQLite databases is limited by I/O (disk speed), and
 substantial performance gains are possible by using a fast disk.
 
-\section{The Data model}
+\section{Data Model}
+
+\subsection{Experimental Data}
 
 The \Rpackage{Genominator} package provides a streamlined interface to
 genomic data. The main goal of the package is to provide fast methods
 for summarizing regions of interest oriented along the genome. The
-package utilizes the \Rpackage{RSQLite} to store the data
-corresponding to an experiment. This data model is simply:
+package utilizes \Rpackage{RSQLite} to store the data corresponding to
+an experiment. This data model is:
 
 \begin{verbatim}
 chr INTEGER, strand INTEGER (-1,0,1), location INTEGER, [name NUMERIC]*
 \end{verbatim}
 
 Specifically it means that each data unit has an associated
-\texttt{chr} (has to be an integer), \texttt{strand} (has to be either
--1,0, or 1 -- 1 encoding the forward strand and 0 encoding that the
-data has no strand information) as well as a \texttt{location}.  In
-addition we allow an unlimited number of additional numeric variables.
+\texttt{chr} (chromosome coded as an integer), \texttt{strand}
+(one of -1, 0, or 1 representing reverse strand, no strand
+information, and forward strand respectively) as well as a
+\texttt{location}.  We also allow an unlimited number of additional
+numeric variables. The requirement that the additional variables be
+numeric is purely an optimization. 
 
-Examples would be 
+Examples are
 \begin{verbatim}
 chr INTEGER, strand INTEGER (-1,0,1), location INTEGER, counts INTEGER
 chr INTEGER, strand INTEGER (-1,0,1), location INTEGER, chip_1 REAL, chip_2 REAL
 \end{verbatim}
 
-The requirement that the additional variables should be numerical is
-purely an optimization. 
+\subsection{Annotation}
 
-The goal in this setup is often to summarize experimental data in a
-number of buckets of interest a.k.a annotation. We define annotation
-as a data.frame with the following columns:
+The goal in this setup is often to summarize experimental data with
+respect to annotation. Unlike experimental data, which is stored in
+an SQLite database, we represent annotation as an R data.frame with the
+following columns:
 
 \begin{verbatim}
-chr INTEGER, strand INTEGER (-1,0,1), start INTEGER, end INTEGER, [name TYPE]*
+chr integer, strand integer (-1L,0L,1L), start integer, end integer, [name class]*
 \end{verbatim}
 
-A common example would be: 
+As in the experimental data representation, strand information is
+encoded as -1 for Reverse/Minus Strand, 0 for No Strand Information
+Available/Relevant, and 1 for Forward/Plus Strand.
+
+A common example is
 \begin{verbatim}
-chr INTEGER, strand INTEGER (-1,0,1), start INTEGER, end INTEGER, feature factor
+chr integer, strand integer (-1L,0L,1L), start integer, end integer, feature factor
 \end{verbatim}
-
-Annotation need not be stored in the database (and is currently not
-supported). Strand information is encoded as -1 : Reverse/Minus Strand, 0 :
-No Strand Information Available/Relevant, and 1 : Forward/Plus Strand.
 
 \section{Interface}
 
+\subsection{Creating Experimental Data}
+
 In this setting there are often things we want to do to various
 classes of annotation. We are going to walk through a very simple
-example using simulated data to present the pipeline.
+example using simulated experimental data to present the pipeline.
+This example uses a verbose setting of TRUE to illustrate activities
+performed in the SQLite databases.
 
 <<createExpData>>=
-N <- 100000 # the number of observations. 
-K <- 100    # the number of annotation regions, not less than 10
+library(Genominator)
+
+options(verbose = TRUE) # to be used by Genominator functions.
+
+set.seed(123)
+
+N <- 100000L # the number of observations. 
+K <- 100L    # the number of annotation regions, not less than 10
 
 df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                  location = sample(1:1000, size = N, replace = TRUE),
-                 strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)))
+                 strand = sample(c(1L,-1L), size = N, replace = TRUE))
 
 head(df)
-eDataRaw <- importToExpData(df, filename = "my.db", tablename = "ex_tbl", overwrite = TRUE, verbose = VERBOSE)
+eDataRaw <- importToExpData(df, filename = "my.db", tablename = "ex_tbl", overwrite = TRUE)
 eDataRaw
 
 eData <- aggregateExpData(eDataRaw, tablename = "counts_tbl", deleteOriginal = FALSE, 
-                          overwrite = TRUE, verbose = VERBOSE)
+                          overwrite = TRUE)
 eData
 @ 
 
+Functions such as \Rfunction{importToExpData} and
+\Rfunction{aggregateExpData} instantiate ExpData objects that, for
+all practical purposes, may be considered to point to a specific
+table in an SQLite database. These functions have a number of
+database bookkeeping arguments that regulate which database to use
+and what database tables to create and delete. For example, the
+overwrite argument indicates whether the database table referred to
+in the tablename argument should be overwritten, and the deleteOriginal
+argument to \Rfunction{aggregateExpData} indicates whether the database
+table created in the \Rfunction{importToExpData} step should be deleted
+from the database.
+
+%% this could use some clarification
 Also, you can use the ``original'' table name. Note that the display
 of ``eDataRaw'' in this instance is broken as the underlying database
 has been changed and some properties of the object are set at
@@ -183,69 +208,78 @@ instantiation. In general, it is advisable to carry out the steps
 involved in building a database and then in separate scripts carry out
 various analyses.
 <<>>=
-eData <- aggregateExpData(eDataRaw, verbose = VERBOSE)
+eData <- aggregateExpData(eDataRaw)
 eData
 @ 
 
-Now, we want to instantiate an expData object. This is done here for
-pedagogical reasons, the ``eData'' object above is more than fine, but
-by instantiating it here, we also put it in 'read' only mode. 
+Each ExpData object has a mode that indicates whether the database is
+in read or write (which also implies read) mode. The ``eDataRaw'' and
+``eData'' objects created above had a 'write' mode. To prevent
+unwanted modifications to the database, we will instantiate an object
+in 'read' only mode. 
 <<>>=
 eData <- ExpData("my.db", tablename = "ex_tbl")
+eData
 @ 
 
-We can summarize these objects to get an idea of what we have. This
-would be the total number of counts in column ``counts.''
+\subsection{Summarizing Experimental Data}
+
+We can use the function \Rfunction{summarizeExpData} to summarize
+ExpData objects to get an idea of what we have. The call to generate
+the total number of counts in column ``counts'' is
 <<>>=
-ss <- summarizeExpData(eData, what = "counts", verbose = VERBOSE)
+ss <- summarizeExpData(eData, what = "counts")
 ss
-if (nrow(df) != ss) {
-    stop("Number of elements in database does not match data.frame.")
-}
 @ 
 
-The available functions are listed here: \myurl{www.sqlite.org/lang\_aggfunc.html}
+We can customize the summary by specifying the name of any SQLite
+function (\myurl{www.sqlite.org/lang\_aggfunc.html}) in the fxs
+argument
 <<>>=
-summarizeExpData(eData, what = "counts", fxs = c("MIN", "MAX"), verbose = VERBOSE)
+summarizeExpData(eData, what = "counts", fxs = c("MIN", "MAX"))
 @ 
+
+\subsection{Selecting Regions in Experimental Data}
 
 We can access genomic data using the function \Rfunction{getRegion}.
 <<>>=
-reg <- getRegion(eData, 1, strand = 1)
+reg <- getRegion(eData, chr = 1L, strand = 1L)
 head(reg)
-baseCounts <- table(df[df$chr == 1 & df$strand == 1 & df$category == 1, "location"])
-if (!all(reg[,"location"] == sort(as.numeric(names(baseCounts))))) {
-    stop("base counts don't match table.")
-}
+baseCounts <- table(df[df$chr == 1L & df$strand == 1L, "location"])
+head(baseCounts)
 @ 
 
 This function optionally takes a number of arguments. 
 <<>>=
-x <- getRegion(eData, chr = 2, start = 100, end = 105, strand = -1, verbose = VERBOSE)
+x <- getRegion(eData, chr = 2L, start = 100L, end = 105L, strand = -1L)
 head(x)
 @ 
+
+\subsection{Creating Annotation}
 
 Now we need to create a suitable annotation object. This can be
 simulated using the following code: 
 <<>>=
 annoData <- data.frame(chr = sample(1:16, size = K, replace = TRUE),
-                       strand = sample(c(1, -1), size = K, replace = TRUE),
+                       strand = sample(c(1L, -1L), size = K, replace = TRUE),
                        start = (st <- sample(1:1000, size = K, replace = TRUE)),
                        end = st + rpois(K, 75),
                        feature = c("gene", "intergenic")[sample(1:2, size = K, replace = TRUE)])
 rownames(annoData) <- paste("elt", 1:K, sep = ".")
 head(annoData)
 @ 
-Note that the annoData need to have distinct row names. This is done
+Note that annoData needs to have distinct row names. This is done
 to maintain the link between annotation and returned data structures
 from the \Rpackage{Genominator} API. 
 
-Now that we have our two relevant data structures what are the kinds
-of operations we wish to perform? 
+\subsection{Using Annotation with Experimental Data}
+
+Now that we have our experimental data and our annotation data structures,
+we can
 \begin{itemize}
-\item summarize regions (means, lengths, sums, etc)
-\item fit models on each region
-\item perform things over classes of regions (genes, intergenic
+\item Summarize regions (means, lengths, sums, etc)
+\item Fit models on each region
+\item Perform operations over classes of regions (genes, intergenic
   regions, ncRNAs)
 \end{itemize}
 
@@ -254,50 +288,57 @@ interest. Here we are going to compute the SUM and COUNT of each
 region. This is telling us the total number of sequencing reads at
 each location and the number of unique locations that were read.
 <<>>=
-head(summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("SUM", "TOTAL"), bindAnno = TRUE, 
-                           verbose = VERBOSE))
+head(summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("SUM", "TOTAL"),
+                           bindAnno = TRUE))
 @ 
 
 <<>>=
-head(summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("SUM"), bindAnno = TRUE, 
-                           verbose = VERBOSE, preserveColnames = TRUE))
+head(summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("SUM"),
+                           bindAnno = TRUE,  preserveColnames = TRUE))
 @ 
 
+%% this could use some clarification
 In this case, an important distinction between the functions ``SUM''
 and ``TOTAL'' is not evident. This distinction is that ``SUM'' will
 return NA if any row in the dataset contains NA. Often we will add NA
 (or NULL in the database) when we join two datasets.
 
-We can split things up by their class using the splitBy argument
+We can produce summarizes by category using the splitBy argument.
 <<>>=
-res <- summarizeByAnnotation(eData, annoData, what = "counts", fx = c("SUM", "COUNT"), 
-                             splitBy = "feature", verbose = VERBOSE)
+res <- summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("SUM", "COUNT"), 
+                             splitBy = "feature")
+class(res)
 lapply(res, head)
 @ 
 
-Finally, we might want to join the relevant annotation up.
+Finally, we might want to join the relevant annotation to the summaries
+using the bindAnno argument.
 <<>>=
-res <- summarizeByAnnotation(eData, annoData, what = "counts", fx = c("SUM", "COUNT"), 
-                             splitBy = "feature", bindAnno = TRUE, verbose = VERBOSE)
+res <- summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("SUM", "COUNT"), 
+                             splitBy = "feature", bindAnno = TRUE)
 lapply(res, head)
 @ 
 
-Unfortunately, the summarizeByAnnotation only implements a small set
-of SQL functions and a more general interface is provided. The cost is
-of course performance. 
+%% this could use some clarification
+Unfortunately, the \Rfunction{summarizeByAnnotation} function only
+supports a small set of SQL functions and a more general interface
+is provided. The cost is of course performance. 
 
-A common task with data which has been split up into regions of
-interest will be to fit some kind of model to the data within
-region. Due to the size of these data sets it is generally advisable
+A common task with data that have been split up into regions of
+interest will be to fit some kind of model to the data within those
+regions. Due to the size of these data sets it is generally advisable
 to save some copy of the ``mapped'' data. 
 <<>>=
-a <- splitByAnnotation(eData, annoData[annoData$feature %in% "gene", ], verbose = VERBOSE)
+dim(annoData[annoData$feature %in% "gene", ])
+a <- splitByAnnotation(eData, annoData[annoData$feature %in% "gene", ])
+class(a)
 length(a)
 names(a)[1:10]
 @ 
 
+%% this could use some clarification
 It is important to understand what \Rfunction{splitByAnnotation}
-returns and why the length of "a" above is not 10 as you might
+returns and why the length of object "a" above is not 10 as you might
 expect. When the region is empty that region is dropped. The names of
 the resulting list will correspond the names of the annotation object
 and can be used to subselect the annotation object. Additionally, the
@@ -306,7 +347,8 @@ with the annotation.
 
 Ignoring strand information could be:
 <<>>=
-b <- splitByAnnotation(eData, annoData, ignoreStrand = TRUE, verbose = VERBOSE)
+b <- splitByAnnotation(eData, annoData, ignoreStrand = TRUE)
+class(b)
 length(b)
 names(b)[1:10]
 @ 
@@ -349,7 +391,7 @@ include these bases filling in 0 reads for them. There are different
 ways to do this expansion. For convenience, things are stratified by
 strand, therefore expansion will produce a list-of-lists where each
 sub-list has possibly two elements corresponding to each strand. If
-the original annotation query is stranded then expansion will produce
+the original annotation query is stranded, then expansion will produce
 a list where each sublist only has one element. Finally, we provide a
 feature to collapse across strand for the common case where one wishes
 to combine reads occurring on either strand within the region. In this
@@ -358,54 +400,30 @@ matrix representing the reads which occurred on either strand.
 
 <<>>=
 ## This returns a list-of-lists 
-x1 <- splitByAnnotation(eData, annoData, expand = TRUE, verbose = VERBOSE, ignoreStrand = TRUE)
+x1 <- splitByAnnotation(eData, annoData, expand = TRUE, ignoreStrand = TRUE)
 names(x1[[1]])
 
 ## this returns a list-of-lists, however they are of length 1
-x2 <- splitByAnnotation(eData, annoData, expand = TRUE, verbose = VERBOSE)
+x2 <- splitByAnnotation(eData, annoData, expand = TRUE)
 names(x2[[1]])
 
 ## this returns a list where we have combined the two sublists
-x3 <- splitByAnnotation(eData, annoData, expand = TRUE, verbose = VERBOSE, addOverStrand = TRUE)
+x3 <- splitByAnnotation(eData, annoData, expand = TRUE, addOverStrand = TRUE)
 head(x3[[1]])
-
-checkContiguity <- function(a) { 
-    sapply(a, function(b) { 
-        if (is.list(b)) {
-            if (!all(do.call(c, lapply(b, function(c) {
-                diff(c[, "location"]) == 1
-            })))) {
-                FALSE
-            }
-            else {
-                TRUE
-            }
-        } else {
-            if (!all(diff(b[,"location"]) == 1))
-                FALSE
-            else 
-                TRUE
-        }
-    })
-}
-if (!all(checkContiguity(x1))) stop("Problem expanding!")
-if (!all(checkContiguity(x2))) stop("Problem expanding!")
-if (!all(checkContiguity(x3))) stop("Problem expanding!")
 @ 
 
 Finally, we often want to compute summaries of higher level entities,
-such as genes, pseudogenes, and intergenic regions. This we can do
-with the convenience function: \Rfunction{mergeWithAnnotation}. This
-function is really not much more than a wrapper around a join.
-
+such as genes, pseudogenes, and intergenic regions. We can do these
+types of operations using the \Rfunction{mergeWithAnnotation} convenience
+function.
 <<>>=
-mergeWithAnnotation(eData, annoData, verbose = VERBOSE)[1:3,]
+mergeWithAnnotation(eData, annoData)[1:3,]
 @ 
 
 There are a number of parameters that can make this more natural. 
 <<fig=TRUE>>=
 par(mfrow=c(1,2))
-x <- lapply(mergeWithAnnotation(eData, annoData, splitBy = "feature", what = "counts", verbose = VERBOSE), 
+x <- lapply(mergeWithAnnotation(eData, annoData, splitBy = "feature", what = "counts"), 
             function(x) { 
                 plot(density(x)) 
             })
@@ -413,18 +431,18 @@ x <- lapply(mergeWithAnnotation(eData, annoData, splitBy = "feature", what = "co
 
 \section{Managing Data}
 \subsection{Merging}
-Often we want to incorporate other datasets which share many of the
-same features. It is natural to store a number of experimental repeats
-in columns of a table, however it is often the case that we receive
-these over time, and that loading them in is not trivial. For this
-reason we provide a \Rfunction{mergeExpData} to bind to tables
-together. 
+Often we want to incorporate other datasets that share many of the
+same features. It is natural to store a number of experimental replicates
+in columns of a table. However, it is often the case that we receive the
+data in chunks over time, and that merging new values with old values is
+not trivial. For this reason we provide a \Rfunction{mergeExpData} to bind
+two tables together. 
 
 <<>>=
 N <- 100000
 dfNew <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                     location = sample(1:1000, size = N, replace = TRUE),
-                    strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)))
+                    strand = sample(c(1L,-1L), size = N, replace = TRUE))
 
 @ 
 
@@ -432,7 +450,7 @@ One thing we could do is:
 <<eval=FALSE>>=
 merged <- merge(df, dfNew, by = c("chr", "location", "strand"), all = T)
 mData <- importToExpData(merged, filename = "my.db", tablename = "hand_merged",
-                         overwrite = TRUE, verbose = VERBOSE)
+                         overwrite = TRUE)
 @ 
 
 However, we might have some issues with memory for really big things
@@ -445,21 +463,20 @@ join microarray experiments.
 
 <<>>=
 eData1 <- aggregateExpData(importToExpData(dfNew, filename = "my.db", tablename = "ex1", 
-                                           overwrite = TRUE, verbose = VERBOSE))
+                                           overwrite = TRUE))
 eData2 <- aggregateExpData(importToExpData(df, filename = "my.db", tablename = "ex2", 
-                                           overwrite = TRUE, verbose = VERBOSE))
+                                           overwrite = TRUE))
 
 ed <- joinExpData(list(eData1, eData2), fields = 
                   list(ex1 = c(counts = "counts_1"), ex2 = c(counts = "counts_2")), 
-                  tablename = "allcounts",
-                  verbose = VERBOSE)
+                  tablename = "allcounts")
 
-summarizeExpData(ed, fxs = c("sum", "total", "avg"), verbose = VERBOSE)
+summarizeExpData(ed, fxs = c("sum", "total", "avg"))
 @ 
 
 
 \subsection{Collapsing}
-Another common thing which we often want to do is to collapse data
+Another common operation that we often want to do is to collapse data
 according to groups. A good example of this is when we have multiple
 lanes and we want to aggregate the lanes in the database to facilitate
 future downstream computations.
@@ -477,8 +494,7 @@ offers a number of specific functionality which is often useful. The
 sequencing depth. 
 <<fig=TRUE>>=
 coverage <- computeCoverage(eData, annoData, effort = seq(100, 1000, by = 5), 
-                            cutoff = function(e, anno, group) e > 1,
-                            verbose = VERBOSE)
+                            cutoff = function(e, anno, group) e > 1)
 plot(coverage, draw.legend = FALSE)
 @ 
 

@@ -1,6 +1,6 @@
 require(Genominator)
 
-VERBOSE <- TRUE
+options(verbose = TRUE)
 N <- 1000000 # the number of observations. 
 K <- 1000    # the number of annotation regions, not less than 10
 
@@ -12,12 +12,12 @@ annoData <- data.frame(chr = sample(1:16, size = K, replace = TRUE),
 init <- function() {
   df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                    location = sample(1:1000, size = N, replace = TRUE),
-                   strand = as.integer(sample(c(1,-1), size = N, replace = TRUE)))
+                   strand = sample(c(1L,-1L), size = N, replace = TRUE))
   head(df)
   eDataRaw <- importToExpData(df, filename = "my.db", tablename = "ex_tbl", 
-                              overwrite = TRUE, verbose = VERBOSE)
+                              overwrite = TRUE)
   eData <- aggregateExpData(eDataRaw, tablename = "counts_tbl", deleteOriginal = FALSE, 
-                            overwrite = TRUE, verbose = VERBOSE)
+                            overwrite = TRUE)
   
   return(eData)
 }
