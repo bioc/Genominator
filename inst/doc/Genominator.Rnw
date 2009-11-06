@@ -189,17 +189,19 @@ eData
 @ 
 
 Functions such as \Rfunction{importToExpData} and
-\Rfunction{aggregateExpData} instantiate ExpData objects that, for
-all practical purposes, may be considered to point to a specific
-table in an SQLite database. These functions have a number of
-database bookkeeping arguments that regulate which database to use
-and what database tables to create and delete. For example, the
-overwrite argument indicates whether the database table referred to
-in the tablename argument should be overwritten, and the deleteOriginal
-argument to \Rfunction{aggregateExpData} indicates whether the database
-table created in the \Rfunction{importToExpData} step should be deleted
-from the database.
+\Rfunction{aggregateExpData} instantiate ExpData objects that, for all
+practical purposes, may be considered a reference to a specific table
+in an SQLite database. These functions have a number of database
+bookkeeping arguments that regulate which database to use and what
+database tables to create and delete. For example, the
+\texttt{overwrite} argument indicates whether the database table
+referred to in the tablename argument should be overwritten, and the
+\texttt{deleteOriginal} argument to \Rfunction{aggregateExpData}
+indicates whether the database table created in the
+\Rfunction{importToExpData} step should be deleted from the database.
 
+If the aggregated table is all that you care about then you can simply
+call \Rfunction{aggregateExpData}
 %% this could use some clarification
 Also, you can use the ``original'' table name. Note that the display
 of ``eDataRaw'' in this instance is broken as the underlying database
