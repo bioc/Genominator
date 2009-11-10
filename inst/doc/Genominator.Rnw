@@ -552,7 +552,7 @@ head(summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("COUNT", "T
 @ 
 
 Note that the result is a \Robject{data.frame}.  We use
-\texttt{bindAnnp = TRUE} in order to keep the annotation as part of
+\texttt{bindAnno = TRUE} in order to keep the annotation as part of
 the result (this is often very useful).
 
 The value of \texttt{fxs} are SQLite functions, see
@@ -639,10 +639,9 @@ sapply(a, function(x) { quantile(x[,"counts"], .9) })[1:10]
 
 Often we wish to use the annotation information when operating on the
 data in each region.  The \Rfunction{applyMapped} function makes such
-a thing easy, but appropriate matching up the annotation and the
-data.  Essentially, this function ensures that you are applying the right bit of
-annotation to the correct chunk of data.
-
+a thing easy, by appropriately matching up the annotation and the
+data.  Essentially, this function ensures that you are applying the
+right bit of annotation to the correct chunk of data.
 <<applyMapped>>=
 applyMapped(a, annoData, FUN = function(region, anno) { 
     counts <- sum(region[,"counts"])
@@ -650,7 +649,6 @@ applyMapped(a, annoData, FUN = function(region, anno) {
     counts/length
 })[1:10]
 @ 
-
 This example computes the average number of reads per base, taking
 into account that bases without data exists.  Note that \texttt{FUN}
 needs to be a function of two arguments.
