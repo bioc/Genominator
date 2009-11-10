@@ -91,54 +91,66 @@ require(yeastRNASeq)
 
 We will use some data sets from the yeastRNASeq data package. Lets
 first see what this package contains:
-<<>>=
-data(package="yeastRNASeq")
+<<datalist>>=
+data(package = "yeastRNASeq")[[3]][, c("Item", "Title")]
 @ 
 
-At first, we will focus on the AlignedRead objects. This object
-represents about .5 million reads for 4 lanes of Solexa
-sequencing.
+At first, we will focus on the AlignedRead list. This object is a list
+of 4 \Rfunction{AlignedRead}'s, each representing the alignment of .5
+million reads.  The 4 elements of the list corresponds to 2 samples
+(mut, wt) each sequenced on 2 lanes.
 
-<<>>=
+<<yeastAligned>>=
 data("yeastAligned")
+names(yeastAligned)
 yeastAligned[[1]]
 @ 
 
 The first step is to make a database:
-<<>>=
+<<eData>>=
 eData <- importFromAlignedReads(yeastAligned, chrMap = levels(chromosome(yeastAligned[[1]])),
                                 filename = "my.db", tablename = "raw", overwrite = TRUE)
+head(eData)
 @ 
 
-Certainly, the most cryptic portion of this call is the chromosome
-map. The Genominator package demands that all chromosomes be stored as
-integer values. Therefore, we must to convert the ``chromosome names''
-to integers. We do this by specifying a rule (essentially
-match(chromosome(yeastAligned[[1]]), chrMap) is what is called). In
-this case, we are fortunate because we don't have to do any
-re-ordering of the ``chromosome names,'' often we are not so lucky.
+\Rfunction{importFromAlignedReads} takes exactly such a (named) list
+of \Rfunction{AlignedReads} and aggregates each experiment and finally
+joins them together.
 
-<<>>=
-head(eData, 4)
+Certainly, the most cryptic portion of this call is the chromosome map
+(the \texttt{chrMap} argument). The Genominator package requires that
+all chromosomes be stored as integer values. Therefore, we must to
+convert the ``chromosome names'' to integers. We do this by specifying
+a rule described as a named vector of integer values, like
+<<chrMap>>=
+levels(chromosome(yeastAligned[[1]]))
 @ 
+Sometimes the call to \Rfunction{levels} is not enough and we need to
+do some reordering and perhaps the addition of extra chromosomes.
 
-The result is an ExpData object which has been aggregated over,
-i.e. each position in the genome which was represented by > 0 reads at
-its 5' most end will have that number of reads. We can now take
-advantage of all of the functionality of the Genominator package,
-using the yeastAnnotation.
+The result is an ExpData object which has been aggregated over, i.e.\
+each position in the genome which was represented by > 0 reads at its
+5' most end will have that number of reads.  Note how we deal with
+reads mapping to the reverse strand of the genome (by using the 5' end
+of the read as its location).
 
-<<>>=
+
+We can now take advantage of all of the functionality of the
+Genominator package, using (parts of) the yeast annotation from SGD.
+
+<<loadingYeastAnno>>=
 data(yeastAnno)
 head(yeastAnno)
 @ 
 
 Once again, we have to deal with the fact that people like to
-represent chromosomes in different ways. In this case, sgd represents
+represent chromosomes in different ways. In this case, SGD represents
 chromosomes with Roman numerals. Additionally, we prepare the
-annotation object to be consumable by the Genominator functions.
+annotation object to be consumable by the Genominator functions by
+making sure that we have columns \texttt{start}, \texttt{end} present
+and that \texttt{strand} takes values in $\{-1,0,1\}$.
 
-<<>>=
+<<yeastAnnoFix>>=
 yeastAnno$chr <- match(yeastAnno$chr, c(as.character(as.roman(1:16)), "MT", "2-micron"))
 yeastAnno$start <- yeastAnno$start_position
 yeastAnno$end <- yeastAnno$end_position
@@ -147,7 +159,12 @@ yeastAnno <- yeastAnno[, c("chr", "start", "end", "strand", "gene_biotype")]
 head(yeastAnno)
 @ 
 
-<<>>=
+With this amount of processing we are now able to do some high level
+analysis.  First we compute, for each annotated region, the number of
+reads hitting that region.  Note that we may double count reads, if
+two regions overlap (which they often do in yeast).
+
+<<geneCounts>>=
 geneCounts <- summarizeByAnnotation(eData, yeastAnno, ignoreStrand = TRUE)
 head(geneCounts)
 @ 
@@ -155,7 +172,8 @@ head(geneCounts)
 We can see how ``good'' the replicates are by assessing whether it
 fits the Poisson model of constant gene expression across lanes with
 variable sequencing effort. 
-<<fig=TRUE>>=
+
+<<gof,fig=TRUE,width=8,height=4>>=
 plot(regionGoodnessOfFit(geneCounts, groups = gsub("_[0-9]_f", "", colnames(geneCounts))),
      chisq = TRUE)
 @ 
