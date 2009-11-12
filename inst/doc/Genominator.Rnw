@@ -255,7 +255,7 @@ head(eDataRaw)
 
 The \Robject{df} object contains unsorted reads.  \Robject{eDataRaw}
 is an example of an ExpData object, the core object in Genominator.
-Such as object essentially points to a specific table in a specific
+Such an object essentially points to a specific table in a specific
 database (in SQLite a database is a file).  The data in
 \Robject{eDataRaw} is ordered along the genome (unlike \Robject{df}),
 but there may be multiple rows with the same genomic location.  The
@@ -288,14 +288,13 @@ table that was \emph{created}.  Note the addition of the
 
 The input ExpData object points to table \texttt{ex\_tbl} in database
 \texttt{my.db}.  The output ExpData object (currently) always uses the
-same database as the input object, possible with a different name (in
-this case \texttt{counts\_tbl}.  All functions that manipulate
-databases has the arguments \texttt{overwrite} and
-\texttt{deleteOriginal}.  In case \texttt{deleteOriginal} is
-\texttt{TRUE}, the original table (in this case \texttt{ex\_tbl} is
-deleted.  If \texttt{tablename} is \texttt{NULL} (default), the
-function does an in-place modification of the table (this is
-destructive).
+same database as the input object, possibly with a different name (in
+this case \texttt{counts\_tbl}).  All functions that manipulate
+databases have the arguments \texttt{overwrite} and
+\texttt{deleteOriginal}.  If \texttt{deleteOriginal} is \texttt{TRUE},
+the original table (in this case \texttt{ex\_tbl}) is deleted.  If
+\texttt{tablename} is \texttt{NULL} (default), the function does a
+destructive in-place modification of the table.
 
 It is possible to break ExpData objects.  For example, if we had used
 the \Rfunction{aggregateExpData} function with \texttt{deleteOriginal
@@ -303,34 +302,33 @@ the \Rfunction{aggregateExpData} function with \texttt{deleteOriginal
 deleted.  Or, if the function had been used with \texttt{tablename =
   NULL} (default), both \Robject{eDataRaw} and \Robject{eData} would
 point to the same table in the database, but the schema recorded in
-\Robject{eDataRaw} (which is created when the object is instantiated)
-would be out of date (it would not include the \texttt{counts}
-column).  While this may seem problematic, it has not been cause for
-much concern.  Remember, that creating ExpData objects are very cheap,
-so if something seems to break, delete them and re-instantiate.  With
-a bit of familiarity, even this should not be necessary.  In general,
-we highly recommend to carry out the creating/manipulation of data in
-a script separate from the analysis (creation/manipulation in general
-requires write access, whereas analysis is read only).
+\Robject{eDataRaw} during instantiation would be out of date because
+it would not include the \texttt{counts} column.  While this may seem
+problematic, it has not been cause for much concern.  Remember, that
+ExpData objects are very cheap to create, so if something seems to
+break, delete and recreate it.  With a bit of familiarity, this
+problem can be avoided.  In general, we highly recommend carrying
+out the creation/manipulation of data in a script separate from the
+analysis, since creation/manipulation requires write access, whereas
+analysis is read only.
 
 Each ExpData object has a mode that indicates whether the database is
-in read or write (which also implies read) mode. The ``eDataRaw'' and
-``eData'' objects created above had a 'write' mode. To prevent
-unwanted modifications to the database, we will instantiate a new
-\Robject{eData} object in 'read' only mode.  
+in read or write, which also implies read, mode. The \Robject{eDataRaw}
+and \Robject{eData} objects created above had a 'write' mode. To
+prevent unwanted modifications to the database, we will instantiate a
+new \Robject{eData} object in 'read' only mode.  
 
 <<readOnly>>= 
 eData <- ExpData("my.db", tablename = "counts_tbl") 
 eData 
 head(eData)
 @
-Note the use of the constructor function \Rfunction{ExpData}, this is
-a standard way to instantiate ExpData objects in a new session.
+This used the constructor function \Rfunction{ExpData}, which is a
+standard way to instantiate ExpData objects in a new session.
 
 It is possible to use the normal \Rfunction{[} and \Rfunction{\$}
 operators on ExpData objects (although they do not have rownames).
-This is rarely necessary and note that the return objects may be
-massive. 
+This is rarely necessary, and the return objects may be massive. 
 
 <<exampleOfSubsetting>>=
 head(eData$chr)
@@ -340,7 +338,7 @@ eData[1:3, 1:2]
 \subsection{Creating Annotation}
 
 We now create a suitable annotation object.  As described in earlier
-sections, annotation consists of consecutive genomic regions, that may
+sections, annotation consists of consecutive genomic regions that may
 or may not be overlapping.  
 <<annoCreate>>=
 annoData <- data.frame(chr = sample(1:16, size = K, replace = TRUE),
@@ -351,16 +349,16 @@ annoData <- data.frame(chr = sample(1:16, size = K, replace = TRUE),
 rownames(annoData) <- paste("elt", 1:K, sep = ".")
 head(annoData)
 @ 
-Note that annoData needs to have distinct row names. This is done
-to maintain the link between annotation and returned data structures
-from the \Rpackage{Genominator} API. 
+In this example, the \Robject{annoData} object needs to have distinct
+row names in order to maintain the link between annotation and returned
+data structures from the \Rpackage{Genominator} API.
 
-Note that strand needs to have values in $\{-1,0,1\}$ and that
-\texttt{chr} needs to have integer values.  When you access ``real''
-annotation, there is often need for a post-process step where the
-annotation gets massaged into this format.  See the additional
-vignette on working with the \Rpackage{ShortRead} package for a
-real-life example.
+Also the \texttt{strand} column needs to have values in $\{-1,0,1\}$,
+and the \texttt{chr} column needs to have integer values.  When you
+access ``real'' annotation, you will often need a post-processing step
+where the annotation gets massaged into this format.  See the additional
+vignette on working with the \Rpackage{ShortRead} package for a real-life
+example.
 
 \section{Creating and managing data}
 
@@ -394,19 +392,19 @@ section.
 It is natural to store a number of experimental replicates in columns
 of a table. However, it is often the case that we receive the data in
 chunks over time, and that merging new values with old values is not
-trivial. For this reason we provide a \Rfunction{joinExpData} to bind
-two tables together.
+trivial. For this reason we provide a \Rfunction{joinExpData} function
+to bind two tables together.
 
 Essentially, merging consists of placing two (or more) columns next to
 each other.  It is (somewhat) clear that (in general) it makes the
-most sense to merge two datasets, if each dataset has only a single
+most sense to merge two datasets when each dataset has only a single
 occurrence of each genomic location.  Otherwise, how would we deal
 with/interpret the case where a genomic location occurs multiple times
 in each dataset?  For that reason, joining two datasets typically
 happens after they have been aggregated.
 
 It is possible to merge/join the datasets in R and then subsequently
-using the import facility to store the resulting object in a
+use the import facility to store the resulting object in a
 database.  In general, that approach is less desirable because 1) it
 is slow(er) and 2) it requires all datasets to be present in memory.
 
@@ -421,12 +419,12 @@ eDataJoin <- joinExpData(list(eData1, eData2), fields =
 head(eDataJoin)
 @ 
 
-Notice that both \Robject{eData1} and \Robject{eData2} has a column
-named \texttt{counts}.  We use the \texttt{fields} argument to rename
-these columns in the resulting object.  Also notice how we deal with
-locations that have no reads mapped to them in one experiment, but
-introducing missing values.  Finally, we may join an arbitrary number
-of ExpData objects.
+In this example both \Robject{eData1} and \Robject{eData2} have a
+column named \texttt{counts} that we rename in the resulting object
+using the \texttt{fields} argument.  Also missing values are introduced
+when the locations in one object are not present in the other.  Finally,
+the \Rfunction{joinExpData} function supports joining an arbitrary
+number of ExpData objects.
 
 We can examine the result using \Rfunction{summarizeExpData}
 (described later)
@@ -459,16 +457,16 @@ head(collapseExpData(eDataJoin, tablename = "collapsed", collapse = "weighted.av
 head(collapseExpData(eDataJoin, tablename = "collapsed", collapse = "avg", overwrite = TRUE))
 @ 
 
-In this case setting \texttt{collapse} equal to \texttt{avg},
-respectively \texttt{weighted.avg} yields the exact same result, since
-the two experiments have the same number of reads.
+In this case setting \texttt{collapse} equal to \texttt{avg} or
+\texttt{weighted.avg} respectively yields the exact same result,
+since the two experiments have the same number of reads.
 
 \section{Interface}
 
 In this section we describe the core functionality of the
 \Rpackage{Genominator} package.
 
-We will use two examples, one ExpData consisting of a single
+We will use two examples: one ExpData consisting of a single
 (aggregated) experiment and one ExpData consisting of two aggregated,
 joined experiments.
 
@@ -482,7 +480,8 @@ eDataJoin <- ExpData("my.db", tablename = "allcounts", mode = "r")
 We can use the function \Rfunction{summarizeExpData} to summarize
 ExpData objects.  This function does not utilize annotation, so the
 summarization is in some sense ``global''.  The call to generate the
-total number of counts (the number of reads) in column ``counts'' is
+total number of counts, i.e. the number of reads, in column ``counts''
+is
 
 <<sumEx1>>= 
 ss <- summarizeExpData(eData, what = "counts")
@@ -493,20 +492,20 @@ The \texttt{what} argument is present in many of the following
 functions.  It refers to which columns are being used, and in general
 the default depends on the type of function.  If the function
 summarizes data, the default is ``all columns, except the genomic
-location columns'', whereas if the function retrieves data the default
-is ``all columns''.
+location columns'', whereas if the function retrieves data, the
+default is ``all columns''.
 
 We can customize the summary by specifying the name of any SQLite
-function (\myurl{www.sqlite.org/lang\_aggfunc.html}) in the fxs
-argument
+function (\myurl{www.sqlite.org/lang\_aggfunc.html}) in the
+\texttt{fxs} argument
 
 <<sumEx2>>=
 summarizeExpData(eData, what = "counts", fxs = c("MIN", "MAX"))
 @ 
 
 This yields the maximum/minimum number of reads mapped to a single
-location.  The minimum number of reads is not zero because we do not
-store locations with no reads associated.  
+location.  The minimum number of reads is not zero because we only
+store locations associated with reads.
 
 \subsection{Selecting a region}
 
@@ -533,44 +532,43 @@ order to
 \item Perform operations over classes of regions (genes, intergenic
   regions, ncRNAs)
 \end{itemize}
-There are essentially two different strategies for this.  One can
-retrieve the data as a big object and then use R functions to operate
-on the data (this is the approach of \Rfunction{splitByAnnotation}),
-or perform some operation on the different regions in the database
-(\Rfunction{summarizeByAnnotation}).  The first approach is more
-flexible, but also slower and requires more memory.  The second
-approach is limited to operations that can be expressed in SQL.
+There are essentially two different strategies for this: retrieve
+the data as a big object and then use R functions to operate on the
+data (e.g. \Rfunction{splitByAnnotation}) or perform some operation
+on the different regions in the database
+(e.g. \Rfunction{summarizeByAnnotation}).  The first approach is
+more flexible, but also slower and requires more memory.  The
+second approach is faster, but limited to operations that can be
+expressed in SQL.
 
-First, we demonstrate how we can summarize over regions of
-interest. Here we are going to compute the SUM and COUNT of each
-region. This is telling us the total number of sequencing reads at
-each location and the number of unique locations that were read.
+First, we demonstrate how to summarize over regions of interest.
+Here we are going to compute the SUM and COUNT of each region, which
+tell us the total number of sequencing reads at each location and the
+number of unique locations that were read respectively.
 
 <<summarizeByAnnotationEx1>>=
 head(summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("COUNT", "TOTAL"),
                            bindAnno = TRUE))
 @ 
 
-Note that the result is a \Robject{data.frame}.  We use
-\texttt{bindAnno = TRUE} in order to keep the annotation as part of
-the result (this is often very useful).
+The result of \Rfunction{summarizeByAnnotation} is a
+\Robject{data.frame}.  We use \texttt{bindAnno = TRUE} in order to
+keep the annotation as part of the result, which is often very useful.
 
-The value of \texttt{fxs} are SQLite functions, see
-(\myurl{www.sqlite.org/lang\_aggfunc.html}).  An important note
-regarding summation is in place here.  The standard SQL function
-\texttt{SUM} is often less desirable for our use cases, instead we
-almost always want to use the SQLite specific function \texttt{TOTAL}.
-The two functions are essentially equal except for how they handle a
-sum of only missing values (in R: \texttt{sum(NA)}).  \texttt{SUM}
-returns a missing value and \texttt{TOTAL} returns a zero.  This is
-relevant when summarizing over a genomic region containing no reads in
-one experiment, but reads in another experiment.
+The \texttt{fxs} argument takes the names of SQLite functions, see
+\myurl{www.sqlite.org/lang\_aggfunc.html}.  One important note
+regarding summation: the standard SQL function \texttt{SUM} handles
+the sum of only missing values, which in R is expressed as
+\texttt{sum(NA)}, differently from the SQLite specific function
+\texttt{TOTAL}. In particular, the \texttt{SUM} function returns a
+missing value and the \texttt{TOTAL} function returns a zero.  This
+is relevant when summarizing over a genomic region containing no reads
+in one experiment, but reads in another experiment.
 
-This next example computes, for each annotated region, the number of
-reads mapping to the region, ignoring strand.  Ignoring strand might
+This next example computes, the number of reads mapping to the region
+for each annotated region, ignoring strand.  Ignoring strand might
 be the right approach if the protocol does not retain strand
-information (as the current standard protocol for Illumina RNA-Seq
-does). 
+information (e.g. the current standard protocol for Illumina RNA-Seq). 
 <<summarizeByAnnotationEx2>>= 
 head(summarizeByAnnotation(eDataJoin, annoData, , fxs = c("SUM"), 
                            bindAnno = TRUE, preserveColnames = TRUE, ignoreStrand = TRUE))
@@ -578,7 +576,7 @@ head(summarizeByAnnotation(eDataJoin, annoData, , fxs = c("SUM"),
 Essentially, this output is the input to a simple differential
 expression analysis.
 
-Note that if two regions in the annotation overlaps, data falling in
+Note that if two regions in the annotation overlap, data falling in
 the overlap will be part of the end result for each region.
 
 We can produce summarizes by category using the splitBy argument.
@@ -590,7 +588,7 @@ lapply(res, head)
 @ 
 
 Finally, we might want to join the relevant annotation to the summaries
-using the bindAnno argument.
+using the \texttt{bindAnno} argument.
 <<summarizeByAnnotationExampleSplit2>>=
 res <- summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("TOTAL", "COUNT"), 
                              splitBy = "feature", bindAnno = TRUE)
@@ -623,12 +621,13 @@ names(a)[1:10]
 head(a[[1]])
 @ 
 
-There are several notes here.  Note that the return object is named
-according to the rownames of the annotation data, and that the return
-object does \emph{not} have an element for each annotated region, but
-only for each annotated region containing some data.  When the region
-is empty, that region is dropped.  We provide several convenience
-functions for operating on the result of such an operation (later).
+There are several notes here.  For starters, the return object is
+named according to the rownames of the annotation data. Also, only
+annotated regions with data are represented in the return object,
+so in general the return object does \emph{not} have an element
+for each annotated region.  We provide several convenience
+functions for operating on the results of
+\Rfunction{splitByAnnotation}, which are discussed later.
 
 Now we wish to compute a trivial function over the counts, such as a
 quantile.
@@ -638,10 +637,10 @@ sapply(a, function(x) { quantile(x[,"counts"], .9) })[1:10]
 @ 
 
 Often we wish to use the annotation information when operating on the
-data in each region.  The \Rfunction{applyMapped} function makes such
-a thing easy, by appropriately matching up the annotation and the
-data.  Essentially, this function ensures that you are applying the
-right bit of annotation to the correct chunk of data.
+data in each region.  The \Rfunction{applyMapped} function makes this
+easy by appropriately matching up the annotation and the data.
+Essentially, this function ensures that you are applying the right bit
+of annotation to the correct chunk of data.
 <<applyMapped>>=
 applyMapped(a, annoData, FUN = function(region, anno) { 
     counts <- sum(region[,"counts"])
@@ -659,27 +658,26 @@ their bounds.  One can successfully argue that the result of the
 example above ought to include such regions with a value of zero (see
 below for this).
 
-When our data sets are large it is often more convenient to only
-return some columns, this can often be significantly
-faster. 
+When our data sets are large, it is often more convenient and
+significantly faster to return only some columns. 
 
 <<fastSplit>>=
 sapply(splitByAnnotation(eData, annoData, what = "counts"), median)[1:10]
 @ 
 
-Often we wish to ``fill'' in regions which we are missing. In the case
-of a coding sequence there may be bases that have no reads which will
-not appear in our resulting object. We can ``expand'' a region to
-include these bases filling in 0 reads for them. There are different
-ways to do this expansion. For convenience, things are stratified by
-strand, therefore expansion will produce a list-of-lists where each
-sub-list has possibly two elements corresponding to each strand. If
-the original annotation query is stranded, then expansion will produce
-a list where each sublist only has one element. Finally, we provide a
-feature to collapse across strand for the common case where one wishes
-to combine reads occurring on either strand within the region. In this
-case the return value is a list where each element is an expanded
-matrix representing the reads which occurred on either strand. 
+Often we wish to ``fill'' in missing regions. In the case of a coding
+sequence there may be bases that have no reads, and so these bases will
+not appear in our resulting object. We can ``expand'' a region to include
+these bases by filling in 0 reads for them. There are different ways to do
+this expansion. For convenience, data are stratified by strand. Therefore
+expansion will produce a list-of-lists, where each sublist has possibly
+two elements corresponding to each strand. If the original annotation
+query is stranded, then expansion will produce a list, where each sublist
+only has one element. Finally, we provide a feature to collapse across
+strand for the common use case of combining reads occurring on either
+strand within the region. In this case the return value is a list, where
+each element is an expanded matrix representing the reads that occurred
+on either strand. 
 
 <<splitByAnnoExtendedExample>>=
 ## This returns a list-of-lists 
@@ -756,4 +754,3 @@ plot(regionGoodnessOfFit(as.data.frame(matrix(rpois(1000, 100), ncol = 10)),
 
 
 \end{document}
-
