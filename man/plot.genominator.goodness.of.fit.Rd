@@ -9,9 +9,11 @@
   a chi-squared distribution.
 }
 \usage{
-plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE, sample = FALSE, nsamples = 5000, xlab = "theoretical quantiles", ylab = "observed quantiles", main = names(x), pch = 16, cex = 0.75, ...)
+plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE,
+                                 sample = FALSE, nsamples = 5000, xlab =
+                                 "theoretical quantiles",
+                                 ylab = "observed quantiles", main = names(x), pch = 16, cex = 0.75, ...)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
     An object of class \code{genominator.goodness.of.fit}, as returned by \code{\link{regionGoodnessOfFit}}.
@@ -46,25 +48,30 @@ plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE, sample = FALS
     and symbols should be magnified relative to the default.  See \code{\link{par}}.
   }
   \item{\dots}{
-    Additional arguments for lower-level functions.
+    Additional arguments for lower-level functions, namely \code{\link{plot}}.
   }
 }
-
 \details{
-  %%  ~~ If necessary, more details than the description above ~~
+  This function constructs a quantile-quantile plot comparing the
+  distribution of observed statistics to either the uniform 0,1
+  distribution or the appropriate chi-squared distribution. This plotting
+  function provides a tool to assess whether replicate lanes, flow cells,
+  sample preparations, etc. fit the model described in
+  \code{\link{regionGoodnessOfFit}}. 
 }
-
 \value{
   This method is used for its side effect.
 }
-
 \author{
   James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
   Hansen \email{khansen@stat.berkeley}
 }
-
 \seealso{
   See \code{Genominator} vignette for more information. See also \code{\link{regionGoodnessOfFit}}.
 }
-
-\keyword{ ~kwd1 }
+\examples{
+  ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
+  data("yeastAnno")
+  plot(regionGoodnessOfFit(ed, yeastAnno), chisq = TRUE)
+}
+\keyword{hplot}

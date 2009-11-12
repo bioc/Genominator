@@ -24,5 +24,5 @@ shortread : $(sfile:=.pdf)
 	dvips -o -q $<
 
 clean : 
-	rm -rf ${file}.aux ${file}.log ${file}.tex plots/* Rplots.pdf auto ${file}.out my.db ${file}.pdf ${pfile}.aux ${pfile}.log ${pfile}.tex ${file}.out pmy.db ${pfile}.pdf ${pfile}.out
+	rm -rf ${file}.aux ${file}.log ${file}.tex plots/* Rplots.pdf auto ${file}.out my.db ${file}.pdf ${pfile}.aux ${pfile}.log ${pfile}.tex ${file}.out pmy.db ${pfile}.pdf ${pfile}.out ${sfile}.aux ${sfile}.log ${sfile}.tex ${sfile}.out pmy.db ${sfile}.pdf ${sfile}.out
 

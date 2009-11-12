@@ -16,6 +16,7 @@
 \alias{getTablename}
 \alias{getColnames}
 \alias{getSchema}
+\alias{listTables}
 \title{Class "ExpData"}
 \description{A class for representing experimental data organized along a genome.}
 \section{Objects from the Class}{
@@ -67,24 +68,22 @@ the constructor function \code{ExpData(db = "filename.db", tablename
     \item{\code{getColnames}}{Returns all columns (argument \code{all = TRUE})
       or all columns except the indexColumns (argument \code{all =
 	FALSE}).}
+    \item{\code{listTables}}{Returns all vector of tables in a database.}
     \item{\code{getMode}}{Returns the mode of the ExpData object.}
-    \item{[}{\code{signature(x = "ExpData")}: subsetting of the
-      object. ExpData objects do not have rownames.}
+    \item{[}{\code{signature(x = "ExpData")}: subsetting of the object. ExpData objects do not have rownames.}
     \item{$}{\code{signature(x = "ExpData")}: selects a column of the table.}
-    \item{head}{\code{signature(x = "ExpData")}: prints the first 10
-      rows of the object.}
-	    \item{initialize}{\code{signature(.Object = "ExpData")}: The initialize method; use the constructor function \code{ExpData} instead.}
+    \item{head}{\code{signature(x = "ExpData")}: prints the first 10 rows of the object.}
+    \item{initialize}{\code{signature(.Object = "ExpData")}: The
+      initialize method; use the constructor function \code{ExpData} instead.}
     \item{regionGoodnessOfFit}{\code{signature(obj = "ExpData")}: FIXME }
     \item{show}{\code{signature(object = "ExpData")}: the show method.}
-	 }
+  }
 }
 
 \author{Jim Bullard <bullard@berkeley.edu> and Kasper Daniel Hansen <khansen@stat.berkeley.edu>}
-
 \seealso{
   The package vignettes.
 }
-
 \examples{
 showClass("ExpData")
 }

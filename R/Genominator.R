@@ -180,7 +180,7 @@ setMethod("[", signature = "ExpData", definition = function (x, i, j, ..., drop 
 })
 
 getRegion <- function(expData, chr, start, end, strand, what = "*",
-                      whereClause = "", verbose = FALSE) {
+                      whereClause = "", verbose = getOption("verbose")) {
     if (what[1] != "*") {
         what <- paste(what, collapse = ",")
     }
@@ -207,7 +207,8 @@ getRegion <- function(expData, chr, start, end, strand, what = "*",
 }
 
 splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALSE,
-                              expand = FALSE, addOverStrands = FALSE, verbose = FALSE)
+                              expand = FALSE, addOverStrands = FALSE,
+                              verbose = getOption("verbose"))
 {
   if (is.null(rownames(annoData)))
     stop("need uniqe rownames for the annoData object.")
@@ -327,7 +328,7 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
 }
 
 mergeWithAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALSE, splitBy = NULL,
-                                verbose = FALSE) {
+                                verbose = getOption("verbose")) {
   
   .timeAndPrint(.writeRegionsTable(expData, annoData, dropCols = FALSE),
                 "writing regions table", print = verbose)
@@ -350,7 +351,7 @@ mergeWithAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FA
 
 summarizeExpData <- function(expData, what = getColnames(expData, all = FALSE), fxs = c("TOTAL"),
                              preserveColnames = TRUE, whereClause = "",
-                             verbose = FALSE) {
+                             verbose = getOption("verbose")) {
     originalWhat <- what
     
     what <- paste(sapply(fxs, function(f) {
@@ -373,7 +374,8 @@ summarizeExpData <- function(expData, what = getColnames(expData, all = FALSE), 
 
 summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData, all = FALSE),
                                   fxs = c("TOTAL"), ignoreStrand = FALSE, splitBy = NULL,
-                                  bindAnno = FALSE, preserveColnames = TRUE, verbose = FALSE)
+                                  bindAnno = FALSE, preserveColnames = TRUE,
+                                  verbose = getOption("verbose"))
 {
     .timeAndPrint(ids <- .writeRegionsTable(expData, annoData),
                   "writing regions table", print = verbose)
@@ -443,12 +445,12 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
     if (print) {
         if (!is.null(q))
             cat(q, "\n")
-        cat(txt, ":")
+        cat(txt, ": ", sep = "")
     }
     time <- round(system.time(exp)[3], 4)
 
     if (print) {
-        cat(time, "\n")
+        cat(time, "sec\n")
     }
 }
 

@@ -9,7 +9,8 @@
 }
 
 importFromAlignedReads <- function(alignedReads, chrMap, filename, tablename,
-                                   overwrite = TRUE, verbose = FALSE, ...) {
+                                   overwrite = TRUE, deleteIntermediates = TRUE,
+                                   verbose = getOption("verbose"), ...) {
     if (!require(ShortRead))
         stop("ShortRead package must be installed.")
     if (!all(sapply(alignedReads, class) == "AlignedRead"))
@@ -28,14 +29,15 @@ importFromAlignedReads <- function(alignedReads, chrMap, filename, tablename,
                               tablename = name, overwrite = TRUE, verbose = verbose)
         aggregateExpData(ed, colname = name, verbose = verbose, overwrite = TRUE)
     }, laneNames, alignedReads)
-    joinExpData(expDatas, tablename = tablename, overwrite = overwrite, verbose = verbose)
+    joinExpData(expDatas, tablename = tablename, overwrite = overwrite, verbose = verbose,
+                deleteOriginals = deleteIntermediates)
 }
 
 ##
 ## Imports data from a data.frame.
 ##
-importToExpData <- function(df, filename, tablename, overwrite = FALSE, verbose = FALSE,
-                            columns = NULL) {
+importToExpData <- function(df, filename, tablename, overwrite = FALSE,
+                            verbose = getOption("verbose"), columns = NULL) {
   db <- dbConnect(dbDriver("SQLite"), filename)
   allCols <- colnames(df)
   
@@ -90,8 +92,9 @@ importToExpData <- function(df, filename, tablename, overwrite = FALSE, verbose 
   return(ExpData(filename, tablename, indexColumns = COLS, mode = 'w'))
 }
 
-aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename = NULL, deleteOriginal = FALSE,
-                             overwrite = FALSE, verbose = FALSE, colname = "counts",
+aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename = NULL,
+                             deleteOriginal = FALSE, overwrite = FALSE,
+                             verbose = getOption("verbose"), colname = "counts",
                              aggregator = paste("count(", by[1], ")", sep = ""))
 {
     moveTable <- FALSE
@@ -143,7 +146,8 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
 
 collapseExpData <- function(expData, tablename = NULL, what = getColnames(expData, all = FALSE),
                             groups = "COL", collapse = c("sum", "avg", "weighted.avg"),
-                            overwrite = FALSE, deleteOriginal = FALSE, verbose = FALSE) {
+                            overwrite = FALSE, deleteOriginal = FALSE,
+                            verbose = getOption("verbose")) {
     ## XXX: Code Duplication!
     moveTable <- FALSE
     if (is.null(tablename)) {
@@ -239,7 +243,8 @@ dbListFieldsAndTypes <- function(con, tablename) {
 }
 
 joinExpData <- function(expDataList, fields = NULL, tablename = "aggtable",
-                        overwrite = TRUE, deleteOriginals = FALSE, verbose = FALSE){
+                        overwrite = TRUE, deleteOriginals = FALSE,
+                        verbose = getOption("verbose")){
 
   ## Does this work if fields is empty?
   ## Arguments:

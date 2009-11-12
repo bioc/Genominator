@@ -21,10 +21,12 @@ importFrom("utils", "head", "read.table")
 ##
 ## exportPattern("^[^\\.]")
 exportClass("ExpData")
-exportMethods("initialize", "show", "head")
+exportMethods("initialize", "show", "head", "$", "[")
 export("ExpData", "aggregateExpData", "applyMapped", "collapseExpData",
        "computeCoverage", "getRegion", "importFromAlignedReads",
        "importToExpData", "joinExpData", "mergeWithAnnotation",
        "plot.genominator.coverage",
        "plot.genominator.goodness.of.fit", "regionGoodnessOfFit",
-       "splitByAnnotation","summarizeByAnnotation","summarizeExpData")
+       "splitByAnnotation","summarizeByAnnotation","summarizeExpData",
+       "getColnames", "getMode", "getDB", "getDBName", "getTablename",
+       "getSchema", "listTables", "getIndexColumns")

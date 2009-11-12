@@ -9,12 +9,12 @@
 computeCoverage <- function (expData, annoData,
                              cutoff  = function(x, anno, group) x > 10, 
                              effort  = seq(1e+05, 5e+07, length = 20),
-                             smooth  = "min", 
-                             groups  = "all",
+                             smooth  = function(probs) probs, 
+                             groups  = rep("ALL", length(what)),
                              what    = getColnames(expData, all = FALSE),
                              totals  = summarizeExpData(expData, what = what, verbose = verbose),
                              ignoreStrand = FALSE,
-                             verbose = FALSE, ...) 
+                             verbose = getOption("verbose"), ...) 
 {
     if (!is.list(annoData))
         stop("annoData must either be a data.frame, or a list of data.frames.")
@@ -46,9 +46,7 @@ computeCoverage <- function (expData, annoData,
             probs <- A/L
             probs <- c(probs, 1 - sum(probs))
             buckets <- 1:(length(A) + 1)
-            switch(smooth, min = {
-                probs[probs == 0] <- min(probs[probs != 0])
-            })
+            probs <- smooth(probs)
             E <- outer(probs, effort)
             E <- E[-nrow(E), ]
             res <- matrix(NA, ncol = ncol(E), nrow = nrow(E))

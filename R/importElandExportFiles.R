@@ -26,7 +26,8 @@ importElandExportFiles <- function(inFiles, database, tablename, chrMap,
                                    purityFilter = TRUE,
                                    matchPerfectly = NULL,
                                    overwrite = FALSE,
-                                   nrows = -1, preprocess = TRUE, verbose = FALSE) {
+                                   nrows = -1, preprocess = TRUE,
+                                   verbose = getOption("verbose")) {
     if (is.null(names(inFiles))) {
         stop("inFiles must have names which corresponsd to eventual column names.")
     }

@@ -14,7 +14,8 @@ simData <- function(l, mu, pi, phi) {
     return(res)
 }
 
-emZeroInflated <- function(v, dfx, maxiter = 300, tol = 1e-5, verbose = FALSE) {
+emZeroInflated <- function(v, dfx, maxiter = 300, tol = 1e-5,
+                           verbose = getOption("verbose")) {
     mu.start <- mean(v[v != 0]) 
     pi.start <- 1 - mean(v == 0)
     if (verbose) cat("mu:", mu.start, "pi:", pi.start, "\n")
