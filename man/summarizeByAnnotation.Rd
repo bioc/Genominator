@@ -11,7 +11,7 @@
 }
 
 \usage{
-summarizeByAnnotation(expData, annoData, what = getColnames(expData, all = FALSE), fxs = c("TOTAL"), ignoreStrand = FALSE, splitBy = NULL, bindAnno = FALSE, preserveColnames = TRUE, verbose = getOption("verbose"))
+summarizeByAnnotation(expData, annoData, what = getColnames(expData, all = FALSE), fxs = c("TOTAL"), ignoreStrand = FALSE, splitBy = NULL, bindAnno = FALSE, preserveColnames = TRUE, verbose = getOption("verbose"), meta.id = NULL)
 }
 
 \arguments{
@@ -43,6 +43,9 @@ summarizeByAnnotation(expData, annoData, what = getColnames(expData, all = FALSE
   \item{verbose}{
     Logical indicating whether details should be printed.
   }
+  \item{meta.id}{
+    Character vector refering to a column in \code{annoData}.  Regions will be aggregated over distinct values of this column.  Setting this argument will set \code{bindAnno} to \code{TRUE}.  If \code{splitBy} is set, \code{meta.id} will override.
+  }
 }
 
 \details{
@@ -52,6 +55,11 @@ summarizeByAnnotation(expData, annoData, what = getColnames(expData, all = FALSE
   a list with all the data and then use R to summarize over each element
   of the list.  It is (naturally) constrained to the use of operations
   expressible in (SQLite) SQL.
+
+  If \code{meta.id} is set to a column in \code{annoData}, all regions
+  with the same value of the \code{meta.id} will be joined together; a
+  standard use case is labelleing exons of a gene.
+
 }
 
 \value{

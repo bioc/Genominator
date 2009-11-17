@@ -1,9 +1,3 @@
-
-##-- These are the columns which are necessary.
-.ANNO.COLS <- c("chr", "start", "end", "strand")
-.REGION.TABLE.NAME <- '__regions__'
-.REGION.TABLE.TMP.NAME <- "__tmp_regions__"
-
 .makeIndexName <- function(tablename) {
     paste(tablename, "IDX", sep = "")
 }
@@ -72,8 +66,8 @@ importToExpData <- function(df, filename, tablename, overwrite = FALSE,
   df <- df[order(df[,COLS[1]], df[,COLS[2]], df[,COLS[3]]), ]
   
   .timeAndPrint( { if (!dbWriteTable(db, tablename, df, row.names = FALSE, overwrite = overwrite))
-                     stop("Unable to write the table, delete table or specify overwrite.")}, "Writing table",
-                print = verbose)
+                     stop("Unable to write the table, delete table or specify overwrite.")},
+                txt = "Writing table", print = verbose)
 
   idxName <- .makeIndexName(tablename)
   q <- paste("CREATE INDEX ",  idxName, " ON ", tablename, "(",
@@ -83,8 +77,8 @@ importToExpData <- function(df, filename, tablename, overwrite = FALSE,
       tryCatch(dbGetQuery(db, paste("DROP INDEX", idxName)), error = function(x) {})
   }
 
-  .timeAndPrint(tryCatch(x <- dbGetQuery(db, q), error = print, q), "Creating index",
-                print = verbose)
+  .timeAndPrint(tryCatch(x <- dbGetQuery(db, q), error = print, q),
+                txt = "Creating index", print = verbose)
   
   ## clean up -- we will reconnect in the line below.
   dbDisconnect(db)
@@ -112,7 +106,7 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
 
     cols <- paste(paste(c(by, colname), "INTEGER"), collapse = ",")
     .timeAndPrint(dbGetQuery(getDB(expData), sprintf("CREATE TABLE %s (%s)", tablename, cols)),
-                  paste("Creating table:", tablename), print = verbose)
+                  txt = paste("Creating table:", tablename), print = verbose)
 
     statement <- sprintf("INSERT INTO %s SELECT %s FROM %s GROUP BY %s",
                          tablename,
@@ -120,17 +114,17 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
                          getTablename(expData),
                          paste(by, collapse = ","))
     .timeAndPrint(dbGetQuery(getDB(expData), statement),
-                  "inserting", print = verbose)
+                  txt = "inserting", print = verbose)
 
     if (deleteOriginal) {
         .timeAndPrint(dbGetQuery(getDB(expData), paste("DROP TABLE", getTablename(expData))),
-                      "droping original table", print = verbose)
+                      txt = "droping original table", print = verbose)
     }
 
     if (moveTable) {
         .timeAndPrint(dbGetQuery(getDB(expData), sprintf("ALTER TABLE %s RENAME TO %s",
                                                          tablename, getTablename(expData))),
-                      "renaming table", print = verbose)
+                      txt = "renaming table", print = verbose)
 
         tablename <- getTablename(expData)
     }
@@ -138,7 +132,8 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
     ## now create the index on the correct tablename.
     statement <-  sprintf("CREATE INDEX %s ON %s (%s);", .makeIndexName(tablename),
                           tablename, paste(by, collapse = ","))
-    .timeAndPrint(dbGetQuery(getDB(expData), statement), "creating index", print = verbose)
+    .timeAndPrint(dbGetQuery(getDB(expData), statement),
+                  txt = "creating index", print = verbose)
 
     ## return a new expData.
     return(ExpData(getDBName(expData), tablename, indexColumns = by, mode = 'w'))
@@ -196,30 +191,33 @@ collapseExpData <- function(expData, tablename = NULL, what = getColnames(expDat
     ##       to enforce, INTEGERness
     statement <- sprintf("CREATE TABLE %s (%s)", tablename, paste(c(paste(getIndexColumns(expData), "INTEGER"), newCols),
                                                                   collapse = ", "))
-    .timeAndPrint(dbGetQuery(getDB(expData), statement), "creating table", print = verbose, statement)
+    .timeAndPrint(dbGetQuery(getDB(expData), statement),
+                  txt = "creating table", print = verbose, query = statement)
 
     statement <- sprintf("INSERT INTO %s SELECT %s FROM %s GROUP BY %s",
                          tablename,
                          paste(c(getIndexColumns(expData), sel), collapse = ", "), getTablename(expData),
                          paste(getIndexColumns(expData), collapse = ","), paste(getIndexColumns(expData), collapse = ","))
-    .timeAndPrint(dbGetQuery(getDB(expData), statement), "inserting data", print = verbose, statement)
+    .timeAndPrint(dbGetQuery(getDB(expData), statement),
+                  txt = "inserting data", print = verbose, query = statement)
 
     ## XXX: Code duplication
     if (deleteOriginal) {
         .timeAndPrint(dbGetQuery(getDB(expData), paste("DROP TABLE", getTablename(expData))),
-                      "droping original table", print = verbose)
+                      txt = "droping original table", print = verbose)
     }
     if (moveTable) {
         .timeAndPrint(dbGetQuery(getDB(expData), sprintf("ALTER TABLE %s RENAME TO %s",
                                                          tablename, getTablename(expData))),
-                      "renaming table", print = verbose)
+                      txt = "renaming table", print = verbose)
         tablename <- getTablename(expData)
     }
 
     ## now create the index on the correct tablename.
     statement <-  sprintf("CREATE INDEX %s ON %s (%s);", .makeIndexName(tablename),
                           tablename, paste(getIndexColumns(expData), collapse = ","))
-    .timeAndPrint(dbGetQuery(getDB(expData), statement), "creating index", print = verbose)
+    .timeAndPrint(dbGetQuery(getDB(expData), statement),
+                  txt = "creating index", print = verbose)
 
     ## return a new expData.
     return(ExpData(getDBName(expData), tablename, mode = 'w'))
@@ -315,7 +313,8 @@ joinExpData <- function(expDataList, fields = NULL, tablename = "aggtable",
   select <- paste("SELECT", COMMA.COLS, "FROM", expdatatables, collapse = " UNION ")
   statement <- sprintf("INSERT INTO %s (%s) %s ORDER BY %s;",
                        temptables[1], COMMA.COLS, select, COMMA.COLS)
-  .timeAndPrint(dbGetQuery(db, statement), "Creating union", print = verbose)
+  .timeAndPrint(dbGetQuery(db, statement),
+                txt = "Creating union", print = verbose)
 
   ## Now we start a for loop where we add one expData at a time.
   ## This is a loop of sequential outer left joins.
@@ -343,7 +342,7 @@ joinExpData <- function(expDataList, fields = NULL, tablename = "aggtable",
     currentCols <- nextCols
     currentTypes <- nextTypes
     .timeAndPrint(dbGetQuery(db, statement),
-                  paste("Left outer join with table", expdatatables[i]),
+                  txt = paste("Left outer join with table", expdatatables[i]),
                   print = verbose)
     dbGetQuery(db, sprintf("DROP TABLE %s;", temptables[i]))
   }
@@ -358,7 +357,7 @@ joinExpData <- function(expDataList, fields = NULL, tablename = "aggtable",
   statement <- sprintf("CREATE INDEX %s ON %s (%s);",
                        paste(tablename, "IDX", sep = ""),
                        tablename, paste(.COLS, collapse = ", "))
-  .timeAndPrint(dbGetQuery(db, statement), "Indexing", print = verbose)
+  .timeAndPrint(dbGetQuery(db, statement), txt = "Indexing", print = verbose)
 
   ## Return pointer to new expData
   return(ExpData(db = getDBName(expDataList[[1]]), tablename = tablename, mode = 'w'))

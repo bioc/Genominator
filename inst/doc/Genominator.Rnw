@@ -15,6 +15,7 @@
 \usepackage{comment}
 \usepackage{fancyhdr}
 \usepackage{hyperref}
+\usepackage{times}
 \usepackage{color}
 
 %%%%%%%%%%%%%%%%%%%%%%%% Adapted from Sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

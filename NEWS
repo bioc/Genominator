@@ -5,8 +5,13 @@
         *                                                *
         **************************************************
 
+Version 1.1
 
-                CHANGES IN GenomeGraphs Version 1.0
+o Added meta.id to summarizeByAnnotation
+o Added to Bioconductor
+o Improved User Guide substantially
+
+Version 1.0
 
 NEW FEATURES
 o Changed underlying database model where now the database exists in two

@@ -1,11 +1,17 @@
 
 ## this is the input file - .Rnw
 ## 
-file=Genominator
+gfile=Genominator
 pfile=plotting
 sfile=withShortRead
 
-all : $(file:=.pdf) plotting shortread
+all : user plotting shortread
+	rm -rf ${gfile}.aux ${gfile}.log ${gfile}.tex ${gfile}.out \
+	       ${pfile}.aux ${pfile}.log ${pfile}.tex ${pfile}.out \
+	       ${sfile}.aux ${sfile}.log ${sfile}.tex ${sfile}.out \
+	       plots Rplots.pdf auto my.db pmy.db 
+
+user : $(gfile:=.pdf)
 
 plotting : $(pfile:=.pdf)
 
@@ -17,12 +23,8 @@ shortread : $(sfile:=.pdf)
 %.pdf : %.tex
 	texi2dvi --pdf $<
 
-%.dvi : %.tex
-	texi2dvi $<
-
-%.ps : %.dvi
-	dvips -o -q $<
-
 clean : 
-	rm -rf ${file}.aux ${file}.log ${file}.tex plots/* Rplots.pdf auto ${file}.out my.db ${file}.pdf ${pfile}.aux ${pfile}.log ${pfile}.tex ${file}.out pmy.db ${pfile}.pdf ${pfile}.out ${sfile}.aux ${sfile}.log ${sfile}.tex ${sfile}.out pmy.db ${sfile}.pdf ${sfile}.out
-
+	rm -rf ${gfile}.aux ${gfile}.log ${gfile}.tex ${gfile}.out ${gfile}.pdf \
+	       ${pfile}.aux ${pfile}.log ${pfile}.tex ${pfile}.out ${pfile}.pdf \
+	       ${sfile}.aux ${sfile}.log ${sfile}.tex ${sfile}.out ${sfile}.pdf \
+	       plots/* Rplots.pdf auto my.db pmy.db 

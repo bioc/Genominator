@@ -1,11 +1,12 @@
 Package: Genominator
-Version: 1.1.0
+Version: 1.1.1
 Title: Analyze genomic data
+Description: Tools for storing, accessing, and visualizing genomic data.
 Author: James Bullard, Kasper Daniel Hansen
 Maintainer: James Bullard <bullard@stat.berkeley.edu>
 Depends: methods, RSQLite
 Imports: DBI, graphics, methods, stats, utils
 Suggests: biomaRt, GenomeGraphs, ShortRead, yeastRNASeq
-Description: Tools for storing, accessing, and visualizing genomic data.  
+Collate: Genominator.R importAndManage.R annotation.R goodnessOfFit.R plotRegion.R coverage.R diffExp.R emZero.R hasOverlap.R  importElandExportFiles.R
 License: Artistic-2.0
 LazyLoad: yes

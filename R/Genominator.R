@@ -1,3 +1,7 @@
+##-- These are package constants.
+.ANNO.COLS <- c("chr", "start", "end", "strand")
+.REGION.TABLE.NAME <- '__regions__'
+.REGION.TABLE.TMP.NAME <- "__tmp_regions__"
 
 setClass("ExpData",
          representation(db           = "character",
@@ -136,7 +140,6 @@ getColnames <- function(expData, all = TRUE) {
     return(setdiff(cc, getIndexColumns(expData)))
   }
 }
-
 listTables <- function(db) { 
   return(dbListTables(dbConnect(dbDriver("SQLite"), db)))
 }
@@ -202,7 +205,7 @@ getRegion <- function(expData, chr, start, end, strand, what = "*",
                  start, end, whereClause, paste(getIndexColumns(expData), collapse = ","))
     
     .timeAndPrint(res <- dbGetQuery(getDB(expData), q),
-                  "fetching region query", print = verbose, q)
+                  txt = "fetching region query", print = verbose, query = q)
     return(res)
 }
 
@@ -226,7 +229,8 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
     what <- paste(getTablename(expData), ".*", sep = "")
   }
   
-  .timeAndPrint(.writeRegionsTable(expData, annoData), "writing region table", print = verbose)
+  .timeAndPrint(.writeRegionsTable(expData, annoData),
+                txt = "writing region table", print = verbose)
   
   ## here we need to order things a certain way so we are guaranteed to have things
   ## come out in a consistent way.
@@ -236,21 +240,23 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
                                collapse = ", "),
                sep = ", ")
   
-  q <- .formRegionsSQL(paste(what, ",", regionID), getTablename(expData),
-                       ignoreStrand = ignoreStrand, oby = oby)
+  q <- .formRegionsSQL(what = paste(what, ",", regionID),
+                       tablename = getTablename(expData),
+                       ignoreStrand = ignoreStrand, orderBy = oby)
   .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q),
-                "fetching splits table", print = verbose, q = q)
+                txt = "fetching splits table", print = verbose, query = q)
   
   if (nrow(tbl) == 0 || ncol(tbl) == 0) {
     return(NULL)
   }
   
   ## count query to determine size.
-  q <- .formRegionsSQL(sprintf("count(%s), %s", regionID, regionID), getTablename(expData),
-                       gby = regionID, ignoreStrand = ignoreStrand,
-                       oby = regionID)
+  q <- .formRegionsSQL(what = sprintf("count(%s), %s", regionID, regionID),
+                       tablename = getTablename(expData),
+                       ignoreStrand = ignoreStrand, groupBy = regionID,
+                       orderBy = regionID)
   .timeAndPrint(cdb <- dbGetQuery(getDB(expData), q),
-                "count query", print = verbose, q = q)
+                txt = "count query", print = verbose, query = q)
   
   ## this makes things worlds faster, however it also means that what is in
   ## the database must be numbers or all become characters. 
@@ -261,10 +267,11 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
   lens <- cdb[,1]; clens <- cumsum(lens)
   bounds <- cbind(c(1, 1 + clens[-length(lens)]), clens)
   
-  .timeAndPrint({ for (i in seq_len(nrow(bounds))) {
-    ## I am dropping the ID column.
-    res[[i]] <- tbl[bounds[i,1]:bounds[i,2], -ncol(tbl), drop = FALSE]
-  }}, "performing split", print = verbose)
+  .timeAndPrint({
+      for (i in seq_len(nrow(bounds))) {
+          ## I am dropping the ID column.
+          res[[i]] <- tbl[bounds[i,1]:bounds[i,2], -ncol(tbl), drop = FALSE]
+      }}, txt = "performing split", print = verbose)
   
   ## here we expand the region with 0s -- this can considerably decrease
   ## performance.
@@ -330,8 +337,8 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
 mergeWithAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALSE, splitBy = NULL,
                                 verbose = getOption("verbose")) {
   
-  .timeAndPrint(.writeRegionsTable(expData, annoData, dropCols = FALSE),
-                "writing regions table", print = verbose)
+    .timeAndPrint(.writeRegionsTable(expData, annoData, dropCols = FALSE),
+                  txt = "writing regions table", print = verbose)
   
   if (what[1] != "*") {
     what <- paste(what, collapse = ",")
@@ -340,11 +347,12 @@ mergeWithAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FA
     ##-- here i need to add the splitBy to the what and then remove it.
     what <- paste(c(what, splitBy), collapse = ",")
   }
-  q <- .formRegionsSQL(what, getTablename(expData), ignoreStrand = ignoreStrand)
-  .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q), "fetching merge table", print = verbose, q)
+  q <- .formRegionsSQL(what = what, tablename = getTablename(expData), ignoreStrand = ignoreStrand)
+  .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q),
+                txt = "fetching merge table", print = verbose, query = q)
   if (!is.null(splitBy)) {
-    .timeAndPrint(tbl <- split(tbl[,-ncol(tbl)], tbl[, splitBy]), paste("splitting by:", splitBy),
-                  print = verbose)
+    .timeAndPrint(tbl <- split(tbl[,-ncol(tbl)], tbl[, splitBy]),
+                  txt = paste("splitting by:", splitBy), print = verbose)
   }
   return(tbl)
 }
@@ -363,7 +371,8 @@ summarizeExpData <- function(expData, what = getColnames(expData, all = FALSE), 
     }
     
     q <- sprintf("SELECT %s FROM %s %s;", what, getTablename(expData), whereClause)
-    .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q), "fetching summary", print = verbose)
+    .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q),
+                  txt = "fetching summary", print = verbose)
 
     if (preserveColnames & length(originalWhat) == ncol(tbl)) {
         colnames(tbl) <- originalWhat
@@ -375,15 +384,26 @@ summarizeExpData <- function(expData, what = getColnames(expData, all = FALSE), 
 summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData, all = FALSE),
                                   fxs = c("TOTAL"), ignoreStrand = FALSE, splitBy = NULL,
                                   bindAnno = FALSE, preserveColnames = TRUE,
-                                  verbose = getOption("verbose"))
+                                  verbose = getOption("verbose"), meta.id = NULL)
 {
-    .timeAndPrint(ids <- .writeRegionsTable(expData, annoData),
-                  "writing regions table", print = verbose)
+    ## bindAnno = TRUE and meta.id != NULL is not compatible
+    .timeAndPrint(ids <- .writeRegionsTable(expData, annoData, id = meta.id),
+                  txt = "writing regions table", print = verbose)
 
     if (length(fxs) > 1 & preserveColnames) {
         if (!missing(preserveColnames))
             warning("Cannot preserve column names when you are applying more than one function to the columns.")
         preserveColnames <- FALSE
+    }
+
+    if(bindAnno && !is.null(meta.id)) {
+        warning("Cannot bind annotation when meta.id is set, ignoring bindAnno = TRUE")
+        bindAnno <- FALSE
+    }
+
+    if(!is.null(splitBy) && !is.null(meta.id) && splitBy != meta.id){
+        warning("setting argument meta.id overrides argument splitBy; splitting meta.id")
+        splitBy <- meta.id
     }
     
     originalWhat <- what
@@ -402,8 +422,13 @@ summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData,
                  what, getTablename(expData), getTablename(expData),
                  getTablename(expData))
     
-    .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q), "fetching summary table", print = verbose, q)
-    rownames(tbl) <- rownames(annoData)
+    .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q),
+                  txt = "fetching summary table", print = verbose, query = q)
+    if(is.null(meta.id)) {
+        rownames(tbl) <- rownames(annoData)[tbl[,1]]
+    } else {
+        rownames(tbl) <- tbl[,1]
+    }
     tbl <- tbl[, -1, drop = FALSE]
     
     if (preserveColnames)
@@ -412,7 +437,6 @@ summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData,
     if (bindAnno) {
         tbl <- cbind(annoData, tbl)
     }
-
 
     if (is.null(splitBy)) {
         return(tbl)
@@ -441,10 +465,10 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
     return(x)
 }
 
-.timeAndPrint <- function(exp, txt, print = TRUE, q = NULL) {
+.timeAndPrint <- function(exp, txt, print = TRUE, query = NULL) {
     if (print) {
-        if (!is.null(q))
-            cat(q, "\n")
+        if (!is.null(query))
+            cat("SQL query:", query, "\n", fill = TRUE)
         cat(txt, ": ", sep = "")
     }
     time <- round(system.time(exp)[3], 4)
@@ -454,8 +478,8 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
     }
 }
 
-.formRegionsSQL <- function(what, tablename, gby = NULL, ignoreStrand = FALSE,
-                            oby = NULL, regionTableName = .REGION.TABLE.NAME) {
+.formRegionsSQL <- function(what, tablename, ignoreStrand = FALSE, groupBy = NULL,
+                            orderBy = NULL, regionTableName = .REGION.TABLE.NAME) {
   
   s <- paste(sprintf(paste("SELECT %s FROM %s INNER JOIN %s ON %s.chr = %s.chr AND",
                            "%s.location BETWEEN %s.start AND %s.end__1"),
@@ -468,46 +492,51 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
                ""
              })
     
-  if (!is.null(gby)) {
-    s <- paste(s, sprintf("GROUP BY %s", gby))
+  if (!is.null(groupBy)) {
+    s <- paste(s, sprintf("GROUP BY %s", groupBy))
   }
-  if (!is.null(oby)) {
-    s <- paste(s, sprintf("ORDER BY %s", oby))
+  if (!is.null(orderBy)) {
+    s <- paste(s, sprintf("ORDER BY %s", orderBy))
   }
   return(s)
 }
 
 ## XXX: I have to deal with this name munging which turns end into end__1.
-.writeRegionsTable <- function(expData, annoData, dropCols = TRUE) {
-  id <- as.integer(1:nrow(annoData))
+.writeRegionsTable <- function(expData, annoData, dropCols = TRUE, id = NULL) {
 
-  joinCols <- annoData[, .ANNO.COLS]
-  for (i in 1:ncol(joinCols)) {
-      if (class(joinCols[,i]) != "integer")
-          joinCols[,i] <- as.integer(joinCols[,i])
-  }
-  
-  if (dropCols) {
-    regions <- cbind(id = id, joinCols)
-  } else {
-    regions <- cbind(id = id, joinCols, annoData[, -which(.ANNO.COLS %in% colnames(annoData)), drop = FALSE])
-  }
-  con <- getDB(expData)
-  
-  ## This approach uses the dbWriteTable
-  dbWriteTable(con, .REGION.TABLE.NAME, regions, overwrite = TRUE, row.names = FALSE)
-  
-  ## This approach uses the temporary table -- this doesn't appear faster and is
-  ## significantly more code, but I haven't done sufficient testing.
-  ## dbWriteTable(con, .REGION.TABLE.TMP.NAME, regions, row.names = FALSE, overwrite = TRUE)
-  ## tryCatch(dbGetQuery(con, sprintf("DROP TABLE %s", .REGION.TABLE.NAME)), error = function(a) {})
-  ## tmp <- colnames(regions)
-  ## tmp[tmp == "end"] <- "end__1"
-  ## cols <- paste(paste(tmp, "INTEGER"), collapse = ",")
-  ## sql <- sprintf("CREATE TEMPORARY TABLE %s (%s)", .REGION.TABLE.NAME, cols)
-  ## dbGetQuery(con, sql)
-  ## sql <- sprintf("INSERT INTO %s SELECT * FROM %s", .REGION.TABLE.NAME, .REGION.TABLE.TMP.NAME)
-  ## dbGetQuery(con, sql)
+    if(is.null(id) || !is.character(id) || !is.element(id, names(annoData))) {
+        id <- as.integer(1:nrow(annoData))
+    } else {
+        id <- annoData[, id]
+    }
 
-  return(id)
+    joinCols <- annoData[, .ANNO.COLS]
+    for (i in 1:ncol(joinCols)) {
+        if (class(joinCols[,i]) != "integer")
+            joinCols[,i] <- as.integer(joinCols[,i])
+    }
+    
+    if (dropCols) {
+        regions <- cbind(id = id, joinCols)
+    } else {
+        regions <- cbind(id = id, joinCols, annoData[, -which(.ANNO.COLS %in% colnames(annoData)), drop = FALSE])
+    }
+    con <- getDB(expData)
+  
+    ## This approach uses the dbWriteTable
+    dbWriteTable(con, .REGION.TABLE.NAME, regions, overwrite = TRUE, row.names = FALSE)
+  
+    ## This approach uses the temporary table -- this doesn't appear faster and is
+    ## significantly more code, but I haven't done sufficient testing.
+    ## dbWriteTable(con, .REGION.TABLE.TMP.NAME, regions, row.names = FALSE, overwrite = TRUE)
+    ## tryCatch(dbGetQuery(con, sprintf("DROP TABLE %s", .REGION.TABLE.NAME)), error = function(a) {})
+    ## tmp <- colnames(regions)
+    ## tmp[tmp == "end"] <- "end__1"
+    ## cols <- paste(paste(tmp, "INTEGER"), collapse = ",")
+    ## sql <- sprintf("CREATE TEMPORARY TABLE %s (%s)", .REGION.TABLE.NAME, cols)
+    ## dbGetQuery(con, sql)
+    ## sql <- sprintf("INSERT INTO %s SELECT * FROM %s", .REGION.TABLE.NAME, .REGION.TABLE.TMP.NAME)
+    ## dbGetQuery(con, sql)
+
+    return(id)
 }
