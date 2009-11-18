@@ -215,6 +215,10 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
 {
   if (is.null(rownames(annoData)))
     stop("need uniqe rownames for the annoData object.")
+
+  if(addOverStrands) {
+      expand <- TRUE
+  }
   
   if (expand) {
     ## In this case, I prepend the annotation columns. This adds
@@ -222,7 +226,7 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
     ## clarifys the code.
     what <- c(getIndexColumns(expData), what)
   }
-
+  
   if (what[1] != "*") {
     what <- paste(paste(getTablename(expData), what, sep = "."), collapse = ", ")
   } else {
@@ -387,7 +391,7 @@ summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData,
                                   verbose = getOption("verbose"), meta.id = NULL)
 {
     ## bindAnno = TRUE and meta.id != NULL is not compatible
-    .timeAndPrint(ids <- .writeRegionsTable(expData, annoData, id = meta.id),
+    .timeAndPrint(.writeRegionsTable(expData, annoData, id = meta.id),
                   txt = "writing regions table", print = verbose)
 
     if (length(fxs) > 1 & preserveColnames) {

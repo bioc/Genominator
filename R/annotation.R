@@ -1,4 +1,3 @@
-
 validAnnotation <- function(annoData) {
     if(!is.data.frame(annoData))
         stop("An annotation object should be a data.frame")
@@ -19,9 +18,17 @@ validAnnotation <- function(annoData) {
     return(TRUE)
 }
 
-makeUIgenes <- function(annoData) {
+makeUIgenes <- function(annoData, gene.id = NULL, transcript.id = NULL, verbose = getOption("verbose")) {
+    if(is.null(gene.id)) {
+        gene.id <- "gene_id"
+    }
+    if(is.null(transcript.id)) {
+        transcript.id <- "transcipt_id"
+    }
+    stopifnot(gene.id %in% names(annoData), transcript.id %in% names(annoData))
     makeUIlocally <- function(chrAnno) {
-        geneSplit <- split(chrAnno, chrAnno$gene_id)
+        if(verbose) cat("computing on chromosome", chrAnno$chr[1], "\n")
+        geneSplit <- split(chrAnno, chrAnno[, gene.id])
         geneRanges <- do.call(IRangesList, lapply(geneSplit, function(gene) {
             reduce(IRanges(gene$start, gene$end))
         }))
@@ -29,7 +36,7 @@ makeUIgenes <- function(annoData) {
             reduce(unlist(geneRanges[-i]))
         })
         consecutivePartsOfGene <- do.call(IRangesList, lapply(geneSplit, function(gene) {
-            transcriptList <- lapply(split(gene, gene$transcript_id), function(exons) {
+            transcriptList <- lapply(split(gene, gene[, transcript.id]), function(exons) {
                 reduce(IRanges(start = exons$start, end = exons$end))
             })
             transcriptIntersection <- Reduce(intersect, transcriptList)
@@ -38,11 +45,13 @@ makeUIgenes <- function(annoData) {
             setdiff(consecutivePartsOfGene[[i]], unionComplementToGene[[i]])
         })
         reps <- sapply(cleanedUIgene, length)
-        data.frame(chr = chrAnno$chr[1],
-                   strand = rep(sapply(geneSplit, function(x) x$chr[1]), reps),
-                   start = do.call(c, lapply(cleanedUIgene, start)),
-                   end = do.call(c, lapply(cleanedUIgene, end)),
-                   gene_id = rep(names(geneSplit), reps))
+        df <- data.frame(chr = chrAnno$chr[1],
+                         strand = rep(sapply(geneSplit, function(x) x$chr[1]), reps),
+                         start = do.call(c, lapply(cleanedUIgene, start)),
+                         end = do.call(c, lapply(cleanedUIgene, end)),
+                         rep(names(geneSplit), reps))
+        names(df)[5] <- gene.id
+        df
     }
     chrSplit <- split(annoData, annoData$chr)
     do.call(rbind, lapply(chrSplit, makeUIlocally))

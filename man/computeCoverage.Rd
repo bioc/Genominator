@@ -9,9 +9,11 @@
   Compute fraction coverage obtained for a certain degree of sequencing effort.
 }
 \usage{
-  computeCoverage(expData, annoData, cutoff = function(x, anno, group) x
-  > 10, effort = seq(1e+05, 5e+07, length = 20), smooth =
-  function(probs) probs, groups = rep("ALL", length(what)), what = getColnames(expData, all = FALSE), totals = summarizeExpData(expData, what = what, verbose = verbose), ignoreStrand = FALSE, verbose = getOption("verbose"), ...)
+  computeCoverage(expData, annoData, cutoff = function(x, anno, group) { x > 10 },
+      effort = seq(1e+05, 5e+07, length = 20), smooth = function(probs) { probs},
+      groups = rep("ALL", length(what)), what = getColnames(expData, all = FALSE),
+      totals = summarizeExpData(expData, what = what, verbose = verbose),
+      ignoreStrand = FALSE, verbose = getOption("verbose"), ...)
 }
 
 \arguments{
@@ -19,8 +21,9 @@
     An \code{ExpData} object.
   }
   \item{annoData}{
-    A data frame which must contain the columns \code{chr}, \code{start}, \code{end} and \code{strand} which specifies
-    annotation regions of interest.   
+    A data frame which must contain the columns \code{chr},
+    \code{start}, \code{end} and \code{strand} which specifies annotation
+    regions of interest. 
   }
   \item{cutoff}{
     A predicate which determines when a region of annotation has been
@@ -70,7 +73,8 @@
   Hansen \email{khansen@stat.berkeley}
 }
 \seealso{
-  See the \code{\link{plot.genominator.coverage}} \code{Genominator} vignette for details.
+  See the \code{\link{plot.genominator.coverage}} for the plotting
+  method and the \code{Genominator} vignette for details.
 }
 \examples{
 ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
