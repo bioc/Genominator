@@ -40,7 +40,9 @@ setMethod("initialize", signature(.Object = "ExpData"),
             if (missing(db))
               stop("Must specify db argument.")
             
-            db <- Sys.glob(db)
+            db <- normalizePath(Sys.glob(db))
+            if (length(db) != 1)
+              stop(paste("Do not use ambiguous filenames when instantiating an ExpData.", db))
             
             .Object@mode <- match.arg(mode)
             .Object@db <- db
