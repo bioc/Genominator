@@ -64,7 +64,7 @@ options(width=70)
 \renewcommand{\dblfloatpagefraction}{0.7}       % require fuller float pages
 
 %%%%%%%%%%%%%%%%%%%%%%% options for sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\SweaveOpts{prefix.string=plots/plotting}
+\SweaveOpts{prefix.string=plots_plotting,eps=FALSE}
 
 %%%%%%%%%%%%%%%%%%%%%% headers and footers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{fancy} 
@@ -98,7 +98,7 @@ K <- 100    # the number of annotation regions, not less than 10
 df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                  location = sample(1:1000, size = N, replace = TRUE),
                  strand = sample(c(1L,-1L), size = N, replace = TRUE))
-eData <- aggregateExpData(importToExpData(df, filename = "pmy.db", overwrite = TRUE, tablename = "ex_tbl"))
+eData <- aggregateExpData(importToExpData(df, dbFilename = "pmy.db", overwrite = TRUE, tablename = "ex_tbl"))
 
 annoData <- data.frame(chr = sample(1:16, size = K, replace = TRUE),
                        strand = sample(c(1, -1), size = K, replace = TRUE),
@@ -161,7 +161,7 @@ annoFactory <- Genominator:::makeAnnoFactory.Biomart(mart, chrFunction = functio
 
 load(system.file("data", "chr1_yeast.rda", package = "Genominator"))
 head(chr1_yeast)
-yData <- importToExpData(chr1_yeast, filename = "my.db", tablename = "yeast", 
+yData <- importToExpData(chr1_yeast, dbFilename = "my.db", tablename = "yeast", 
                          overwrite = TRUE)
 
 rp <- Genominator:::makeRegionPlotter(list("track.-" = list(expData = yData, what = c("mRNA_1", "mRNA_2"),

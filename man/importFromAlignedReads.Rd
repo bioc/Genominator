@@ -11,7 +11,7 @@
   are taken from list names, which must be unique.  }
 
 \usage{
-importFromAlignedReads(alignedReads, chrMap, filename, tablename,
+importFromAlignedReads(alignedReads, chrMap, dbFilename, tablename,
 overwrite = TRUE, deleteIntermediates = TRUE, verbose = getOption("verbose"), ...)
 }
 
@@ -24,7 +24,7 @@ overwrite = TRUE, deleteIntermediates = TRUE, verbose = getOption("verbose"), ..
     importation to the database, chromosome names will be converted to
     integers corresponding to position within the \code{chrMap} vector.
   }
-  \item{filename}{
+  \item{dbFilename}{
     The filename of the database to which the data will be imported.
   }
   \item{tablename}{
@@ -62,7 +62,7 @@ overwrite = TRUE, deleteIntermediates = TRUE, verbose = getOption("verbose"), ..
     require(yeastRNASeq)
     data("yeastAligned")
     eData <- importFromAlignedReads(yeastAligned, chrMap = levels(chromosome(yeastAligned[[1]])),
-                                    filename = tempfile(), tablename =
+                                    dbFilename = tempfile(), tablename =
                                     "raw", overwrite = TRUE)
    }
 }

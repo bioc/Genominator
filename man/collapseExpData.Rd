@@ -60,7 +60,7 @@ collapseExpData(expData, tablename = NULL, what = getColnames(expData,
 \seealso{ See \code{Genominator} vignette for more information.  }
 \examples{
 ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
-nd <- importToExpData(head(ed, -1), filename = tempfile(), tablename = "collapsed")
+nd <- importToExpData(head(ed, -1), dbFilename = tempfile(), tablename = "collapsed")
 cd <- collapseExpData(nd, tablename = "bio", groups = c("mut", "mut", "wt", "wt"), overwrite = TRUE)
 head(cd)
 }

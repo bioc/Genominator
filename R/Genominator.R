@@ -4,7 +4,7 @@
 .REGION.TABLE.TMP.NAME <- "__tmp_regions__"
 
 setClass("ExpData",
-         representation(db           = "character",
+         representation(dbFilename   = "character",
                         tablename    = "character",
                         tableSchema  = "character",
                         indexColumns = "character",
@@ -18,7 +18,7 @@ setClass("ExpData",
 
 setMethod("show", "ExpData", function(object) {
     cat("table:", getTablename(object), "\n")
-    cat("database file:", getDBName(object), "\n")
+    cat("database file:", getDBFilename(object), "\n")
     cat("index columns:", getIndexColumns(object), "\n")
     cat("mode:", getMode(object), "\n")
     cat("schema:\n")
@@ -30,22 +30,22 @@ setMethod("head", "ExpData", function(x, ...) {
     if (length(args) == 1 && is.numeric(args[[1]]))
         n <- args[[1]]
     else
-        n <- 10
+        n <- 6
     dbGetQuery(getDB(x), sprintf("SELECT * FROM %s LIMIT %s;", getTablename(x), n))
 })
 
 setMethod("initialize", signature(.Object = "ExpData"),
-          function(.Object, db, tablename = "", pragmas = NULL, indexColumns = NULL,
+          function(.Object, dbFilename, tablename = "", pragmas = NULL, indexColumns = NULL,
                    mode = c('r', 'w')) {
-            if (missing(db))
-              stop("Must specify db argument.")
+            if (missing(dbFilename))
+              stop("Must specify dbFilename argument.")
             
-            db <- normalizePath(Sys.glob(db))
-            if (length(db) != 1)
-              stop(paste("Do not use ambiguous filenames when instantiating an ExpData.", db))
+            dbFilename <- normalizePath(Sys.glob(dbFilename))
+            if (length(dbFilename) != 1)
+              stop(paste("Do not use ambiguous filenames when instantiating an ExpData.", dbFilename))
             
             .Object@mode <- match.arg(mode)
-            .Object@db <- db
+            .Object@dbFilename <- dbFilename
             .Object@tablename <- tablename
              
             if (.Object@mode == 'r')
@@ -63,8 +63,8 @@ setMethod("initialize", signature(.Object = "ExpData"),
             ##       and the fact that something you do might make the db unsafe w/multiple
             ##       threads accessing it. 
             ##
-            if (length(.Object@db) != 0 && .Object@db != "") {
-              if (exists(.Object@db, envir = .Object@.pool)) {
+            if (length(.Object@dbFilename) != 0 && .Object@dbFilename != "") {
+              if (exists(.Object@dbFilename, envir = .Object@.pool)) {
                 ## refresh each time we call this function, could have stale
                 ## handles if you are borrowing the connection from an object. 
                 dbDisconnect(getDB(.Object))
@@ -74,10 +74,10 @@ setMethod("initialize", signature(.Object = "ExpData"),
             if (.Object@mode == 'r') 
               v <- .Object@.tmpFile
             else
-              v <- .Object@db
+              v <- .Object@dbFilename
 
             ## connect.
-            assign(.Object@db, dbConnect(dbDriver("SQLite"), v), .Object@.pool)
+            assign(.Object@dbFilename, dbConnect(dbDriver("SQLite"), v), .Object@.pool)
 
             ## now set the pragmas
             if (!is.null(pragmas)) {
@@ -87,7 +87,7 @@ setMethod("initialize", signature(.Object = "ExpData"),
             ## now attach the data if we are in read mode. I'll also
             ## want to register a finalizer somehow.
             if (.Object@mode == 'r') {
-              dbGetQuery(getDB(.Object), sprintf("attach \"%s\" as \"\";", .Object@db))
+              dbGetQuery(getDB(.Object), sprintf("attach \"%s\" as \"\";", .Object@dbFilename))
             }
             
             reg.finalizer(.Object@.pool, function(o) {
@@ -101,12 +101,12 @@ setMethod("initialize", signature(.Object = "ExpData"),
           })
 
 
-ExpData <- function(db, tablename, mode = c('r', 'w'), indexColumns = NULL, pragmas = NULL) {
+ExpData <- function(dbFilename, tablename, mode = c('r', 'w'), indexColumns = NULL, pragmas = NULL) {
   if (is.null(indexColumns)) 
-    new("ExpData", db = db, tablename = tablename, pragmas = pragmas,
+    new("ExpData", dbFilename = dbFilename, tablename = tablename, pragmas = pragmas,
         mode = mode)
   else
-    new("ExpData", db = db, tablename = tablename, pragmas = pragmas,
+    new("ExpData", dbFilename = dbFilename, tablename = tablename, pragmas = pragmas,
         indexColumns = indexColumns, mode = mode)
 }
 
@@ -119,11 +119,11 @@ getMode <- function(expData) {
 }
 
 getDB <- function(expData) {
-  get(expData@db, expData@.pool)
+  get(expData@dbFilename, expData@.pool)
 }
 
-getDBName <- function(expData) {
-    expData@db
+getDBFilename <- function(expData) {
+    expData@dbFilename
 }
 
 getTablename <- function(expData) {
@@ -474,7 +474,7 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
 .timeAndPrint <- function(exp, txt, print = TRUE, query = NULL) {
     if (print) {
         if (!is.null(query))
-            cat("SQL query:", query, "\n", fill = TRUE)
+            cat(paste("SQL query:", query, "\n"), fill = TRUE)
         cat(txt, ": ", sep = "")
     }
     time <- round(system.time(exp)[3], 4)

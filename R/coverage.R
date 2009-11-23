@@ -7,9 +7,9 @@
 ##
 
 computeCoverage <- function (expData, annoData,
-                             cutoff  = function(x, anno, group) x > 10, 
+                             cutoff  = function(x, anno, group) { x > 10 }, 
                              effort  = seq(1e+05, 5e+07, length = 20),
-                             smooth  = function(probs) probs, 
+                             smooth  = function(probs) { probs }, 
                              groups  = rep("ALL", length(what)),
                              what    = getColnames(expData, all = FALSE),
                              totals  = summarizeExpData(expData, what = what, verbose = verbose),

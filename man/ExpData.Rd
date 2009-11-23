@@ -12,7 +12,7 @@
 \alias{getDB}
 \alias{getMode}
 \alias{getIndexColumns}
-\alias{getDBName}
+\alias{getDBFilename}
 \alias{getTablename}
 \alias{getColnames}
 \alias{getSchema}
@@ -21,12 +21,12 @@
 \description{A class for representing experimental data organized along a genome.}
 \section{Objects from the Class}{
 The preferred way to construct objects of class \code{ExpData} is to use
-the constructor function \code{ExpData(db = "filename.db", tablename
+the constructor function \code{ExpData(dbFilename = "filename.db", tablename
   = "tablename")}
 }
 \section{Slots}{
   \describe{
-    \item{\code{db}:}{Object of class \code{"character"} containing the
+    \item{\code{dbFilename}:}{Object of class \code{"character"} containing the
       filename of the SQLite database.}
     \item{\code{tablename}:}{Object of class \code{"character"}
       containing the tablename of the relevant SQLite table.}
@@ -55,11 +55,11 @@ the constructor function \code{ExpData(db = "filename.db", tablename
 
 \section{Methods}{
   \describe{
-    \item{\code{ExpData(db, tablename, mode, indexColumns, pragma)}}{A constructor
+    \item{\code{ExpData(dbFilename, tablename, mode, indexColumns, pragma)}}{A constructor
       function.  The last three arguments are for expert users.}
     \item{\code{getDB}}{Returns a connection to the database associated with
       the ExpData object.}
-    \item{\code{getDBName}}{Returns the filename of the database associated with
+    \item{\code{getDBFilename}}{Returns the filename of the database associated with
       the ExpData object.}
     \item{\code{getTablename}}{Returns the tablename of the ExpData object}
     \item{\code{getSchema}}{Returns the schema of the table associated with the

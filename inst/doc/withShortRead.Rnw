@@ -64,7 +64,7 @@ options(width=70)
 \renewcommand{\dblfloatpagefraction}{0.7}       % require fuller float pages
 
 %%%%%%%%%%%%%%%%%%%%%%% options for sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\SweaveOpts{prefix.string=plots/withshortread}
+\SweaveOpts{prefix.string=plots_withshortread,eps=FALSE}
 
 %%%%%%%%%%%%%%%%%%%%%% headers and footers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{fancy} 
@@ -109,7 +109,7 @@ yeastAligned[[1]]
 The first step is to make a database:
 <<eData>>=
 eData <- importFromAlignedReads(yeastAligned, chrMap = levels(chromosome(yeastAligned[[1]])),
-                                filename = "my.db", tablename = "raw", overwrite = TRUE)
+                                dbFilename = "my.db", tablename = "raw", overwrite = TRUE)
 head(eData)
 @ 
 

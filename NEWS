@@ -10,6 +10,10 @@ Version 1.1
 o Added meta.id to summarizeByAnnotation
 o Added to Bioconductor
 o Improved User Guide substantially
+o (Internal) Changed a few tryCatch statements to use the SQL
+  "... IF EXISTS ..." instead.
+o Changed the db and filename to be in sync: there is now only
+  a dbFIlename slot in ExpData and all functions accept dbFilename.
 
 Version 1.0
 

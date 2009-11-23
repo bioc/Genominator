@@ -56,8 +56,8 @@ joinExpData(expDataList, fields = NULL, tablename = "aggtable", overwrite = TRUE
                       location = sample(1:1000, size = N, replace = TRUE),
                       strand = sample(c(1L,-1L), size = N, replace = TRUE))
 
-     eDataRaw1 <- aggregateExpData(importToExpData(df1, filename = "my.db", tablename = "ex_tbl_1", overwrite = TRUE))
-     eDataRaw2 <- aggregateExpData(importToExpData(df1, filename = "my.db", tablename = "ex_tbl_2", overwrite = TRUE))
+     eDataRaw1 <- aggregateExpData(importToExpData(df1, dbFilename = "my.db", tablename = "ex_tbl_1", overwrite = TRUE))
+     eDataRaw2 <- aggregateExpData(importToExpData(df1, dbFilename = "my.db", tablename = "ex_tbl_2", overwrite = TRUE))
      jd <- joinExpData(list(eDataRaw1, eDataRaw2), tablename = "combined", 
                       fields = list("ex_tbl_1" = c("counts" = "e1"), "ex_tbl_2" = c("counts" = "e2")))
      head(jd)    

@@ -61,7 +61,7 @@
 \renewcommand{\dblfloatpagefraction}{0.7}       % require fuller float pages
 
 %%%%%%%%%%%%%%%%%%%%%%% options for sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\SweaveOpts{prefix.string=plots/genominator}
+\SweaveOpts{prefix.string=plots_genominator,eps=FALSE}
 
 %%%%%%%%%%%%%%%%%%%%%% headers and footers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{fancy} 
@@ -249,7 +249,7 @@ df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                  strand = sample(c(1L,-1L), size = N, replace = TRUE))
 
 head(df)
-eDataRaw <- importToExpData(df, filename = "my.db", tablename = "ex_tbl", overwrite = TRUE)
+eDataRaw <- importToExpData(df, dbFilename = "my.db", tablename = "ex_tbl", overwrite = TRUE)
 eDataRaw
 head(eDataRaw)
 @ 
@@ -320,7 +320,7 @@ prevent unwanted modifications to the database, we will instantiate a
 new \Robject{eData} object in 'read' only mode.  
 
 <<readOnly>>= 
-eData <- ExpData("my.db", tablename = "counts_tbl") 
+eData <- ExpData(dbFilename = "my.db", tablename = "counts_tbl") 
 eData 
 head(eData)
 @
@@ -368,12 +368,12 @@ For illustrative purposes, we generate another set of data:
 df2 <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                   location = sample(1:1000, size = N, replace = TRUE),
                   strand = sample(c(1L,-1L), size = N, replace = TRUE))
-eData2 <- aggregateExpData(importToExpData(df2, filename = "my.db", tablename = "ex2", 
+eData2 <- aggregateExpData(importToExpData(df2, dbFilename = "my.db", tablename = "ex2", 
                                            overwrite = TRUE))
 @ 
 as well as re-doing the aggregation performed previously (with a new tablename)
 <<eData1>>=
-eData1 <- aggregateExpData(importToExpData(df, filename = "my.db", tablename = "ex1", 
+eData1 <- aggregateExpData(importToExpData(df, dbFilename = "my.db", tablename = "ex1", 
                                            overwrite = TRUE))
 @ 
 
@@ -410,9 +410,9 @@ database.  In general, that approach is less desirable because 1) it
 is slow(er) and 2) it requires all datasets to be present in memory.
 
 <<joinExample>>=
-## eData1 <- aggregateExpData(importToExpData(df2, filename = "my.db", tablename = "ex1", 
+## eData1 <- aggregateExpData(importToExpData(df2, dbFilename = "my.db", tablename = "ex1", 
 ##                                            overwrite = TRUE))
-## eData2 <- aggregateExpData(importToExpData(df, filename = "my.db", tablename = "ex2", 
+## eData2 <- aggregateExpData(importToExpData(df, dbFilename = "my.db", tablename = "ex2", 
 ##                                            overwrite = TRUE))
 eDataJoin <- joinExpData(list(eData1, eData2), fields = 
                   list(ex1 = c(counts = "counts_1"), ex2 = c(counts = "counts_2")), 

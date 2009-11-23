@@ -2,7 +2,7 @@
     paste(tablename, "IDX", sep = "")
 }
 
-importFromAlignedReads <- function(alignedReads, chrMap, filename, tablename,
+importFromAlignedReads <- function(alignedReads, chrMap, dbFilename, tablename,
                                    overwrite = TRUE, deleteIntermediates = TRUE,
                                    verbose = getOption("verbose"), ...) {
     if (!require(ShortRead))
@@ -19,7 +19,7 @@ importFromAlignedReads <- function(alignedReads, chrMap, filename, tablename,
         loc <- position(aln)
         str <- c(-1,1)[match(strand(aln), c("-", "+"))] 
         chr <- match(chromosome(aln), chrMap)
-        ed <- importToExpData(data.frame(chr = chr, location = loc, strand = str), filename = filename,
+        ed <- importToExpData(data.frame(chr = chr, location = loc, strand = str), dbFilename = dbFilename,
                               tablename = name, overwrite = TRUE, verbose = verbose)
         aggregateExpData(ed, colname = name, verbose = verbose, overwrite = TRUE)
     }, laneNames, alignedReads)
@@ -30,9 +30,9 @@ importFromAlignedReads <- function(alignedReads, chrMap, filename, tablename,
 ##
 ## Imports data from a data.frame.
 ##
-importToExpData <- function(df, filename, tablename, overwrite = FALSE,
+importToExpData <- function(df, dbFilename, tablename, overwrite = FALSE,
                             verbose = getOption("verbose"), columns = NULL) {
-  db <- dbConnect(dbDriver("SQLite"), filename)
+  db <- dbConnect(dbDriver("SQLite"), dbFilename)
   allCols <- colnames(df)
   
   if (missing(columns))
@@ -70,20 +70,18 @@ importToExpData <- function(df, filename, tablename, overwrite = FALSE,
                 txt = "Writing table", print = verbose)
 
   idxName <- .makeIndexName(tablename)
-  q <- paste("CREATE INDEX ",  idxName, " ON ", tablename, "(",
-             paste(COLS, collapse = ", "),");", sep = "")
 
   if (overwrite) {
-      tryCatch(dbGetQuery(db, paste("DROP INDEX", idxName)), error = function(x) {})
+      dbGetQuery(db, paste("DROP INDEX IF EXISTS", idxName))
   }
-
-  .timeAndPrint(tryCatch(x <- dbGetQuery(db, q), error = print, q),
-                txt = "Creating index", print = verbose)
+  q <- sprintf("CREATE INDEX %s ON %s (%s)", idxName, tablename,
+               paste(COLS, collapse = ", "))
+  .timeAndPrint(dbGetQuery(db, q), txt = "Creating index", print = verbose)
   
   ## clean up -- we will reconnect in the line below.
   dbDisconnect(db)
   
-  return(ExpData(filename, tablename, indexColumns = COLS, mode = 'w'))
+  return(ExpData(dbFilename = dbFilename, tablename, indexColumns = COLS, mode = 'w'))
 }
 
 aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename = NULL,
@@ -100,8 +98,7 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
     }
 
     if (overwrite) {
-        tryCatch(dbGetQuery(getDB(expData), paste("DROP table", tablename)),
-                 error = function(x) {})
+        dbGetQuery(getDB(expData), paste("DROP TABLE IF EXISTS", tablename))
     }
 
     cols <- paste(paste(c(by, colname), "INTEGER"), collapse = ",")
@@ -136,7 +133,8 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
                   txt = "creating index", print = verbose)
 
     ## return a new expData.
-    return(ExpData(getDBName(expData), tablename, indexColumns = by, mode = 'w'))
+    return(ExpData(dbFilename = getDBFilename(expData), tablename = tablename,
+                   indexColumns = by, mode = 'w'))
 }
 
 collapseExpData <- function(expData, tablename = NULL, what = getColnames(expData, all = FALSE),
@@ -151,8 +149,7 @@ collapseExpData <- function(expData, tablename = NULL, what = getColnames(expDat
         moveTable <- TRUE
     }
     if (overwrite) {
-        tryCatch(dbGetQuery(getDB(expData), paste("DROP table", tablename)),
-                 error = function(x) {})
+        dbGetQuery(getDB(expData), paste("DROP TABLE IF EXISTS", tablename))
     }
 
     if (length(groups) == 1)
@@ -218,9 +215,9 @@ collapseExpData <- function(expData, tablename = NULL, what = getColnames(expDat
                           tablename, paste(getIndexColumns(expData), collapse = ","))
     .timeAndPrint(dbGetQuery(getDB(expData), statement),
                   txt = "creating index", print = verbose)
-
-    ## return a new expData.
-    return(ExpData(getDBName(expData), tablename, mode = 'w'))
+    
+    ## return a new ExpData
+    return(ExpData(dbFilename = getDBFilename(expData), tablename = tablename, mode = 'w')) 
 }
 
 ##-- Infer the column types. pretty lame.
@@ -258,7 +255,7 @@ joinExpData <- function(expDataList, fields = NULL, tablename = "aggtable",
   ## verbose : timing
   if(class(expDataList) != "list" || length(expDataList) < 2)
     stop("argument 'expDataList' must be a list of at least 2 components")
-  if(!length(unique((sapply(expDataList, getDBName)))))
+  if(!length(unique((sapply(expDataList, getDBFilename)))))
     stop("All expData must point to the same database!")
   if(!is.null(names(fields)) && !(setequal(sapply(expDataList, getTablename), names(fields))))
     stop("fields must be named appropriately: as the tables in expDataList")
@@ -360,6 +357,6 @@ joinExpData <- function(expDataList, fields = NULL, tablename = "aggtable",
   .timeAndPrint(dbGetQuery(db, statement), txt = "Indexing", print = verbose)
 
   ## Return pointer to new expData
-  return(ExpData(db = getDBName(expDataList[[1]]), tablename = tablename, mode = 'w'))
+  return(ExpData(dbFilename = getDBFilename(expDataList[[1]]), tablename = tablename, mode = 'w'))
 }
 
