@@ -18,6 +18,9 @@
   It interfaces well with the GenomeGraphs package.
   
   Read the package vignettes for extensive use cases.
+
+  To cite this package, please see the output of
+  \code{citation("Genominator")}.
 }
 \author{James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
   Hansen \email{khansen@stat.berkeley}}
