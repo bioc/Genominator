@@ -1,0 +1,25 @@
+citHeader("To cite package 'Genominator' in publications use:")
+desc <- packageDescription("Genominator")
+year <- 2009
+vers <- paste("R package version", desc$Version)
+title <- "Evaluation of Statistical Methods for Normalization and Differential Expression in mRNA-Seq Experiments"
+institution <- "UC Berkeley Division of Biostatistics"
+type <- "Working Paper Series"
+number <- 247
+url <- "http://www.bepress.com/ucbbiostat/paper247"
+citEntry(entry="techreport",
+         title = title,
+         author = personList(as.person("James Bullard"),
+         as.person("Elizabeth Purdom"),
+         as.person("Kasper D. Hansen"),
+         as.person("Sandrine Dudoit")),
+         year = year,
+	 institution = institution,
+         type = type,
+         number = number,
+	 url = url,
+         note = vers,
+	 textVersion = 
+           paste("James Bullard, Elizabeth Purdom, Kasper D. Hansen, Sandrine Dudoit",
+                 " (", year, "). ", title, ". ", institution, " ", type, " ", number, ". ", 
+                 url, ". ", vers, ".", sep=""))
