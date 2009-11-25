@@ -8,7 +8,8 @@
   S3 method to plot \code{genominator.coverage} object.  Shows coverage as a function of plotting effort.
 }
 \usage{
-plot.genominator.coverage(x, type = "l", col = NULL, draw.totals = TRUE, draw.legend = TRUE, legend.location = NULL, ...)
+plot.genominator.coverage(x, type = "l", col = NULL,
+  draw.totals = TRUE, draw.legend = TRUE, legend.location = NULL, \dots)
 }
 
 \arguments{
@@ -45,18 +46,23 @@ plot.genominator.coverage(x, type = "l", col = NULL, draw.totals = TRUE, draw.le
   See \code{Genominator} vignette for more information.  See also \code{\link{computeCoverage}}.
 }
 \examples{
-ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
 data("yeastAnno")
-a <- computeCoverage(ed, yeastAnno, effort = 2^(5:18), cutoff = function(x, ...) x > 1)
+a <- computeCoverage(ed, yeastAnno, effort = 2^(5:18),
+                     cutoff = function(x, ...) x > 1)
 plot(a, lwd = 5, col = "grey")
 plot(a, draw.totals = FALSE)
-b <- computeCoverage(ed, yeastAnno, groups = c("mut", "mut", "wt",
-  "wt"), effort = 2^(5:18), cutoff = function(x, ...) x > 1)
+ygroups <- rep(c("mut", "wt"), c(2,2))
+b <- computeCoverage(ed, yeastAnno, grups = ygroups,
+                     effort = 2^(5:18), cutoff = function(x, ...) x > 1)
 plot(b)
-b <- computeCoverage(ed, yeastAnno, groups = c("mut", "mut", "wt",
-  "wt"), effort = 2^(5:18),
-  cutoff = function(x, ...) x > 3, smooth = function(probs) { probs =
-  probs + min(probs[probs!=0]); probs = probs/sum(probs)})
+b <- computeCoverage(ed, yeastAnno, groups = ygroups,
+                     effort = 2^(5:18), cutoff = function(x, ...) x > 3,
+                     smooth = function(probs) {
+                       probs = probs + min(probs[probs!=0])
+                       probs = probs/sum(probs)
+                     })
 plot(b)
 }
 \keyword{hplot}

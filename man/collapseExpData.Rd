@@ -12,10 +12,10 @@
 }
 
 \usage{
-collapseExpData(expData, tablename = NULL, what = getColnames(expData,
-                all = FALSE), groups = "COL", collapse = c("sum", "avg",
-                "weighted.avg"), overwrite = FALSE, deleteOriginal = FALSE,
-                verbose = getOption("verbose"))
+collapseExpData(expData, tablename = NULL,
+  what = getColnames(expData, all = FALSE), groups = "COL",
+  collapse = c("sum", "avg", "weighted.avg"), overwrite = FALSE,
+  deleteOriginal = FALSE, verbose = getOption("verbose"))
 }
 \arguments{
   \item{expData}{
@@ -28,7 +28,8 @@ collapseExpData(expData, tablename = NULL, what = getColnames(expData,
     Data columns to apply \code{collapse} function to.
   }
   \item{groups}{
-    Vector of length \code{what} indicating how columns should be grouped when applying \code{collapse} function.
+    Vector of length \code{what} indicating how columns should be
+    grouped when applying \code{collapse} function. 
   }
   \item{collapse}{
     Function to apply to grouped columns.
@@ -59,9 +60,14 @@ collapseExpData(expData, tablename = NULL, what = getColnames(expData,
 
 \seealso{ See \code{Genominator} vignette for more information.  }
 \examples{
-ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
-nd <- importToExpData(head(ed, -1), dbFilename = tempfile(), tablename = "collapsed")
-cd <- collapseExpData(nd, tablename = "bio", groups = c("mut", "mut", "wt", "wt"), overwrite = TRUE)
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
+nd <- importToExpData(head(ed, -1), dbFilename = tempfile(),
+                      tablename = "collapsed")
+head(nd)
+cd <- collapseExpData(nd, tablename = "bio", overwrite = TRUE,
+                      groups = c("mut", "mut", "wt", "wt"))
+                      
 head(cd)
 }
 \keyword{manip}

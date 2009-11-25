@@ -9,7 +9,8 @@
 }
 
 \usage{
-getRegion(expData, chr, start, end, strand, what = "*", whereClause = "", verbose = getOption("verbose"))
+getRegion(expData, chr, start, end, strand, what = "*",
+  whereClause = "", verbose = getOption("verbose"))
 }
 
 \arguments{
@@ -61,9 +62,10 @@ getRegion(expData, chr, start, end, strand, what = "*", whereClause = "", verbos
   See \code{Genominator} vignette for more information.
 }
 \examples{
-    ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
-    c1 <- getRegion(ed, chr = 1)
-    dim(c1)
-    head(c1)
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
+c1 <- getRegion(ed, chr = 1)
+dim(c1)
+head(c1)
 }
 \keyword{manip}

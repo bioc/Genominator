@@ -2,28 +2,50 @@
     paste(tablename, "IDX", sep = "")
 }
 
-importFromAlignedReads <- function(alignedReads, chrMap, dbFilename, tablename,
+importFromAlignedReads <- function(alignedReads, filenames, chrMap, dbFilename, tablename,
                                    overwrite = TRUE, deleteIntermediates = TRUE,
                                    verbose = getOption("verbose"), ...) {
     if (!require(ShortRead))
         stop("ShortRead package must be installed.")
-    if (!all(sapply(alignedReads, class) == "AlignedRead"))
-        stop("alignedReads must be a list of AlignedRead objects.")
-
-    laneNames <- names(alignedReads)
-    
-    if (is.null(laneNames) || any(laneNames == "") || length(unique(laneNames)) != length(laneNames))
-        stop("alignedReads must be a named list with unique names.")
-
-    expDatas <- mapply(function(name, aln) {
-        loc <- position(aln)
-        str <- c(-1,1)[match(strand(aln), c("-", "+"))] 
+    if(!xor(missing(alignedReads), missing(filenames)))
+        stop("Either provide 'alignedReads' argument or 'filenames' argument, not both or none")
+    if(!missing(alignedReads)) {
+        method <- "alignedReads"
+    } else {
+        method <- "filenames"
+    }
+       
+    importObject <- function(name, aln) {
+        loc <- position(aln) + ifelse(strand(aln) == "-", width(aln) - 1, 0)
+        str <- c(-1L, 0L, 1L)[match(strand(aln), c("-", "*", "+"))] 
         chr <- match(chromosome(aln), chrMap)
         ed <- importToExpData(data.frame(chr = chr, location = loc, strand = str), dbFilename = dbFilename,
                               tablename = name, overwrite = TRUE, verbose = verbose)
         aggregateExpData(ed, colname = name, verbose = verbose, overwrite = TRUE)
-    }, laneNames, alignedReads)
-    joinExpData(expDatas, tablename = tablename, overwrite = overwrite, verbose = verbose,
+    }
+
+    switch(method, alignedReads = {
+        laneNames <- names(alignedReads)
+        if (!all(sapply(alignedReads, class) == "AlignedRead") || 
+            is.null(laneNames) || any(laneNames == "") || anyDuplicated(laneNames))
+            stop("'alignedReads' must be a list of 'AlignedRead' objects with unique names.")
+        expDataList <- mapply(importObject, laneNames, alignedReads)
+        
+    }, filenames = {
+        laneNames <- names(filenames)
+        if (!is.character(filenames) || !all(file.exists(filenames)) ||
+            is.null(laneNames) || any(laneNames == "") || anyDuplicated(laneNames))
+            stop("'filenames' must be a character vector of filenames (of existing files) with unique names.")
+        expDataList <- as.list(filenames)
+        names(expDataList) <- names(filenames)
+        for(name in names(filenames)) {
+            file <- filenames[name]
+            aln <- readAligned(dirPath = file, ...)
+            expDataList[[name]] <- importObject(name = name, aln = aln)
+        }
+    })
+    
+    joinExpData(expDataList, tablename = tablename, overwrite = overwrite, verbose = verbose,
                 deleteOriginals = deleteIntermediates)
 }
 

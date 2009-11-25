@@ -6,7 +6,6 @@
 \alias{$,ExpData-method}
 \alias{head,ExpData-method}
 \alias{initialize,ExpData-method}
-%% \alias{regionGoodnessOfFit,ExpData-method}
 \alias{show,ExpData-method}
 \alias{ExpData}
 \alias{getDB}
@@ -26,23 +25,22 @@ the constructor function \code{ExpData(dbFilename = "filename.db", tablename
 }
 \section{Slots}{
   \describe{
-    \item{\code{dbFilename}:}{Object of class \code{"character"} containing the
+    \item{\code{dbFilename}:}{A \code{"character"} containing the
       filename of the SQLite database.}
-    \item{\code{tablename}:}{Object of class \code{"character"}
+    \item{\code{tablename}:}{A \code{"character"}
       containing the tablename of the relevant SQLite table.}
-    \item{\code{tableSchema}:}{Object of class \code{"character"}.  The
-      schema for the SQLite table.}
-    \item{\code{indexColumns}:}{Object of class
-      \code{"character"}, listing which columns (and in which order) in
-      the table has been indexed.} 
-    \item{\code{mode}:}{Object of class \code{"character"}.  Indicates
+    \item{\code{tableSchema}:}{A (named) \code{"character"} vector,
+      containing the schema for the SQLite table.}
+    \item{\code{indexColumns}:}{A \code{"character"}, listing which
+      columns (and in which order) in the table has been indexed.} 
+    \item{\code{mode}:}{A \code{"character"} indicating
       whether the database is in read or write mode. Write mode implies
       read mode.} 
-    \item{\code{chrMap}:}{Object of class \code{"character"}.  For now,
-      a placeholder.}
-    \item{\code{.tmpFile}:}{Object of class \code{"character"}.  Only
+    \item{\code{chrMap}:}{A \code{"character"} which is a placeholder,
+      for now.}
+    \item{\code{.tmpFile}:}{A \code{"character"}.  Only
       for developers..}
-    \item{\code{.pool}:}{Object of class \code{"environment"}.  Only for
+    \item{\code{.pool}:}{A \code{"environment"}.  Only for
     developers.}
   }
 }
@@ -75,7 +73,6 @@ the constructor function \code{ExpData(dbFilename = "filename.db", tablename
     \item{head}{\code{signature(x = "ExpData")}: prints the first 10 rows of the object.}
     \item{initialize}{\code{signature(.Object = "ExpData")}: The
       initialize method; use the constructor function \code{ExpData} instead.}
-    \item{regionGoodnessOfFit}{\code{signature(obj = "ExpData")}: FIXME }
     \item{show}{\code{signature(object = "ExpData")}: the show method.}
   }
 }

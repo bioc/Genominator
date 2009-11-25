@@ -10,9 +10,8 @@
 }
 \usage{
 plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE,
-                                 sample = FALSE, nsamples = 5000, xlab =
-                                 "theoretical quantiles",
-                                 ylab = "observed quantiles", main = names(x), pch = 16, cex = 0.75, ...)
+  sample = FALSE, nsamples = 5000, xlab = "theoretical quantiles",
+  ylab = "observed quantiles", main = names(x), pch = 16, cex = 0.75, \dots)
 }
 \arguments{
   \item{x}{
@@ -70,8 +69,9 @@ plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE,
   See \code{Genominator} vignette for more information. See also \code{\link{regionGoodnessOfFit}}.
 }
 \examples{
-  ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
-  data("yeastAnno")
-  plot(regionGoodnessOfFit(ed, yeastAnno), chisq = TRUE)
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
+data("yeastAnno")
+plot(regionGoodnessOfFit(ed, yeastAnno), chisq = TRUE)
 }
 \keyword{hplot}

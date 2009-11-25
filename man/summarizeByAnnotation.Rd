@@ -11,7 +11,10 @@
 }
 
 \usage{
-summarizeByAnnotation(expData, annoData, what = getColnames(expData, all = FALSE), fxs = c("TOTAL"), ignoreStrand = FALSE, splitBy = NULL, bindAnno = FALSE, preserveColnames = TRUE, verbose = getOption("verbose"), meta.id = NULL)
+summarizeByAnnotation(expData, annoData,
+  what = getColnames(expData, all = FALSE), fxs = c("TOTAL"),
+  ignoreStrand = FALSE, splitBy = NULL, bindAnno = FALSE,
+  preserveColnames = TRUE, verbose = getOption("verbose"), meta.id = NULL)
 }
 
 \arguments{
@@ -82,8 +85,9 @@ summarizeByAnnotation(expData, annoData, what = getColnames(expData, all = FALSE
   See \code{Genominator} vignette for more information, as well as the \code{\link{ExpData-class}}.
 }
 \examples{
-  ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
-  data("yeastAnno")
-  summarizeByAnnotation(ed, yeastAnno[1:50,])
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
+data("yeastAnno")
+summarizeByAnnotation(ed, yeastAnno[1:50,])
 }
 \keyword{manip}

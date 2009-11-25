@@ -8,8 +8,9 @@
   This function returns a summary of one or more data columns, as indicated by a particular SQLite query function.  
 }
 \usage{
-summarizeExpData(expData, what = getColnames(expData, all = FALSE), fxs = c("TOTAL"),
-                 preserveColnames = TRUE, whereClause = "", verbose = getOption("verbose"))
+summarizeExpData(expData, what = getColnames(expData, all = FALSE),
+  fxs = c("TOTAL"), preserveColnames = TRUE, whereClause = "",
+  verbose = getOption("verbose"))
 }
 \arguments{
   \item{expData}{
@@ -55,8 +56,9 @@ summarizeExpData(expData, what = getColnames(expData, all = FALSE), fxs = c("TOT
 }
 
 \examples{
-  ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
-  summarizeExpData(ed)
-  summarizeExpData(ed, fxs = c("MIN", "MAX", "AVG"))
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
+summarizeExpData(ed)
+summarizeExpData(ed, fxs = c("MIN", "MAX", "AVG"))
 }
 \keyword{manip}

@@ -1,7 +1,7 @@
 Package: Genominator
 Version: 1.1.1
-Title: Analyze genomic data
-Description: Tools for storing, accessing, and visualizing genomic data.
+Title: Analyze, manage and store genomic data
+Description: Tools for storing, accessing, analyzing and visualizing genomic data.
 Author: James Bullard, Kasper Daniel Hansen
 Maintainer: James Bullard <bullard@stat.berkeley.edu>
 Depends: methods, RSQLite

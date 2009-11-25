@@ -9,11 +9,14 @@
   Compute fraction coverage obtained for a certain degree of sequencing effort.
 }
 \usage{
-  computeCoverage(expData, annoData, cutoff = function(x, anno, group) { x > 10 },
-      effort = seq(1e+05, 5e+07, length = 20), smooth = function(probs) { probs},
-      groups = rep("ALL", length(what)), what = getColnames(expData, all = FALSE),
-      totals = summarizeExpData(expData, what = what, verbose = verbose),
-      ignoreStrand = FALSE, verbose = getOption("verbose"), ...)
+computeCoverage(expData, annoData,
+  cutoff = function(x, anno, group) { x > 10 },
+  effort = seq(1e+05, 5e+07, length = 20),
+  smooth = function(probs) { probs },
+  groups = rep("ALL", length(what)),
+  what = getColnames(expData, all = FALSE),
+  totals = summarizeExpData(expData, what = what, verbose = verbose),
+  ignoreStrand = FALSE, verbose = getOption("verbose"), \dots)
 }
 
 \arguments{
@@ -77,9 +80,11 @@
   method and the \code{Genominator} vignette for details.
 }
 \examples{
-ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
 data("yeastAnno")
-a <- computeCoverage(ed, yeastAnno, effort = 2^(5:18), cutoff = function(x, ...) x > 1, smooth = FALSE)
+a <- computeCoverage(ed, yeastAnno, effort = 2^(5:18),
+                     cutoff = function(x, ...) x > 1, smooth = FALSE)
 names(a)
 }
 \keyword{misc}

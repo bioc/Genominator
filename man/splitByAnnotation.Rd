@@ -8,8 +8,9 @@
   This function splits the data into a list of matrices, by annotation element.
 }
 \usage{
-splitByAnnotation(expData, annoData, what = "*", ignoreStrand = FALSE, expand = FALSE, 
-                  addOverStrands = FALSE, verbose = getOption("verbose"))
+splitByAnnotation(expData, annoData, what = "*",
+  ignoreStrand = FALSE, expand = FALSE, 
+  addOverStrands = FALSE, verbose = getOption("verbose"))
 }
 \arguments{
   \item{expData}{
@@ -58,8 +59,9 @@ splitByAnnotation(expData, annoData, what = "*", ignoreStrand = FALSE, expand = 
   See \code{Genominator} vignette for more information.
 }
 \examples{
-  ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
-  data("yeastAnno")
-  splitByAnnotation(ed, yeastAnno[1:30,])
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
+data("yeastAnno")
+splitByAnnotation(ed, yeastAnno[1:30,])
 }
 \keyword{manip}

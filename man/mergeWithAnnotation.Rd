@@ -10,7 +10,8 @@
 }
 
 \usage{
-mergeWithAnnotation(expData, annoData, what = "*", ignoreStrand = FALSE, splitBy = NULL, verbose = getOption("verbose"))
+mergeWithAnnotation(expData, annoData, what = "*",
+  ignoreStrand = FALSE, splitBy = NULL, verbose = getOption("verbose"))
 }
 
 \arguments{
@@ -57,8 +58,9 @@ mergeWithAnnotation(expData, annoData, what = "*", ignoreStrand = FALSE, splitBy
   See \code{Genominator} vignette for more information.
 }
 \examples{
-  ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
-  data("yeastAnno")
-  mergeWithAnnotation(ed, yeastAnno[1:5,])
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
+data("yeastAnno")
+mergeWithAnnotation(ed, yeastAnno[1:5,])
 }
 \keyword{manip}

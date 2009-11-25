@@ -12,12 +12,15 @@
   or and \code{ExpData} object.
 }
 \usage{
-\S4method{regionGoodnessOfFit}{data.frame}(obj, denominator =
-colSums(obj), groups = rep("A", ncol(obj)))
+\S4method{regionGoodnessOfFit}{data.frame}(obj,
+  denominator = colSums(obj),
+  groups = rep("A", ncol(obj)))
 
-\S4method{regionGoodnessOfFit}{ExpData}(obj, annoData, groups = rep("A",
-length(what)), what = getColnames(obj, all = FALSE), denominator =
-c("regions", "lanes"), verbose = getOption("verbose"))
+\S4method{regionGoodnessOfFit}{ExpData}(obj, annoData,
+  groups = rep("A", length(what)),
+  what = getColnames(obj, all = FALSE),
+  denominator = c("regions", "lanes"), 
+  verbose = getOption("verbose"))
 }
 \arguments{
   \item{obj}{
@@ -72,16 +75,19 @@ c("regions", "lanes"), verbose = getOption("verbose"))
   offset. Goodness of fit to this model across replicates is a good
   indication of Poisson variation across lanes. Deviation from this is
   an indication of overdispersion between replicate lanes.
+}
 
-  \cite{James H. Bullard, Elizabeth A. Purdom, Kasper D. Hansen, Steffen
-    Durinck, and Sandrine Dudoit, "Statistical Inference in mRNA-Seq:
-    Exploratory Data Analysis and Differential Expression" (April
-    2009). U.C. Berkeley Division of Biostatistics Working Paper
-    Series.Working Paper 247.}
+\references{James H. Bullard, Elizabeth A. Purdom, Kasper D. Hansen, Steffen
+  Durinck, and Sandrine Dudoit, "Statistical Inference in mRNA-Seq:
+  Exploratory Data Analysis and Differential Expression" (April
+  2009). U.C. Berkeley Division of Biostatistics Working Paper
+  Series. Working Paper
+  247. \url{http://www.bepress.com/ucbbiostat/paper247}
 }
 \examples{
-  ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
-  data("yeastAnno")
-  names(regionGoodnessOfFit(ed, yeastAnno))
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
+data("yeastAnno")
+names(regionGoodnessOfFit(ed, yeastAnno))
 }
 \keyword{methods}

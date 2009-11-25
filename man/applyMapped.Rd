@@ -43,14 +43,16 @@ applyMapped(mapped, annoData, FUN, bindAnno = FALSE)
 
 \seealso{ See \code{Genominator} vignette for more information.  }
 \examples{
-  ed <- ExpData(system.file(package = "Genominator", "sample.db"), tablename = "raw")
-  data("yeastAnno")
-  s <- splitByAnnotation(ed, yeastAnno[1:100,], what = getColnames(ed,
-                         all = FALSE), ignoreStrand = TRUE, addOverStrand = TRUE)
+ed <- ExpData(system.file(package = "Genominator", "sample.db"),
+              tablename = "raw")
+data("yeastAnno")
+s <- splitByAnnotation(ed, yeastAnno[1:100,],
+                       what = getColnames(ed, all = FALSE),
+                       ignoreStrand = TRUE, addOverStrand = TRUE)
 
-  ## compute the per-base rate for this dataset.
-  applyMapped(s, yeastAnno, function(dta, anno) {
-     colSums(dta, na.rm = TRUE)/(anno$end - anno$start + 1)
-  }, bindAnno = TRUE)[1:4,]
+## compute the per-base rate for this dataset.
+applyMapped(s, yeastAnno, function(dta, anno) {
+   colSums(dta, na.rm = TRUE)/(anno$end - anno$start + 1)
+}, bindAnno = TRUE)[1:4,]
 }
 \keyword{iteration}

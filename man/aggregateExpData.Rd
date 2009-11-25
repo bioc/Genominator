@@ -11,7 +11,10 @@
 }
 
 \usage{
-aggregateExpData(expData, by = getIndexColumns(expData), tablename = NULL, deleteOriginal = FALSE, overwrite = FALSE, verbose = getOption("verbose"), colname = "counts", aggregator = paste("count(", by[1], ")", sep = ""))
+aggregateExpData(expData, by = getIndexColumns(expData),
+  tablename = NULL, deleteOriginal = FALSE, overwrite = FALSE,
+  verbose = getOption("verbose"), colname = "counts",
+  aggregator = paste("count(", by[1], ")", sep = ""))
 }
 
 \arguments{
@@ -25,19 +28,23 @@ aggregateExpData(expData, by = getIndexColumns(expData), tablename = NULL, delet
     Name of database table to write output data to.
   }
   \item{deleteOriginal}{
-    Logical indicating whether original database table in \code{ExpData} object should be deleted.
+    Logical indicating whether original database table in \code{ExpData}
+  object should be deleted. 
   }
   \item{overwrite}{
-    Logical indicating whether database table referred to in \code{tablename} argument should be overwritten.
+    Logical indicating whether database table referred to in
+  \code{tablename} argument should be overwritten. 
   }
   \item{verbose}{
     Logical indicating whether details should be printed.
   }
   \item{colname}{
-    Name of column for recording aggregation output (by default, \code{counts}).
+    Name of column for recording aggregation output (by default,
+  \code{counts}). 
   }
   \item{aggregator}{
-    SQLite code used for aggregating.  See \code{Details} for more information.
+    SQLite code used for aggregating.  See \code{Details} for more
+  information. 
   }
 }
 
@@ -64,7 +71,8 @@ N  <- 10000 # the number of observations.
 df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                  location = sample(1:1000, size = N, replace = TRUE),
                  strand = sample(c(1L,-1L), size = N, replace = TRUE))
-eDataRaw <- aggregateExpData(importToExpData(df, dbFilename = tempfile(), tablename = "ex_tbl", overwrite = TRUE))
+eDataRaw <- aggregateExpData(importToExpData(df, dbFilename = tempfile(), 
+                             tablename = "ex_tbl", overwrite = TRUE))
 }
 
 \keyword{manip}
