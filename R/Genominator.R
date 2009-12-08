@@ -388,9 +388,9 @@ summarizeExpData <- function(expData, what = getColnames(expData, all = FALSE), 
 }
 
 summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData, all = FALSE),
-                                  fxs = c("TOTAL"), ignoreStrand = FALSE, splitBy = NULL,
-                                  bindAnno = FALSE, preserveColnames = TRUE,
-                                  verbose = getOption("verbose"), meta.id = NULL)
+                                  fxs = c("TOTAL"), groupBy = NULL, splitBy = NULL,
+                                  ignoreStrand = FALSE, bindAnno = FALSE, preserveColnames = TRUE,
+                                  verbose = getOption("verbose"))
 {
     ## bindAnno = TRUE and meta.id != NULL is not compatible
     .timeAndPrint(.writeRegionsTable(expData, annoData, id = meta.id),
