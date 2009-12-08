@@ -392,8 +392,8 @@ summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData,
                                   ignoreStrand = FALSE, bindAnno = FALSE, preserveColnames = TRUE,
                                   verbose = getOption("verbose"))
 {
-    ## bindAnno = TRUE and meta.id != NULL is not compatible
-    .timeAndPrint(.writeRegionsTable(expData, annoData, id = meta.id),
+    ## bindAnno = TRUE and groupBy != NULL is not compatible
+    .timeAndPrint(.writeRegionsTable(expData, annoData, id = groupBy),
                   txt = "writing regions table", print = verbose)
 
     if (length(fxs) > 1 & preserveColnames) {
@@ -402,14 +402,14 @@ summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData,
         preserveColnames <- FALSE
     }
 
-    if(bindAnno && !is.null(meta.id)) {
-        warning("Cannot bind annotation when meta.id is set, ignoring bindAnno = TRUE")
+    if(bindAnno && !is.null(groupBy)) {
+        warning("Cannot bind annotation when groupBy is set, ignoring bindAnno = TRUE")
         bindAnno <- FALSE
     }
 
-    if(!is.null(splitBy) && !is.null(meta.id) && splitBy != meta.id){
-        warning("setting argument meta.id overrides argument splitBy; splitting meta.id")
-        splitBy <- meta.id
+    if(!is.null(splitBy) && !is.null(groupBy) && splitBy != groupBy){
+        warning("setting argument groupBy overrides argument splitBy; splitting groupBy")
+        splitBy <- groupBy
     }
     
     originalWhat <- what
@@ -430,7 +430,7 @@ summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData,
     
     .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q),
                   txt = "fetching summary table", print = verbose, query = q)
-    if(is.null(meta.id)) {
+    if(is.null(groupBy)) {
         rownames(tbl) <- rownames(annoData)[tbl[,1]]
     } else {
         rownames(tbl) <- tbl[,1]

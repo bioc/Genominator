@@ -125,7 +125,7 @@ the list.
 
 <<fig=TRUE>>=
 rp <- Genominator:::makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
-                             dp = DisplayPars(lwd = .45, color = "grey"))))
+                                             dp = DisplayPars(lwd = .45, color = "grey"))))
 rp(1, 400, 500)
 @ 
 

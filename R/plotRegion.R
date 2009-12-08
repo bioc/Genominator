@@ -51,7 +51,8 @@ makeAnnoFactory.AnnoData <- function(annoData,
         regions <- data.frame(start = mat[,"start"], end = mat[, "end"],
                               feature = mat[, featureColumnName], group = groups, ID = IDs)
 
-        new("AnnotationTrack", chr = chr, strand = strand, regions = regions, dp = dp)
+        makeAnnotationTrack(chr = chr, strand = strand, regions =
+                            regions, dp = dp)
     }
 }
 
@@ -100,7 +101,7 @@ makeRegionPlotter <- function(expDataLists, annoFactory = NULL) {
                 yy <- numeric(1)
                 xx[1] <- 1
                 yy[1] <- NA
-                return(new("BaseTrack", base = xx, value = yy, dp = dp, segmentation = segmentation))
+                return(makeBaseTrack(base = xx, value = yy, dp = dp, trackOverlay = segmentation))
             }
 
             if (is.null(lst$class)) {
@@ -108,17 +109,17 @@ makeRegionPlotter <- function(expDataLists, annoFactory = NULL) {
             } else {
                 klass <- lst$class
             }
-
+            
             
             switch (klass,
                     BaseTrack = {
-                        new("BaseTrack", base = res[, "location"], value = fx(res[, lst$what]), dp = dp,
-                            segmentation = segmentation)
+                        makeBaseTrack(base = res[, "location"], value = fx(res[, lst$what]), dp = dp,
+                                      trackOverlay = segmentation)
                     },
                     GenericArray = {
-                        new("GenericArray", probeStart = res[, "location"],
-                            intensity = fx(as.matrix(res[, lst$what, drop = FALSE])),
-                            dp = dp, segmentation = segmentation)
+                        makeGenericArray(probeStart = res[, "location"],
+                                         intensity = fx(as.matrix(res[, lst$what, drop = FALSE])),
+                                         dp = dp, trackOverlay = segmentation)
                     },
                 {
                     stop("Unknown class specified.")
@@ -141,9 +142,9 @@ makeRegionPlotter <- function(expDataLists, annoFactory = NULL) {
         unstranded <- if(is.null(gr[["0"]])) {
             NULL
         } else {
-            list(" " = gr[["0"]], new("GenomeAxis"))
+            list(" " = gr[["0"]], makeGenomeAxis())
         }
-        ann <- c("+" = gr[["+"]], new("GenomeAxis"), " " = unstranded, "-" = gr[["-"]])
+        ann <- c("+" = gr[["+"]], makeGenomeAxis(), " " = unstranded, "-" = gr[["-"]])
         lst <- Filter(function(x) !is.null(x), c(ann, lst))
 
         gdPlot(c(lst, title), minBase = start, maxBase = end, overlays = overlays, ...)
