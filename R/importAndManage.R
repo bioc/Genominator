@@ -15,13 +15,13 @@ importFromAlignedReads <- function(alignedReads, filenames, chrMap, dbFilename, 
         method <- "filenames"
     }
        
-    importObject <- function(name, aln) {
+    importObject <- function(name, aln, verbose) {
         loc <- position(aln) + ifelse(strand(aln) == "-", width(aln) - 1, 0)
         str <- c(-1L, 0L, 1L)[match(strand(aln), c("-", "*", "+"))] 
         chr <- match(chromosome(aln), chrMap)
         ed <- importToExpData(data.frame(chr = chr, location = loc, strand = str), dbFilename = dbFilename,
                               tablename = name, overwrite = TRUE, verbose = verbose)
-        aggregateExpData(ed, colname = name, verbose = verbose, overwrite = TRUE)
+        aggregateExpData(ed, colname = name, overwrite = TRUE, verbose = verbose)
     }
 
     switch(method, alignedReads = {
@@ -29,26 +29,34 @@ importFromAlignedReads <- function(alignedReads, filenames, chrMap, dbFilename, 
         if (!all(sapply(alignedReads, class) == "AlignedRead") || 
             is.null(laneNames) || any(laneNames == "") || anyDuplicated(laneNames))
             stop("'alignedReads' must be a list of 'AlignedRead' objects with unique names.")
-        expDataList <- mapply(importObject, laneNames, alignedReads)
-        
+        expDataList <- mapply(importObject, laneNames, alignedReads, moreArgs = list(verbose = TRUE))
     }, filenames = {
-        columnsList <- split(filenames, names(filenames))
-        columnNames <- names(columnsList)
+        columnList <- split(filenames, names(filenames))
+        columnNames <- names(columnList)
         if (!is.character(filenames) || !all(file.exists(filenames)) ||
             is.null(columnNames) || any(columnNames == ""))
             stop("'filenames' must be a named character vector of filenames (of existing files).")
         if(verbose)
             cat("filename : column",
-                paste(sapply(names(columnsList), function(x) {
-                    paste(paste(columnsList[[x]], ":", x), collapse = "\n")
-                }), collapse = "\n"),
-                "\n", fill = TRUE)
+                paste(sapply(names(columnList), function(x) {
+                    paste(paste(columnList[[x]], ":", x), collapse = "\n")
+                }), collapse = "\n"), fill = TRUE)
         expDataList <- as.list(columnNames)
         names(expDataList) <- columnNames
-        for(name in names(filenames)) {
+        for(name in columnNames) {
+            if(verbose)
+                cat("process column", name, "in ...", fill = TRUE)
             files <- columnList[[name]]
-            aln <- readAligned(dirPath = files, ...)
-            expDataList[[name]] <- importObject(name = name, aln = aln)
+            etime <- round(system.time({
+                aln <- readAligned(dirPath = files, ...)
+            })[3], 4)
+            if(verbose)
+                cat("  parsing using ShortRead in", etime, "secs", fill = TRUE)
+            etime <- round(system.time({
+                expDataList[[name]] <- importObject(name = name, aln = aln, verbose = FALSE)
+            })[3], 4)
+            if(verbose)
+                cat("  importing in", etime, "secs", fill = TRUE)
         }
     })
     
@@ -92,6 +100,9 @@ importToExpData <- function(df, dbFilename, tablename, overwrite = FALSE,
 
   ## now order them while you have the table in memory because
   ## constructing the index is infinitely faster this way.
+  df <- df[ stats::complete.cases(df[, COLS]), ]
+  if(nrow(df) == 0)
+      stop("After removing missing locations, df has no rows.")
   df <- df[order(df[,COLS[1]], df[,COLS[2]], df[,COLS[3]]), ]
   
   .timeAndPrint( { if (!dbWriteTable(db, tablename, df, row.names = FALSE, overwrite = overwrite))
