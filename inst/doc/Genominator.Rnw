@@ -87,6 +87,7 @@ options(width = 70)
 ## source("../../R/importAndManage.R")
 ## source("../../R/plotRegion.R")
 ## source("../../R/coverage.R")
+## source("../../R/goodnessOfFit.R")
 @ 
 
 \section{Introduction}
@@ -249,7 +250,7 @@ df <- data.frame(chr = sample(1:16, size = N, replace = TRUE),
                  strand = sample(c(1L,-1L), size = N, replace = TRUE))
 
 head(df)
-eDataRaw <- importToExpData(df, dbFilename = "my.db", tablename = "ex_tbl", overwrite = TRUE)
+eDataRaw <- importToExpData(df, "my.db", tablename = "ex_tbl", overwrite = TRUE)
 eDataRaw
 head(eDataRaw)
 @ 

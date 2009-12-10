@@ -6,8 +6,10 @@
         **************************************************
 
 Version 1.1
-
-o Added meta.id to summarizeByAnnotation
+o Fixed the connection pool to be outside of individual ExpData
+  objects. This elucidated a hitherto unknown bug where a user could
+  inadvertently write to a read-only database. 
+o Added groupBy to summarizeByAnnotation
 o Added to Bioconductor
 o Improved User Guide substantially
 o (Internal) Changed a few tryCatch statements to use the SQL

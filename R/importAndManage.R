@@ -111,6 +111,8 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
                              verbose = getOption("verbose"), colname = "counts",
                              aggregator = paste("count(", by[1], ")", sep = ""))
 {
+    .checkWrite(expData)
+
     moveTable <- FALSE
 
     if (is.null(tablename)) {
@@ -120,11 +122,11 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
     }
 
     if (overwrite) {
-        dbGetQuery(getDB(expData), paste("DROP TABLE IF EXISTS", tablename))
+        dbGetQuery(getDBConnection(expData), paste("DROP TABLE IF EXISTS", tablename))
     }
 
     cols <- paste(paste(c(by, colname), "INTEGER"), collapse = ",")
-    .timeAndPrint(dbGetQuery(getDB(expData), sprintf("CREATE TABLE %s (%s)", tablename, cols)),
+    .timeAndPrint(dbGetQuery(getDBConnection(expData), sprintf("CREATE TABLE %s (%s)", tablename, cols)),
                   txt = paste("Creating table:", tablename), print = verbose)
 
     statement <- sprintf("INSERT INTO %s SELECT %s FROM %s GROUP BY %s",
@@ -132,16 +134,16 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
                          paste(c(by, aggregator), collapse = ","),
                          getTablename(expData),
                          paste(by, collapse = ","))
-    .timeAndPrint(dbGetQuery(getDB(expData), statement),
+    .timeAndPrint(dbGetQuery(getDBConnection(expData), statement),
                   txt = "inserting", print = verbose)
 
     if (deleteOriginal) {
-        .timeAndPrint(dbGetQuery(getDB(expData), paste("DROP TABLE", getTablename(expData))),
+        .timeAndPrint(dbGetQuery(getDBConnection(expData), paste("DROP TABLE", getTablename(expData))),
                       txt = "droping original table", print = verbose)
     }
 
     if (moveTable) {
-        .timeAndPrint(dbGetQuery(getDB(expData), sprintf("ALTER TABLE %s RENAME TO %s",
+        .timeAndPrint(dbGetQuery(getDBConnection(expData), sprintf("ALTER TABLE %s RENAME TO %s",
                                                          tablename, getTablename(expData))),
                       txt = "renaming table", print = verbose)
 
@@ -151,7 +153,7 @@ aggregateExpData <- function(expData, by = getIndexColumns(expData), tablename =
     ## now create the index on the correct tablename.
     statement <-  sprintf("CREATE INDEX %s ON %s (%s);", .makeIndexName(tablename),
                           tablename, paste(by, collapse = ","))
-    .timeAndPrint(dbGetQuery(getDB(expData), statement),
+    .timeAndPrint(dbGetQuery(getDBConnection(expData), statement),
                   txt = "creating index", print = verbose)
 
     ## return a new expData.
@@ -163,6 +165,8 @@ collapseExpData <- function(expData, tablename = NULL, what = getColnames(expDat
                             groups = "COL", collapse = c("sum", "avg", "weighted.avg"),
                             overwrite = FALSE, deleteOriginal = FALSE,
                             verbose = getOption("verbose")) {
+    .checkWrite(expData)
+
     ## XXX: Code Duplication!
     moveTable <- FALSE
     if (is.null(tablename)) {
@@ -171,7 +175,7 @@ collapseExpData <- function(expData, tablename = NULL, what = getColnames(expDat
         moveTable <- TRUE
     }
     if (overwrite) {
-        dbGetQuery(getDB(expData), paste("DROP TABLE IF EXISTS", tablename))
+        dbGetQuery(getDBConnection(expData), paste("DROP TABLE IF EXISTS", tablename))
     }
 
     if (length(groups) == 1)
@@ -210,23 +214,23 @@ collapseExpData <- function(expData, tablename = NULL, what = getColnames(expDat
     ##       to enforce, INTEGERness
     statement <- sprintf("CREATE TABLE %s (%s)", tablename, paste(c(paste(getIndexColumns(expData), "INTEGER"), newCols),
                                                                   collapse = ", "))
-    .timeAndPrint(dbGetQuery(getDB(expData), statement),
+    .timeAndPrint(dbGetQuery(getDBConnection(expData), statement),
                   txt = "creating table", print = verbose, query = statement)
 
     statement <- sprintf("INSERT INTO %s SELECT %s FROM %s GROUP BY %s",
                          tablename,
                          paste(c(getIndexColumns(expData), sel), collapse = ", "), getTablename(expData),
                          paste(getIndexColumns(expData), collapse = ","), paste(getIndexColumns(expData), collapse = ","))
-    .timeAndPrint(dbGetQuery(getDB(expData), statement),
+    .timeAndPrint(dbGetQuery(getDBConnection(expData), statement),
                   txt = "inserting data", print = verbose, query = statement)
 
     ## XXX: Code duplication
     if (deleteOriginal) {
-        .timeAndPrint(dbGetQuery(getDB(expData), paste("DROP TABLE", getTablename(expData))),
+        .timeAndPrint(dbGetQuery(getDBConnection(expData), paste("DROP TABLE", getTablename(expData))),
                       txt = "droping original table", print = verbose)
     }
     if (moveTable) {
-        .timeAndPrint(dbGetQuery(getDB(expData), sprintf("ALTER TABLE %s RENAME TO %s",
+        .timeAndPrint(dbGetQuery(getDBConnection(expData), sprintf("ALTER TABLE %s RENAME TO %s",
                                                          tablename, getTablename(expData))),
                       txt = "renaming table", print = verbose)
         tablename <- getTablename(expData)
@@ -235,14 +239,14 @@ collapseExpData <- function(expData, tablename = NULL, what = getColnames(expDat
     ## now create the index on the correct tablename.
     statement <-  sprintf("CREATE INDEX %s ON %s (%s);", .makeIndexName(tablename),
                           tablename, paste(getIndexColumns(expData), collapse = ","))
-    .timeAndPrint(dbGetQuery(getDB(expData), statement),
+    .timeAndPrint(dbGetQuery(getDBConnection(expData), statement),
                   txt = "creating index", print = verbose)
     
     ## return a new ExpData
     return(ExpData(dbFilename = getDBFilename(expData), tablename = tablename, mode = 'w')) 
 }
 
-##-- Infer the column types. pretty lame.
+## Infer the column types. pretty lame.
 dbListFieldsAndTypes <- function(con, tablename) {
   TYPE.MAP <- c("INTEGER", "REAL", "VARCHAR")
   names(TYPE.MAP) <- c("integer", "numeric", "character")
@@ -262,19 +266,8 @@ dbListFieldsAndTypes <- function(con, tablename) {
 joinExpData <- function(expDataList, fields = NULL, tablename = "aggtable",
                         overwrite = TRUE, deleteOriginals = FALSE,
                         verbose = getOption("verbose")){
-
-  ## Does this work if fields is empty?
-  ## Arguments:
-  ## expDataList : list of expData objects
-  ## fields : a list, preferably named as the tables in the expDataList,
-  ##  each component is a named vector where the names of the vector are
-  ##  the original column names of the table and the values of the vector
-  ##  are the new columns names.
-  ##  Example fields = list(c("a" = "b"), c("a" = "c"))
-  ## tablename : the new tablename
-  ## overwrite : overwrite the new table?
-  ## deleteOriginals : delete all tables in the expDataList
-  ## verbose : timing
+    .checkWrite(expDataList)
+    
   if(class(expDataList) != "list" || length(expDataList) < 2)
     stop("argument 'expDataList' must be a list of at least 2 components")
   if(!length(unique((sapply(expDataList, getDBFilename)))))
@@ -317,7 +310,7 @@ joinExpData <- function(expDataList, fields = NULL, tablename = "aggtable",
 
   nExpData <- length(expDataList)
   expdatatables <- sapply(expDataList, getTablename)
-  db <- getDB(expDataList[[1]])
+  db <- getDBConnection(expDataList[[1]])
 
   if(overwrite) {
     dbGetQuery(db, paste("DROP TABLE IF EXISTS", tablename, ";"))

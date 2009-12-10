@@ -7,8 +7,6 @@
 
 * Faster version of makeUIgene.
 
-* Think about meta.id terminology.
-
 * Add in functionality for ROC like curves like the PLoS paper.
 
 * Make the interface to GenomeGraphs public.

@@ -1,20 +1,57 @@
-##-- These are package constants.
+## Package constants
 .ANNO.COLS <- c("chr", "start", "end", "strand")
 .REGION.TABLE.NAME <- '__regions__'
 .REGION.TABLE.TMP.NAME <- "__tmp_regions__"
 
+## Connection pool
+##
+## XXX :
+## 1. garbage collection
+##
+.pool <- new.env(hash=TRUE, parent = emptyenv())
+.makeDBConnectionName <- function(.Object) paste(.Object@dbFilename, .Object@mode, sep = "___")
+.getConnection <- function(.Object) {
+  get(.makeDBConnectionName(.Object), .pool)
+}
+.setConnection <- function(.Object, connection) {
+  assign(.makeDBConnectionName(.Object), connection, .pool)
+}
+.refreshConnection <- function(.Object) {
+  if (length(.Object@dbFilename) != 0 && .Object@dbFilename != "") {
+    if (exists(.makeDBConnectionName(.Object), envir = .pool)) {
+      dbDisconnect(.getConnection(.Object))
+    }
+  }
+  if (.Object@mode == 'r') 
+    v <- .Object@.tmpFile
+  else
+    v <- .Object@dbFilename
+  .setConnection(.Object, dbConnect(dbDriver("SQLite"), v))
+}
+
+getDBConnection <- function(expData) {
+  .getConnection(expData)
+}
+
+.checkWrite <- function(expData) {
+  if (class(expData) == "list")
+    b <- all('w' == sapply(expData, getMode))
+  else
+    b <- 'w' == getMode(expData)
+
+  if (!b)
+    stop("Error, cannot write to a database in read mode.")
+}
+
 setClass("ExpData",
          representation(dbFilename   = "character",
                         tablename    = "character",
-                        tableSchema  = "character",
                         indexColumns = "character",
                         mode         = "character",
                         chrMap       = "character",
-                        .tmpFile     = "character",
-                        .pool        = "environment"
+                        .tmpFile     = "character"
                         ),
-         prototype(indexColumns = c("chr", "location", "strand"),
-                   .pool = new.env(hash=TRUE, parent = emptyenv())))
+         prototype(indexColumns = c("chr", "location", "strand")))
 
 setMethod("show", "ExpData", function(object) {
     cat("table:", getTablename(object), "\n")
@@ -31,7 +68,7 @@ setMethod("head", "ExpData", function(x, ...) {
         n <- args[[1]]
     else
         n <- 6
-    dbGetQuery(getDB(x), sprintf("SELECT * FROM %s LIMIT %s;", getTablename(x), n))
+    dbGetQuery(getDBConnection(x), sprintf("SELECT * FROM %s LIMIT %s;", getTablename(x), n))
 })
 
 setMethod("initialize", signature(.Object = "ExpData"),
@@ -54,49 +91,18 @@ setMethod("initialize", signature(.Object = "ExpData"),
             if (!is.null(indexColumns))
               .Object@indexColumns <- indexColumns
 
-            ##
-            ## this is a simple sharing mechanism so that we don't have to think about
-            ## instanteating expData objects and overloading the number of connections
-            ## a database can have.
-
-            ## XXX : think about the fact that you can't see the schema
-            ##       and the fact that something you do might make the db unsafe w/multiple
-            ##       threads accessing it. 
-            ##
-            if (length(.Object@dbFilename) != 0 && .Object@dbFilename != "") {
-              if (exists(.Object@dbFilename, envir = .Object@.pool)) {
-                ## refresh each time we call this function, could have stale
-                ## handles if you are borrowing the connection from an object. 
-                dbDisconnect(getDB(.Object))
-              }
-            }
-            
-            if (.Object@mode == 'r') 
-              v <- .Object@.tmpFile
-            else
-              v <- .Object@dbFilename
-
-            ## connect.
-            assign(.Object@dbFilename, dbConnect(dbDriver("SQLite"), v), .Object@.pool)
+            ## refresh connection
+            .refreshConnection(.Object)
 
             ## now set the pragmas
             if (!is.null(pragmas)) {
-              dbGetQuery(getDB(.Object), pragmas)
+              dbGetQuery(getDBConnection(.Object), pragmas)
             }
-
-            ## now attach the data if we are in read mode. I'll also
-            ## want to register a finalizer somehow.
+            
+            ## now attach the main database if we are in read mode. 
             if (.Object@mode == 'r') {
-              dbGetQuery(getDB(.Object), sprintf("attach \"%s\" as \"\";", .Object@dbFilename))
+              dbGetQuery(getDBConnection(.Object), sprintf("attach \"%s\" as \"\";", .Object@dbFilename))
             }
-            
-            reg.finalizer(.Object@.pool, function(o) {
-              dbDisconnect(getDB(.Object))
-              if (.Object@mode == 'r') unlink(.Object@.tmpFile)
-            })
-            
-              
-            .Object@tableSchema <- dbListFieldsAndTypes(getDB(.Object), .Object@tablename)
             return(.Object)
           })
 
@@ -118,10 +124,6 @@ getMode <- function(expData) {
   return(expData@mode)
 }
 
-getDB <- function(expData) {
-  get(expData@dbFilename, expData@.pool)
-}
-
 getDBFilename <- function(expData) {
     expData@dbFilename
 }
@@ -131,7 +133,7 @@ getTablename <- function(expData) {
 }
 
 getSchema <- function(expData) {
-  expData@tableSchema
+  dbListFieldsAndTypes(getDBConnection(expData), expData@tablename) 
 }
 
 getColnames <- function(expData, all = TRUE) {
@@ -147,7 +149,7 @@ listTables <- function(db) {
 }
 
 setMethod("$", signature = "ExpData", definition = function(x, name) {
-    dbGetQuery(getDB(x), sprintf("SElECT %s from %s", name, getTablename(x)))
+    dbGetQuery(getDBConnection(x), sprintf("SElECT %s from %s", name, getTablename(x)))
 })
 
 ##
@@ -181,7 +183,7 @@ setMethod("[", signature = "ExpData", definition = function (x, i, j, ..., drop 
   q <- sprintf("SELECT %s FROM %s %s", whichClause, getTablename(x), whereClause)
   if ("verbose" %in% names(list(...)))
       print(q)
-  dbGetQuery(getDB(x), q)
+  dbGetQuery(getDBConnection(x), q)
 })
 
 getRegion <- function(expData, chr, start, end, strand, what = "*",
@@ -206,7 +208,7 @@ getRegion <- function(expData, chr, start, end, strand, what = "*",
                  what, getTablename(expData), chr, paste(strand, collapse = ","),
                  start, end, whereClause, paste(getIndexColumns(expData), collapse = ","))
     
-    .timeAndPrint(res <- dbGetQuery(getDB(expData), q),
+    .timeAndPrint(res <- dbGetQuery(getDBConnection(expData), q),
                   txt = "fetching region query", print = verbose, query = q)
     return(res)
 }
@@ -249,7 +251,7 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
   q <- .formRegionsSQL(what = paste(what, ",", regionID),
                        tablename = getTablename(expData),
                        ignoreStrand = ignoreStrand, orderBy = oby)
-  .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q),
+  .timeAndPrint(tbl <- dbGetQuery(getDBConnection(expData), q),
                 txt = "fetching splits table", print = verbose, query = q)
   
   if (nrow(tbl) == 0 || ncol(tbl) == 0) {
@@ -261,7 +263,7 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
                        tablename = getTablename(expData),
                        ignoreStrand = ignoreStrand, groupBy = regionID,
                        orderBy = regionID)
-  .timeAndPrint(cdb <- dbGetQuery(getDB(expData), q),
+  .timeAndPrint(cdb <- dbGetQuery(getDBConnection(expData), q),
                 txt = "count query", print = verbose, query = q)
   
   ## this makes things worlds faster, however it also means that what is in
@@ -350,11 +352,11 @@ mergeWithAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FA
     what <- paste(what, collapse = ",")
   }
   if (!is.null(splitBy) & (what != "*")) {
-    ##-- here i need to add the splitBy to the what and then remove it.
+    ## here i need to add the splitBy to the what and then remove it.
     what <- paste(c(what, splitBy), collapse = ",")
   }
   q <- .formRegionsSQL(what = what, tablename = getTablename(expData), ignoreStrand = ignoreStrand)
-  .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q),
+  .timeAndPrint(tbl <- dbGetQuery(getDBConnection(expData), q),
                 txt = "fetching merge table", print = verbose, query = q)
   if (!is.null(splitBy)) {
     .timeAndPrint(tbl <- split(tbl[,-ncol(tbl)], tbl[, splitBy]),
@@ -377,7 +379,7 @@ summarizeExpData <- function(expData, what = getColnames(expData, all = FALSE), 
     }
     
     q <- sprintf("SELECT %s FROM %s %s;", what, getTablename(expData), whereClause)
-    .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q),
+    .timeAndPrint(tbl <- dbGetQuery(getDBConnection(expData), q),
                   txt = "fetching summary", print = verbose)
 
     if (preserveColnames & length(originalWhat) == ncol(tbl)) {
@@ -428,7 +430,7 @@ summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData,
                  what, getTablename(expData), getTablename(expData),
                  getTablename(expData))
     
-    .timeAndPrint(tbl <- dbGetQuery(getDB(expData), q),
+    .timeAndPrint(tbl <- dbGetQuery(getDBConnection(expData), q),
                   txt = "fetching summary table", print = verbose, query = q)
     if(is.null(groupBy)) {
         rownames(tbl) <- rownames(annoData)[tbl[,1]]
@@ -525,9 +527,10 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
     if (dropCols) {
         regions <- cbind(id = id, joinCols)
     } else {
-        regions <- cbind(id = id, joinCols, annoData[, -which(.ANNO.COLS %in% colnames(annoData)), drop = FALSE])
+        regions <- cbind(id = id, joinCols,
+                         annoData[, -which(.ANNO.COLS %in% colnames(annoData)), drop = FALSE])
     }
-    con <- getDB(expData)
+    con <- getDBConnection(expData)
   
     ## This approach uses the dbWriteTable
     dbWriteTable(con, .REGION.TABLE.NAME, regions, overwrite = TRUE, row.names = FALSE)

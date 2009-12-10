@@ -13,8 +13,8 @@
 \usage{
 summarizeByAnnotation(expData, annoData,
   what = getColnames(expData, all = FALSE), fxs = c("TOTAL"),
-  ignoreStrand = FALSE, splitBy = NULL, bindAnno = FALSE,
-  preserveColnames = TRUE, verbose = getOption("verbose"), meta.id = NULL)
+  groupBy = NULL, splitBy = NULL, ignoreStrand = FALSE, bindAnno = FALSE,
+  preserveColnames = TRUE, verbose = getOption("verbose"))
 }
 
 \arguments{
@@ -31,11 +31,17 @@ summarizeByAnnotation(expData, annoData,
   \item{fxs}{
     Vector of strings giving the names of SQLite functions to call on the data column(s).
   }
-  \item{ignoreStrand}{
-    Logical indicating whether strand should be taken into account in aggregation.  If \code{TRUE} strand will be ignored.
+  \item{groupBy}{
+    Character vector refering to a column in \code{annoData}.  Regions
+    will be aggregated over distinct values of this column.  Setting this
+    argument will set \code{bindAnno} to \code{TRUE}.  If \code{splitBy}
+    is set, \code{meta.id} will override. 
   }
   \item{splitBy}{
     String indicating column of \code{annoData} object on which to split results.
+  }
+  \item{ignoreStrand}{
+    Logical indicating whether strand should be taken into account in aggregation.  If \code{TRUE} strand will be ignored.
   }
   \item{bindAnno}{
     Logical indicating whether annotation information should be included in the output.
@@ -45,9 +51,6 @@ summarizeByAnnotation(expData, annoData,
   }
   \item{verbose}{
     Logical indicating whether details should be printed.
-  }
-  \item{meta.id}{
-    Character vector refering to a column in \code{annoData}.  Regions will be aggregated over distinct values of this column.  Setting this argument will set \code{bindAnno} to \code{TRUE}.  If \code{splitBy} is set, \code{meta.id} will override.
   }
 }
 

@@ -28,5 +28,5 @@ export("ExpData", "aggregateExpData", "applyMapped", "collapseExpData",
        "plot.genominator.coverage",
        "plot.genominator.goodness.of.fit", "regionGoodnessOfFit",
        "splitByAnnotation","summarizeByAnnotation","summarizeExpData",
-       "getColnames", "getMode", "getDB", "getDBFilename", "getTablename",
+       "getColnames", "getMode", "getDBConnection", "getDBFilename", "getTablename",
        "getSchema", "listTables", "getIndexColumns")

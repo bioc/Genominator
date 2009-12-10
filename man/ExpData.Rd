@@ -8,7 +8,7 @@
 \alias{initialize,ExpData-method}
 \alias{show,ExpData-method}
 \alias{ExpData}
-\alias{getDB}
+\alias{getDBConnection}
 \alias{getMode}
 \alias{getIndexColumns}
 \alias{getDBFilename}
@@ -29,8 +29,6 @@ the constructor function \code{ExpData(dbFilename = "filename.db", tablename
       filename of the SQLite database.}
     \item{\code{tablename}:}{A \code{"character"}
       containing the tablename of the relevant SQLite table.}
-    \item{\code{tableSchema}:}{A (named) \code{"character"} vector,
-      containing the schema for the SQLite table.}
     \item{\code{indexColumns}:}{A \code{"character"}, listing which
       columns (and in which order) in the table has been indexed.} 
     \item{\code{mode}:}{A \code{"character"} indicating
@@ -40,8 +38,6 @@ the constructor function \code{ExpData(dbFilename = "filename.db", tablename
       for now.}
     \item{\code{.tmpFile}:}{A \code{"character"}.  Only
       for developers..}
-    \item{\code{.pool}:}{A \code{"environment"}.  Only for
-    developers.}
   }
 }
 
@@ -55,7 +51,7 @@ the constructor function \code{ExpData(dbFilename = "filename.db", tablename
   \describe{
     \item{\code{ExpData(dbFilename, tablename, mode, indexColumns, pragma)}}{A constructor
       function.  The last three arguments are for expert users.}
-    \item{\code{getDB}}{Returns a connection to the database associated with
+    \item{\code{getDBConnection}}{Returns a connection to the database associated with
       the ExpData object.}
     \item{\code{getDBFilename}}{Returns the filename of the database associated with
       the ExpData object.}
