@@ -32,15 +32,22 @@ importFromAlignedReads <- function(alignedReads, filenames, chrMap, dbFilename, 
         expDataList <- mapply(importObject, laneNames, alignedReads)
         
     }, filenames = {
-        laneNames <- names(filenames)
+        columnsList <- split(filenames, names(filenames))
+        columnNames <- names(columnsList)
         if (!is.character(filenames) || !all(file.exists(filenames)) ||
-            is.null(laneNames) || any(laneNames == "") || anyDuplicated(laneNames))
-            stop("'filenames' must be a character vector of filenames (of existing files) with unique names.")
-        expDataList <- as.list(filenames)
-        names(expDataList) <- names(filenames)
+            is.null(columnNames) || any(columnNames == ""))
+            stop("'filenames' must be a named character vector of filenames (of existing files).")
+        if(verbose)
+            cat("filename : column",
+                paste(sapply(names(columnsList), function(x) {
+                    paste(paste(columnsList[[x]], ":", x), collapse = "\n")
+                }), collapse = "\n"),
+                "\n", fill = TRUE)
+        expDataList <- as.list(columnNames)
+        names(expDataList) <- columnNames
         for(name in names(filenames)) {
-            file <- filenames[name]
-            aln <- readAligned(dirPath = file, ...)
+            files <- columnList[[name]]
+            aln <- readAligned(dirPath = files, ...)
             expDataList[[name]] <- importObject(name = name, aln = aln)
         }
     })
