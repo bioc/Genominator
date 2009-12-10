@@ -6,6 +6,13 @@
         **************************************************
 
 Version 1.1
+o Added functionality to importFromAlignedReads so that it is possible
+  to immediately collapse several files together, at the cost of
+  having them all in memory at the same time (this later point might
+  be changed).
+o Added a check to importToExpData so that only rows with
+  non-missing values of (chr, location, strand) gets written to the
+  database.
 o Fixed the connection pool to be outside of individual ExpData
   objects. This elucidated a hitherto unknown bug where a user could
   inadvertently write to a read-only database. 

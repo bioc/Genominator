@@ -1,7 +1,7 @@
-* Revisit the creation functions to ensure that we do not write
-  anything with missing values of chr, strand, location.
+* DONE Revisit the creation functions to ensure that we do not write
+  anything with missing values of chr, strand, location. 
 
-* Consider renaming the getDB function to something like getConnection.
+* DONE Consider renaming the getDB function to something like getConnection.
 
 * makeBackground should be developed.
 
