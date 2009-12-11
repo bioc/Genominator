@@ -6,6 +6,8 @@
         **************************************************
 
 Version 1.1
+o Changed importFromAlignedReads to have only one argument 'x' instead
+  of 'alignedReads' and 'filenames'.
 o Added functionality to importFromAlignedReads so that it is possible
   to immediately collapse several files together, at the cost of
   having them all in memory at the same time (this later point might

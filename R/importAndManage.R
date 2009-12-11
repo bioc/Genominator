@@ -2,18 +2,28 @@
     paste(tablename, "IDX", sep = "")
 }
 
-importFromAlignedReads <- function(alignedReads, filenames, chrMap, dbFilename, tablename,
+importFromAlignedReads <- function(x, chrMap, dbFilename, tablename,
                                    overwrite = TRUE, deleteIntermediates = TRUE,
                                    verbose = getOption("verbose"), ...) {
     if (!require(ShortRead))
         stop("ShortRead package must be installed.")
-    if(!xor(missing(alignedReads), missing(filenames)))
-        stop("Either provide 'alignedReads' argument or 'filenames' argument, not both or none")
-    if(!missing(alignedReads)) {
-        method <- "alignedReads"
-    } else {
-        method <- "filenames"
-    }
+    if(is.null(names(x)) || any(names(x) == ""))
+        stop("'x' must have existing, non-empty names")
+    switch(class(x),
+           list = {
+               if (!all(sapply(x, class) == "AlignedRead") || 
+                   anyDuplicated(names(x)))
+                   stop("'x' must be a list of 'AlignedRead' objects with unique names.")
+               method <- "AlignedReadList"
+           },
+           character = {
+               if (!all(file.exists(x)))
+                   stop("'x' must be a named character vector of filenames (of existing files).")
+               method <- "filenames"
+           },
+           stop("seems the 'x' argument is wrong")
+           )
+
        
     importObject <- function(name, aln, verbose) {
         loc <- position(aln) + ifelse(strand(aln) == "-", width(aln) - 1, 0)
@@ -24,42 +34,38 @@ importFromAlignedReads <- function(alignedReads, filenames, chrMap, dbFilename, 
         aggregateExpData(ed, colname = name, overwrite = TRUE, verbose = verbose)
     }
 
-    switch(method, alignedReads = {
-        laneNames <- names(alignedReads)
-        if (!all(sapply(alignedReads, class) == "AlignedRead") || 
-            is.null(laneNames) || any(laneNames == "") || anyDuplicated(laneNames))
-            stop("'alignedReads' must be a list of 'AlignedRead' objects with unique names.")
-        expDataList <- mapply(importObject, laneNames, alignedReads, moreArgs = list(verbose = TRUE))
-    }, filenames = {
-        columnList <- split(filenames, names(filenames))
-        columnNames <- names(columnList)
-        if (!is.character(filenames) || !all(file.exists(filenames)) ||
-            is.null(columnNames) || any(columnNames == ""))
-            stop("'filenames' must be a named character vector of filenames (of existing files).")
-        if(verbose)
-            cat("filename : column",
-                paste(sapply(names(columnList), function(x) {
-                    paste(paste(columnList[[x]], ":", x), collapse = "\n")
-                }), collapse = "\n"), fill = TRUE)
-        expDataList <- as.list(columnNames)
-        names(expDataList) <- columnNames
-        for(name in columnNames) {
-            if(verbose)
-                cat("process column", name, "in ...", fill = TRUE)
-            files <- columnList[[name]]
-            etime <- round(system.time({
-                aln <- readAligned(dirPath = files, ...)
-            })[3], 4)
-            if(verbose)
-                cat("  parsing using ShortRead in", etime, "secs", fill = TRUE)
-            etime <- round(system.time({
-                expDataList[[name]] <- importObject(name = name, aln = aln, verbose = FALSE)
-            })[3], 4)
-            if(verbose)
-                cat("  importing in", etime, "secs", fill = TRUE)
-        }
-    })
-    
+    switch(method,
+           AlignedReadList = {
+               laneNames <- names(x)
+               expDataList <- mapply(importObject, laneNames, x, MoreArgs = list(verbose = TRUE))
+           },
+           filenames = {
+               filenames <- x
+               columnList <- split(filenames, names(filenames))
+               columnNames <- names(columnList)
+               if(verbose)
+                   cat("filename : column",
+                       paste(sapply(names(columnList), function(xx) {
+                           paste(paste(columnList[[xx]], ":", xx), collapse = "\n")
+                       }), collapse = "\n"), fill = TRUE)
+               expDataList <- as.list(columnNames)
+               names(expDataList) <- columnNames
+               for(name in columnNames) {
+                   if(verbose)
+                       cat("process column", name, "in ...", fill = TRUE)
+                   files <- columnList[[name]]
+                   etime <- round(system.time({
+                       aln <- readAligned(dirPath = files, ...)
+                   })[3], 4)
+                   if(verbose)
+                       cat("  parsing using ShortRead in", etime, "secs", fill = TRUE)
+                   etime <- round(system.time({
+                       expDataList[[name]] <- importObject(name = name, aln = aln, verbose = FALSE)
+                   })[3], 4)
+                   if(verbose)
+                       cat("  importing in", etime, "secs", fill = TRUE)
+               }
+           })
     joinExpData(expDataList, tablename = tablename, overwrite = overwrite, verbose = verbose,
                 deleteOriginals = deleteIntermediates)
 }

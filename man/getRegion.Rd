@@ -1,7 +1,7 @@
 \name{getRegion}
 \alias{getRegion}
 \title{
-  Select a region from an \code{ExpData} object.
+  Select a region from an ExpData object.
 }
 
 \description{

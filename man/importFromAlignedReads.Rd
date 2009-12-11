@@ -11,26 +11,24 @@
   are taken from list names, which must be unique.  }
 
 \usage{
-importFromAlignedReads(alignedReads, filenames, chrMap, dbFilename,
+importFromAlignedReads(x, chrMap, dbFilename,
   tablename, overwrite = TRUE, deleteIntermediates = TRUE,
   verbose = getOption("verbose"), \dots)
 }
 
 \arguments{
-  \item{alignedReads}{
-    A list of objects of class \code{AlignedRead}, where list elements
-    have unique names.  The names of the list will be used as column
-    names in the resulting database (and note that it is not easy to
-    change column names in the database).  Either \code{alignedReads} or
-    \code{filenames} need to be present.
-  }
-  \item{filenames}{
-    A named character vector of filenames which will be read using the
-    \code{readAligned} function from \pkg{ShortRead}.  The names of the
-    character vector will be used as column names in the resulting
-    database (and note that it is not easy to change column names in the
-    database).  Either \code{alignedReads} or \code{filenames} need to
-    be present.
+  \item{x}{
+    This argument can be one of two things: either a named list of
+    objects of class \code{AlignedRead} or a named character vector of
+    filenames.  In both cases, the names of the object are used as
+    column names inthe resulting database (not that it is not easy to
+    change those names).  Therefore the names of \code{x} needs to be
+    present and non-empty and also to satisfy the requirements of
+    column names in SQLite.  If \code{x} is a list of
+    \code{AlignedRead}, the column names needs to be unique.  If
+    \code{x} is a character vector of filenames, the names do not have
+    to be unique, in which case two filenames with the same (column)
+    name gets collapsed into the same column.
   }
   \item{chrMap}{
     A vector of chromosome names from the aligned output.  On
@@ -63,12 +61,15 @@ importFromAlignedReads(alignedReads, filenames, chrMap, dbFilename,
   of the 5' end of the reads (note that this differs from the convention
   for the \code{AlignedRead} class from \pkg{ShortRead}.
 
-  If using the \code{filenames} argument, the function will require
-  enough memory to parse each input file in turn.
+  If the \code{x} argument is a character vector of filenames, the
+  function will require enough memory to parse each input file in turn.
+  If there are duplicates in names of \code{x} the function requires
+  enough memory to parse all files with the same column name at the same
+  time.
 }
 \value{
   Outputs an object of class \code{ExpData} with a column for each
-  element of the \code{alignedRead} list or the \code{filenames} vector.
+  element of the \code{x} argument.
 }
 \author{
   James Bullard \email{bullard@stat.berkeley.edu},

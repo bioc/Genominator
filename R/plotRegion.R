@@ -101,7 +101,7 @@ makeRegionPlotter <- function(expDataLists, annoFactory = NULL) {
                 yy <- numeric(1)
                 xx[1] <- 1
                 yy[1] <- NA
-                return(makeBaseTrack(base = xx, value = yy, dp = dp, trackOverlay = segmentation))
+                return(makeBaseTrack(base = xx, value = yy, dp = dp, segmentation = segmentation))
             }
 
             if (is.null(lst$class)) {
@@ -114,12 +114,12 @@ makeRegionPlotter <- function(expDataLists, annoFactory = NULL) {
             switch (klass,
                     BaseTrack = {
                         makeBaseTrack(base = res[, "location"], value = fx(res[, lst$what]), dp = dp,
-                                      trackOverlay = segmentation)
+                                      segmentation = segmentation)
                     },
                     GenericArray = {
                         makeGenericArray(probeStart = res[, "location"],
                                          intensity = fx(as.matrix(res[, lst$what, drop = FALSE])),
-                                         dp = dp, trackOverlay = segmentation)
+                                         dp = dp, segmentation = segmentation)
                     },
                 {
                     stop("Unknown class specified.")
