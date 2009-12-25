@@ -422,7 +422,7 @@ summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData,
     what <- paste("__regions__.id", what, sep = ", ")
     
     q <- sprintf(paste("SELECT %s FROM __regions__ LEFT OUTER JOIN %s ON __regions__.chr = %s.chr",
-                       "AND %s.location BETWEEN __regions__.start AND __regions__.end__1",
+                       "AND %s.location BETWEEN __regions__.start AND __regions__.end",
                        if(!ignoreStrand) {
                            sprintf("AND (%s.strand = __regions__.strand OR __regions__.strand = 0 OR %s.strand = 0)",
                                    getTablename(expData), getTablename(expData))
@@ -490,7 +490,7 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
                             orderBy = NULL, regionTableName = .REGION.TABLE.NAME) {
   
   s <- paste(sprintf(paste("SELECT %s FROM %s INNER JOIN %s ON %s.chr = %s.chr AND",
-                           "%s.location BETWEEN %s.start AND %s.end__1"),
+                           "%s.location BETWEEN %s.start AND %s.end"),
                      what, tablename, regionTableName, regionTableName, tablename,
                      tablename, regionTableName, regionTableName),
              if(!ignoreStrand) {
@@ -509,7 +509,6 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
   return(s)
 }
 
-## XXX: I have to deal with this name munging which turns end into end__1.
 .writeRegionsTable <- function(expData, annoData, dropCols = TRUE, id = NULL) {
 
     if(is.null(id) || !is.character(id) || !is.element(id, names(annoData))) {

@@ -6,6 +6,9 @@
         **************************************************
 
 Version 1.1
+o The new version of DBI (0.2-5) fixes the name mangling of the SQL 
+  reserved keyword "end".  Workarounds for this mangling has been
+  removed and Genominator now depends on DBI >= 0.2-5.
 o Changed importFromAlignedReads to have only one argument 'x' instead
   of 'alignedReads' and 'filenames'.
 o Added functionality to importFromAlignedReads so that it is possible
