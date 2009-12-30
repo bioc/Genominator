@@ -5,8 +5,22 @@
         *                                                *
         **************************************************
 
+	Changes in Genominator Version 1.0.3
 
-                CHANGES IN GenomeGraphs Version 1.0
+BUG FIXES
+o The newly released DBI version 0.2-5 fixed a name mangling bug
+  whereby a column name  of "end" would be silently changed to
+  "end__1".  This columnname was used internally in Genominator so a
+  change was warranted.  Genominator now depends explicitely on
+  DBI >= 0.2-5. 
+o An oversight in the vignette build process left a big temporary
+  database in the build directory which was getting packaged as a part
+  of the final build.  This has been fixed, reducing the size of
+  the source tarball from 34M to 2M and also reducing the size of the
+  installation by a similar amount.
+
+
+                CHANGES IN Genominator Version 1.0
 
 NEW FEATURES
 o Changed underlying database model where now the database exists in two
