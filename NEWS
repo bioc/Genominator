@@ -6,6 +6,8 @@
         **************************************************
 
 Version 1.1
+o Changed some internals of the plotting functionality to make it work
+  with a GenomeGraphs update.
 o The new version of DBI (0.2-5) fixes the name mangling of the SQL 
   reserved keyword "end".  Workarounds for this mangling has been
   removed and Genominator now depends on DBI >= 0.2-5.
