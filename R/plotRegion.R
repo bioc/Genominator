@@ -151,6 +151,42 @@ makeRegionPlotter <- function(expDataLists, annoFactory = NULL) {
     }
 }
 
+makeCoveragePlotter <- function(eData, what, readLength = 1, dp = DisplayPars()) {
+    ## use both anno as char and data.frame and also accept chr, start, end
+    makeTracks <- function(anno, extend = 0) {
+        if(nrow(anno) != 1) stop("")
+        anno$start <- anno$start - extend
+        anno$end <- anno$end + extend
+        if(class(eData) == "ExpData")
+            res <- splitByAnnotation(eData, anno = anno, ignoreStrand = TRUE, , what = c("location", what), expand = TRUE)[[1]]
+        else {
+            res <- lapply(eData, function(x) {
+                subset(x, x[, "location"] >= anno$start &
+                          x[, "location"] <= anno$end)
+            })
+            what <- setdiff(colnames(res[[1]]), c("strand", "chr","location"))
+        }
+        tracks <- lapply(what, function(wh) {
+            counts.pos <- res[["1"]][, wh]
+            counts.neg <- res[["-1"]][, wh]
+            if(readLength > 1) {
+                weights <- rep(1, readLength)
+                pad <- rep(0, readLength - 1)
+                res.pos <- convolve(c(pad, counts.pos), weights, type = "filter")
+                res.neg <- rev(convolve(c(pad, rev(counts.neg)), weights, type = "filter"))
+                values <- res.pos + res.neg
+            } else {
+                values <- counts.pos + counts.neg
+            }
+            makeBaseTrack(base = res[["1"]][, "location"], value = values, dp = dp)
+        })
+        names(tracks) <- what
+        gdPlot(c(makeGenomeAxis(), tracks), minBase = anno$start, maxBase = anno$end)
+        return(invisible(list(tracks = tracks, results = res)))
+    }
+}
+
+
 ##
 ## Useful for converting to pileup representation.
 ##

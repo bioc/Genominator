@@ -1,68 +1,85 @@
-                        Dear Emacs, please make this -*-Text-*- mode!
+
         **************************************************
         *                                                *
         *              1.0 SERIES NEWS                   *
         *                                                *
         **************************************************
 
-Version 1.1
-o Changed some internals of the plotting functionality to make it work
-  with a GenomeGraphs update.
-o The new version of DBI (0.2-5) fixes the name mangling of the SQL 
-  reserved keyword "end".  Workarounds for this mangling has been
-  removed and Genominator now depends on DBI >= 0.2-5.
-o Changed importFromAlignedReads to have only one argument 'x' instead
-  of 'alignedReads' and 'filenames'.
-o Added functionality to importFromAlignedReads so that it is possible
-  to immediately collapse several files together, at the cost of
-  having them all in memory at the same time (this later point might
-  be changed).
-o Added a check to importToExpData so that only rows with
-  non-missing values of (chr, location, strand) gets written to the
-  database.
-o Fixed the connection pool to be outside of individual ExpData
-  objects. This elucidated a hitherto unknown bug where a user could
-  inadvertently write to a read-only database. 
-o Added groupBy to summarizeByAnnotation
-o Added to Bioconductor
-o Improved User Guide substantially
-o (Internal) Changed a few tryCatch statements to use the SQL
-  "... IF EXISTS ..." instead.
-o Changed the db and filename to be in sync: there is now only
-  a dbFIlename slot in ExpData and all functions accept dbFilename.
-o Added CITATION
 
-Version 1.0
+		CHANGES IN GENOMINATOR VERSION 1.1
 
 NEW FEATURES
-o Changed underlying database model where now the database exists in two
-  modes, either a read or write mode. This should be somewhat transparent
-  to the end user.
-o Added importFromAlignedRead which allows the importing of objects read
-  using readAligned from ShortRead package.
-o Added support for arbitrary index columns, this support allows for
-  the inclusion of more complex types of reads, e.g. reads of different
-  lengths or paired end reads. This support is preliminary, but should
-  allow for a mix of representations.
-o Added '$' and '[' methods to expData objects to directly query the
-  database. 
-o Fixed vignette to more correctly describe splitByAnnotation.
-o Added ability to filter the reads when importing an Eland export file.
-o Added whereClause to summarizeExpData.
-o Added sample = FALSE argument to plot function for goodness of fit plots.
-  This allows one to plot fewer than all of the points for smaller pdfs. 
-o Added regionGoodnessOfFit.df to work with matrices or data.frames. 
-o Added in-memory ordering to importToExpData; this speeds things up
-  considerably when indexing.
 
-	       	    
+    o	The NEWS files is now parsable by the R function call
+	news(package = "Genominator").
+    o	Changed importFromAlignedReads to have only one argument 'x'
+	instead of 'alignedReads' and 'filenames'. 
+    o	Added functionality to importFromAlignedReads so that it is
+	possible to immediately collapse several files together, at
+	the cost of having them all in memory at the same time (this
+	later point might be changed).
+    o	Added groupBy to summarizeByAnnotation.
+    o	Added to Bioconductor.
+    o	Improved User Guide substantially
+    o	Added CITATION file.
 
 BUG FIXES
-o Fixed bug where colnames are trashed when preserveColnames = T and
-  bindAnno = T
-o Modified fix below when we include "what" argument. 
-o Fixed bug in splitByAnnotation when expand = TRUE and addOverStrands = TRUE
-  and only one strand was present in the sequencing reads. 
-o Fixed bug in splitByAnnotation when expand = TRUE where reads were
-  lost.
 
+    o	Changed some internals of the plotting functionality to make
+	it work with a GenomeGraphs update.
+    o	The new version of DBI (0.2-5) fixes the name mangling of the
+	SQL reserved keyword "end".  Workarounds for this mangling has
+	been removed and Genominator now depends on DBI >= 0.2-5.
+    o	Added a check to importToExpData so that only rows with
+	non-missing values of (chr, location, strand) gets written to
+	the database.
+    o	Fixed the connection pool to be outside of individual ExpData
+	objects. This elucidated a hitherto unknown bug where a user
+	could inadvertently write to a read-only database. 
+    o	(Internal) Changed a few tryCatch statements to use the SQL
+	"... IF EXISTS ..." instead. 
+    o	Changed the db and filename to be in sync: there is now only a
+	dbFIlename slot in ExpData and all functions accept
+	dbFilename.
+
+		CHANGES IN GENOMINATOR VERSION 1.0
+
+NEW FEATURES
+
+    o	Changed underlying database model where now the database
+	exists in two modes, either a read or write mode. This should
+	be somewhat transparent to the end user.
+    o	Added importFromAlignedRead which allows the importing of
+	objects read using readAligned from ShortRead package.
+    o	Added support for arbitrary index columns, this support allows
+	for the inclusion of more complex types of reads, e.g. reads
+	of different lengths or paired end reads. This support is
+	preliminary, but should allow for a mix of representations.
+    o	Added '$' and '[' methods to expData objects to directly query
+	the database. 
+    o	Fixed vignette to more correctly describe splitByAnnotation.
+    o	Added ability to filter the reads when importing an Eland export file.
+    o	Added whereClause to summarizeExpData.
+    o	Added sample = FALSE argument to plot function for goodness of
+	fit plots. This allows one to plot fewer than all of the
+	points for smaller pdfs.  
+    o	Added regionGoodnessOfFit.df to work with matrices or
+	data.frames.
+    o	Added in-memory ordering to importToExpData; this speeds things
+	up considerably when indexing.
+	       	    
+BUG FIXES
+
+    o	Fixed bug where colnames are trashed when preserveColnames = T
+	and bindAnno = T
+    o	Modified fix below when we include "what" argument.
+    o	Fixed bug in splitByAnnotation when expand = TRUE and
+	addOverStrands = TRUE and only one strand was present in the
+	sequencing reads.
+    o	Fixed bug in splitByAnnotation when expand = TRUE where reads
+	were lost.
+
+%%%% Local Variables:
+%%%% mode: text
+%%%% coding: utf-8
+%%%% End:
