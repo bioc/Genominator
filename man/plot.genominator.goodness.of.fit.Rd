@@ -10,8 +10,8 @@
 }
 \usage{
 plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE,
-  sample = FALSE, nsamples = 5000, xlab = "theoretical quantiles",
-  ylab = "observed quantiles", main = names(x), pch = 16, cex = 0.75, \dots)
+  qqline = FALSE, xlab = "theoretical quantiles",
+  ylab = "observed quantiles", main, pch = 16, cex = 0.75, \dots)
 }
 \arguments{
   \item{x}{
@@ -23,12 +23,9 @@ plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE,
   \item{plotCol}{
     Logical indicating whether points at extreme quantiles should be colored.
   }
-  \item{sample}{
-    Logical indicating whether only a sample of statistics should be included in the plot.  For large data sets, this
-    may be useful for reducing the plot size.
-  }
-  \item{nsamples}{
-    Integer indicating number of samples to be selected if \code{sample} is \code{TRUE}.
+  \item{qqline}{
+    Logical indicating whether a qqline should be added, this is a line
+    through the 25\%- and 75\%-quantiles.
   }
   \item{xlab}{
     X-axis label for plot.

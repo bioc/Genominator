@@ -14,7 +14,8 @@ importFrom("stats", "convolve", "dnbinom", "dpois", "na.omit",
            "rnbinom", "rpois", "runif")
 
 importFrom("utils", "head", "read.table")
-
+import("IRanges")
+importMethodsFrom("IRanges", "setdiff")
 
 ##
 ## export anything w/out a . in front. 
@@ -25,6 +26,7 @@ exportMethods("initialize", "show", "head", "$", "[")
 export("ExpData", "aggregateExpData", "applyMapped", "collapseExpData",
        "computeCoverage", "getRegion", "importFromAlignedReads",
        "importToExpData", "joinExpData", "mergeWithAnnotation",
+       "makeGeneRepresentation", "validAnnotation",
        "plot.genominator.coverage",
        "plot.genominator.goodness.of.fit", "regionGoodnessOfFit",
        "splitByAnnotation","summarizeByAnnotation","summarizeExpData",

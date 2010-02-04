@@ -6,7 +6,7 @@ setGeneric("regionGoodnessOfFit", function(obj, ...) standardGeneric("regionGood
 setMethod("regionGoodnessOfFit", "data.frame",
           definition = function(obj, denominator = colSums(obj), groups = rep("A", ncol(obj))) {
               if (length(groups) != ncol(obj) & length(groups) != length(denominator))
-                  stop("Arguments groups must be same length as obj and denominator.")
+                  stop("Arguments 'groups', 'obj' and 'denominator' must all have the same length.")
               sameSample <- split(1:ncol(obj), groups)
               denominator <- split(denominator, groups)
 
@@ -57,51 +57,52 @@ setMethod("regionGoodnessOfFit", "ExpData",
               regionGoodnessOfFit(regionSums, denominator = denominator, groups = groups)
           })
 
-plot.genominator.goodness.of.fit <- function(x, chisq = FALSE, plotCol = TRUE, sample = FALSE,
-                                             nsamples = 5000, xlab = "theoretical quantiles",
-                                             ylab = "observed quantiles", main = names(x),
+plot.genominator.goodness.of.fit <- function(x, chisq = FALSE, plotCol = TRUE, qqline = FALSE,
+                                             xlab = "theoretical quantiles",
+                                             ylab = "observed quantiles", main,
                                              pch = 16, cex = .75, ...) {
-    op <- par(no.readonly = TRUE)
-
+    stats <- x$stats
     dfs <- x$dfs
-    x <- x$stats
-    args <- list(...)
-    
-    a <- sqrt(length(x))
+    if(missing(main))
+        main <- names(stats)
+        
+    a <- sqrt(length(stats))
     b <- a
     if (!is.integer(a)) {
         a <- floor(a)
-        b <- length(x)/a
+        b <- length(stats)/a
     }
-    par(mfrow=c(a,b))
+    op <- par(mfrow=c(a,b), no.readonly = TRUE)
+    on.exit(par(op))
     
-    g <- mapply(function(mat, name) {
+    mapply(function(mat, name, mainplot) {
         if (chisq) {
-            y <- sort(mat[, "chi"])
-            xx <- sort(rchisq(length(y), df = dfs[name]))
+            yy <- mat[, "chi"]
+            xx <- qchisq(ppoints(yy), df = dfs[name])
         } else {
-            y <- sort(mat[, "pval"])
-            xx <- seq(0, 1, length = length(y))
+            yy <- sort(mat[, "pval"])
+            xx <- qunif(ppoints(yy), min = 0, max = 1)
         }
-        if (sample & length(y) > nsamples) {
-            idx <- sort(sample(1:length(y), size = nsamples))
-            y <- y[idx]
-            xx <- xx[idx]
-        }
+        qq <- qqplot(xx, yy, plot.it = FALSE)
         if (plotCol) {
-            colors <- rep("black", length(y))
+            colors <- rep("black", length(yy))
             colors[floor(length(colors)*.95):length(colors)] <- "red"
             colors[floor(length(colors)*.99):length(colors)] <- "violet"
             colors[floor(length(colors)*.999):length(colors)] <- "orange"
-            plot(xx, y, xlab = xlab , ylab = ylab, main = name, col = colors, pch = pch, cex = cex, ...)
+        } else {
+            colors <- "black"
         }
-        else {
-            plot(xx, y, xlab = xlab, ylab = ylab, main = name, pch = pch, cex = cex, ...)
+        plot(qq$x, qq$y, col = colors, xlab = xlab, ylab = ylab, main = mainplot, pch = pch, cex = cex, ...)
+        if(qqline) {
+            yyqt <- quantile(qq$y, c(0.25, 0.75))
+            xxqt <- quantile(qq$x, c(0.25, 0.75))
+            slope <- diff(yyqt) / diff(xxqt)
+            int <- yyqt[1L] - slope * xxqt[1L]
+            abline(int, slope, col = "blue")
         }
-        abline(0, 1, col = "blue")
-    }, x, names(x))
-
-    par(op)
+        abline(0, 1, col = "blue", lty = 2)
+    }, stats, names(stats), main)
+    invisible(NULL)
 }
 
 ##

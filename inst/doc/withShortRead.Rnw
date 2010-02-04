@@ -1,163 +1,343 @@
 %\VignetteIndexEntry{Working with the ShortRead Package}
 %\VignetteDepends{Genominator, ShortRead, yeastRNASeq}
 %\VignettePackage{Genominator}
-\documentclass[letterpaper,12pt]{article}
-
+\documentclass[12pt]{article}
 <<echo=FALSE>>=
 options(width=70)
 @ 
-
-%%%%%%%%%%%%%%%%%%%%%%%% Standard Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage{epsfig}
-\usepackage{graphicx}
-\usepackage{graphics}
-\usepackage{amssymb}
-\usepackage{amsmath}
-\usepackage{mathrsfs}
-\usepackage{fancyvrb}
-\usepackage{caption}
-\usepackage{comment}
-\usepackage{fancyhdr}
+\SweaveOpts{eps=FALSE,echo=TRUE}
+\usepackage{times}
 \usepackage{hyperref}
-\usepackage{color}
-
-%%%%%%%%%%%%%%%%%%%%%%%% Adapted from Sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\DefineVerbatimEnvironment{Rcode}{Verbatim}{fontshape=sl, frame=single, 
-  framesep=2mm, fontsize=\small, baselinestretch=.5}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%% My macros (which of course are borrowed from a million ... %%
-\def\argmax{\operatornamewithlimits{arg\,max}}
-\def\argmin{\operatornamewithlimits{arg\,min}}
 
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
-\newcommand{\myurl}[1]{\href{http://#1}{\textcolor{red}{\texttt{#1}}}}
-\newcommand{\myem}[1]{\structure{#1}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\software{R}}
 
-%%%%%%%%%%%%%%%%%%%%%%%% Page and Document Setup %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\addtolength{\oddsidemargin}{-0.875in}
-\addtolength{\topmargin}{-0.875in}
-\addtolength{\textwidth}{1.75in}
-\addtolength{\textheight}{1.75in}
-
-\captionsetup{margin=15pt,font=small,labelfont=bf}
-
-\renewcommand{\topfraction}{0.9}        % max fraction of floats at top
-\renewcommand{\bottomfraction}{0.8}     % max fraction of floats at bottom
-
-% Parameters for TEXT pages (not float pages):
-\setcounter{topnumber}{2}
-\setcounter{bottomnumber}{2}
-\setcounter{totalnumber}{4}             % 2 may work better
-\setcounter{dbltopnumber}{2}            % for 2-column pages
-\renewcommand{\dbltopfraction}{0.9}     % fit big float above 2-col. text
-\renewcommand{\textfraction}{0.07}      % allow minimal text w. figs
-
-% Parameters for FLOAT pages (not text pages):
-\renewcommand{\floatpagefraction}{0.7}          % require fuller float pages
-
-% N.B.: floatpagefraction MUST be less than topfraction !!
-\renewcommand{\dblfloatpagefraction}{0.7}       % require fuller float pages
-
-%%%%%%%%%%%%%%%%%%%%%%% options for sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\SweaveOpts{prefix.string=plots_withshortread,eps=FALSE}
-
-%%%%%%%%%%%%%%%%%%%%%% headers and footers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagestyle{fancy} 
-\renewcommand{\footrulewidth}{\headrulewidth}
-
-%%%%%%%%%%%%%%%%%%%%%%%%% bibliography  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliographystyle{plainnat}
-
-%%%%%%%%%%%%%%%%%%%%%%% opening %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Working with the ShortRead Package}
-\author{James Bullard, Kasper Daniel Hansen}
+\author{James Bullard and Kasper Daniel Hansen}
+\date{Modified: January 15, 2010.  Compiled: \today}
 \begin{document}
 \maketitle
 
-In this document we show how to use the Genominator package with
-ShortRead. In this document, we will demonstrate some analysis --
-maybe even some useful first steps when analyzing RNA-Seq data. 
+\section*{Importing data}
 
-<<initialize,echo=TRUE,results=hide>>=
+In this document we show how to use the \Rpackage{Genominator} package
+with the \Rpackage{ShortRead} package and conduct a simple
+differential expression analysis.
+
+<<packages,results=hide>>=
 require(Genominator)
 require(ShortRead)
 require(yeastRNASeq)
 @ 
 
-We will use some data sets from the yeastRNASeq data package. Lets
-first see what this package contains:
-<<datalist>>=
-data(package = "yeastRNASeq")[[3]][, c("Item", "Title")]
-@ 
+The data we will use are described in the vignette of the
+\Rpackage{yeastRNASeq}.  But to summarize, we have data from two
+different yeasts, a wild-type strain (``\texttt{wt}'') and a mutant
+strain (``\texttt{mut}'').  Part of the RNA degradation pathway is
+knocked out in the mutant.  For each strain we have two lanes worth of
+data -- it is the exact same sample and library preparation sequenced
+in both lanes.  Only 500,000 raw reads from each lane is part of the
+\Rpackage{yeastRNASeq} package and they have been aligned with Bowtie,
+keeping only unique hits with up to two mismatches.  Since not all
+reads align, we will be working with a up to 500,000 reads per lane.
 
-At first, we will focus on the AlignedRead list. This object is a list
-of 4 \Rfunction{AlignedRead}'s, each representing the alignment of .5
-million reads.  The 4 elements of the list corresponds to 2 samples
-(mut, wt) each sequenced on 2 lanes.
-
+The data is available as a list of \Rclass{AlignedRead} class objects:
 <<yeastAligned>>=
-data("yeastAligned")
-names(yeastAligned)
+data(yeastAligned)
 yeastAligned[[1]]
+sapply(yeastAligned, length)
 @ 
 
-The first step is to make a database:
-<<eData>>=
-eData <- importFromAlignedReads(yeastAligned, chrMap = levels(chromosome(yeastAligned[[1]])),
-                                dbFilename = "my.db", tablename = "raw", overwrite = TRUE)
+In the package we also have the Bowtie output files, which we will use
+for illustration:
+<<filesInYeastRNASeq>>=
+list.files(file.path(system.file(package = "yeastRNASeq"), "reads"), 
+           pattern = "bowtie")
+@ 
+The Bowtie output files are compressed using \software{gzip},
+\Rpackage{ShortRead} can handle this.
+
+Before importing a set of aligned reads using \Rpackage{Genominator}
+one usually has to make some decisions regarding chromosome names as
+well as names of the columns in the resulting database.
+
+Note the chromosome names are a bit special: \texttt{Scchr01}.  In our
+experience it is quite common for different annotation sources to use
+different shorthands for the chromosomes (for yeast we have at least
+seen \texttt{chr1}, \texttt{chr01}, \texttt{Scchr01}, \texttt{chrI}).
+This is a bit of a pain and is very hard to automate.  In
+\Rpackage{Genominator} we expect the user to explicitly convert the
+chromosome names to a common representation and we furthermore require
+chromosome names to be integers.  For the sake of importing alignment
+files this is accomplished by using the \Rfuncarg{chrMap} argument
+that is a simple character vector which the chromosome names are
+matched up against.  The first element in the vector gets assigned the
+integer 1 and so on.  If there are chromosomes in the alignment file
+that does not appear in the \Rfuncarg{chrMap} vector, the
+corresponding reads are not imported.  This is often useful, but can
+also lead to loss of data.
+
+We construct the \Rfuncarg{chrMap} object by
+<<chrMap>>=
+chrMap <- paste("Scchr", sprintf("%02d", 1:16), sep = "")
+unique(chromosome((yeastAligned[[1]])))
+@ 
+We see that by using this version of \Rfuncarg{chrMap} we will drop
+reads aligning to the mitochondrial chromosome.
+
+The other decision we need to make is how to map filenames to names of
+the columns of the resulting database.  Note that whatever choice we
+make is more or less permanent.  Usually we prefer short, descriptive
+names.  It makes a lot of sense to construct these names
+programmatic from the filenames:
+<<filesArgument>>=
+files <- list.files(file.path(system.file(package = "yeastRNASeq"), "reads"), 
+                    pattern = "bowtie", full.names = TRUE)
+names(files) <- sub("_f\\.bowtie\\.gz", "", basename(files))
+names(files)
+@ 
+The way this is all specific is through a named vector of filenames,
+the names of the vector corresponds to column names in the resulting
+database.  If two (or more) file entries have the same name, they will
+be joined into one column.
+
+We now import the alignment files using
+\Rfunction{importFromAlignedReads}, which uses the
+\Rfunction{readAligned} function from \Rpackage{ShortRead} to parse
+the files.
+<<importFromAlignedReads>>=
+eData <- importFromAlignedReads(files, chrMap = chrMap,
+                                dbFilename = "my.db",
+                                tablename = "raw", type = "Bowtie")
+eData
 head(eData)
 @ 
+This will create a database \texttt{my.db} in the current
+directory.  The reads are automatically associated to the genomic
+location corresponding to the 5' end of the read -- this is slightly
+different from some other programs that uses the lefternmost location
+of the read (the difference is in reads mapping to the reverse strand).
 
-\Rfunction{importFromAlignedReads} takes exactly such a (named) list
-of \Rfunction{AlignedReads} and aggregates each experiment and finally
-joins them together.
+\section*{Annotation}
 
-Certainly, the most cryptic portion of this call is the chromosome map
-(the \texttt{chrMap} argument). The Genominator package requires that
-all chromosomes be stored as integer values. Therefore, we must to
-convert the ``chromosome names'' to integers. We do this by specifying
-a rule described as a named vector of integer values, like
-<<chrMap>>=
-levels(chromosome(yeastAligned[[1]]))
+There are at least two easy ways to retrieve annotation using
+\software{Bioconductor}: the \Rpackage{biomaRt} package which accesses
+Ensembl and the \Rpackage{rtracklayer} package which accesses the UCSC
+genome browser.  There are oftentimes species-specific databases (for
+yeast we have at least SGD) which is a third source of annotation.
+
+\subsection{Using biomaRt}
+
+We will use \Rpackage{biomaRt} to retrieve information from the
+Ensembl database.  We will illustrate a few pitfalls by comparing two
+different, but similar looking queries.  More information on using
+\Rpackage{biomaRt} can be found it its excellent vignette.
+
+The following code was run in January 2010.
+<<biomaRt,eval=FALSE>>=
+require(biomaRt)
+mart <- useMart("ensembl", "scerevisiae_gene_ensembl")
+attributes.gene <- c("ensembl_gene_id", "chromosome_name",  "start_position", 
+                     "end_position", "strand", "gene_biotype")
+attributes.tr <- c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_exon_id", "chromosome_name",  "start_position", 
+                   "end_position", "strand", "gene_biotype", "exon_chrom_start", "exon_chrom_end", "rank")
+ensembl.gene <- getBM(attributes = attributes.gene,  mart = mart)
+ensembl.transcript <- getBM(attributes = attributes.tr,  mart = mart)
 @ 
-Sometimes the call to \Rfunction{levels} is not enough and we need to
-do some reordering and perhaps the addition of extra chromosomes.
 
-The result is an ExpData object which has been aggregated over, i.e.\
-each position in the genome which was represented by > 0 reads at its
-5' most end will have that number of reads.  Note how we deal with
-reads mapping to the reverse strand of the genome (by using the 5' end
-of the read as its location).
+The output is saved in the \Robject{yeastAnno.sources} object which is
+a list containing various annotation objects from yeast.
 
-
-We can now take advantage of all of the functionality of the
-Genominator package, using (parts of) the yeast annotation from SGD.
-
-<<loadingYeastAnno>>=
-data(yeastAnno)
-head(yeastAnno)
+<<ensemblAnno>>=
+data(yeastAnno.sources)
+ensembl.gene <- yeastAnno.sources$ensembl.gene
+ensembl.transcript <- yeastAnno.sources$ensembl.transcript
+head(ensembl.gene, n = 2)
+head(ensembl.transcript, n = 2)
+dim(ensembl.gene)
+dim(ensembl.transcript)
+subset(ensembl.gene, ensembl_gene_id == "YPR098C")
+subset(ensembl.transcript, ensembl_gene_id == "YPR098C")
+length(unique(ensembl.transcript$ensembl_transcript_id))
 @ 
 
-Once again, we have to deal with the fact that people like to
-represent chromosomes in different ways. In this case, SGD represents
-chromosomes with Roman numerals. Additionally, we prepare the
-annotation object to be consumable by the Genominator functions by
-making sure that we have columns \texttt{start}, \texttt{end} present
-and that \texttt{strand} takes values in $\{-1,0,1\}$.
+Note that altering the query a bit leads to a quite different number
+of rows being retrieved.  In this case it is because each row in one
+query correspond to a gene, whereas each row in the other query
+correspon to an exon of a transcript.
 
-<<yeastAnnoFix>>=
-yeastAnno$chr <- match(yeastAnno$chr, c(as.character(as.roman(1:16)), "MT", "2-micron"))
-yeastAnno$start <- yeastAnno$start_position
-yeastAnno$end <- yeastAnno$end_position
-rownames(yeastAnno) <- yeastAnno$ensembl
-yeastAnno <- yeastAnno[, c("chr", "start", "end", "strand", "gene_biotype")]
-head(yeastAnno)
+A key observation here is that the columns \texttt{start\_position}
+and \texttt{end\_position} contains the start and end position of the
+gene which is different from the start and end position of the exon
+when we look at a gene consiting of two exons.  Furthermore, it is not
+even clear from the output of the first query that genes with multiple
+exons exists.  In this example, there is no difference between the
+transcript id and the gene id, because (at least according to this
+annotation), there are no genes in yeast that produces multiple
+transcripts. 
+
+In this case, we would argue that the right object to use is
+\Robject{yeastAnno.transcripts}.  Below we will post-process this
+object for use with \Rpackage{Genominator}.
+
+\subsection{Using rtracklayer}
+
+Here we will use the \Rpackage{rtracklayer} package to access the UCSC
+genome browser.  UCSC sometimes have different tables for a specific
+genome.  We will take a closer look at the SGD table (based on the
+name we presume that it is supposed to package information from SGD
+(= Saccharomyces Genome Database)) and the ENS table (which we assume
+is an attempt to package information from Ensembl)
+
+The following code was run in January 2010
+<<rtracklayer,eval=FALSE>>=
+require(rtracklayer)
+session <- browserSession()
+genome(session) <- "sacCer2"
+ucsc.sgdGene <- getTable(ucscTableQuery(session, "sgdGene"))
+ucsc.ensGene <- getTable(ucscTableQuery(session, "ensGene"))
 @ 
+
+<<yeastAnno.sources,eval=FALSE,echo=FALSE>>=
+yeastAnno.sources <- list(ensembl.gene = ensembl.gene,
+                          ensembl.transcript = ensembl.transcript,
+                          ucsc.sgdGene = ucsc.sgdGene,
+                          ucsc.ensGene = ucsc.ensGene)
+save(yeastAnno.sources, file = "yeastAnno.sources.rda")
+@ 
+
+We will also examine the output from these two tables
+
+<<ucscAnno>>=
+data(yeastAnno.sources)
+ucsc.sgdGene <- yeastAnno.sources$ucsc.sgdGene
+ucsc.ensGene <- yeastAnno.sources$ucsc.ensGene
+head(ucsc.sgdGene, n = 2)
+head(ucsc.ensGene, n = 2)
+dim(ucsc.sgdGene)
+dim(ucsc.ensGene)
+subset(ucsc.sgdGene, name == "YPR098C")
+subset(ucsc.ensGene, name == "YPR098C")
+subset(ucsc.sgdGene, name == "YER102W")
+subset(ucsc.ensGene, name == "YER102W")
+@ 
+
+From this we see that the two tables have quite a different number of
+genes in them, that the two tables look very similar on the two exon
+gene considered in the previous section (although one table has the
+additional information of a protein ID), but that the two tables
+differ on at least one gene (actually, there are 757 entries that have
+same value in the \texttt{name} column but different values in the
+\texttt{exonStarts} column).
+
+
+\subsection*{Some comments on annotation}
+
+As we see here, there are different sources of annotation that differ,
+even for a relatively simple and well-studied species as \emph{S.\
+  cerevisiae}.  We cannot give any recommendation as to what
+annotation source to use, that depends on the biological question and
+possibly other factors.
+
+However, some effort ought to be spend on making sure that the used
+annotation matches up with the genome used.  Even for yeast there are
+several different genomes.  And while they differ in only a few
+substitutions and insertion/deletions, the insertion/deletions can
+easily lead to ``off-by-a-little'' errors.
+
+Finally we note that for this specific example, none of the queries
+above display the SGD classification of genes into ``verified'',
+``dubious'', and ``uncharacterized'', a classification that is often
+important when analyzing ones results.  This information is obtainable
+directly from SGD and perhaps from a better use of the annotation
+tools above.
+
+\subsection*{Post-processing the annotation}
+
+In the following we will work with the
+\Robject{ensembl.transcript} object, which we now
+post-process for use with \Rpackage{Genominator}.  
+
+In \Rpackage{Genominator} an annotation object is a
+\Rclass{data.frame} with columns \Rcode{chr, start, end, strand} where
+\Rcode{chr} is an integer (and should match up with whatever was used
+in the import step earlier) and \Rcode{strand} has values in
+$\{-1,1,0\}$ with $0$ indicating that there is no strand information
+(and hence $0$ matches both $1$ and $-1$). 
+<<yAnno>>=
+yAnno <- ensembl.transcript
+yAnno$chr <- match(yAnno$chr, c(as.character(as.roman(1:16)), "MT", "2-micron"))
+yAnno$start <- yAnno$start_position
+yAnno$end <- yAnno$end_position
+rownames(yAnno) <- yAnno$ensembl_exon_id
+yAnno.simple <- yAnno[yAnno$chr %in% 1:16, c("chr", "start", "end", "strand")]
+head(yAnno.simple, n = 2)
+head(yAnno, n = 2)
+validAnnotation(yAnno)
+@ 
+(note that we remove all annotation on the mitochondria and the
+plasmid).
+
+\section*{Gene level counts}
+
+It is easy to obtain region level counts for a given annotation object:
+<<geneCounts.1>>=
+geneCounts.1 <- summarizeByAnnotation(eData, yAnno, ignoreStrand = TRUE)
+head(geneCounts.1)
+@ 
+This produces a matrix containing the read counts per gene.  Such a
+matrix is ready for analysis by various packages as well as the
+functionality in \Rpackage{Genominator}.
+
+We use \Rfuncarg{ignoreStrand = TRUE} because the experimental assay
+does not keep strand of origin, so we count reads on either strand,
+inside each atomic region.  
+
+Note that the resulting matrix has one row for each row in the
+annotation object.  Inthis annotation object, rows correspond to
+exons.  We can get gene level counts either by using a
+\Rfunction{tapply} or directly from \Rpackage{Genominator} by
+<<geneCounts.2>>= 
+geneCounts.2 <- summarizeByAnnotation(eData, yAnno, ignoreStrand = TRUE, 
+                                      groupBy = "ensembl_gene_id")
+head(geneCounts.2)
+@
+
+Note that -- because of the way reads are represented in the database
+when we use \Rfunction{importFromAlignedReads} -- that a read is
+counting as part of a gene if the first sequenced base maps within the
+region defined by the gene.  This may create some concern at gene
+boundaries. 
+
+There are further complications.  In yeast, it is very common for two
+genes to overlap each other on opposite strands.  In other organisms,
+a gene may have several transcripts.  For this purpose,
+\Rpackage{Genominator} supports the computation of various gene
+models.
+
+Union-intersection (UI) genes were introduced by \cite{}.  The UI
+representation of a gene is the set of bases that are annotated as
+being part of every transcript of the gene and that are not part of
+any transcript of any other gene.
+
+We may transform our annotation object into a UI representation by
+<<>>=
+yAnno.UI <- makeGeneRepresentation(yAnno, type = "UIgene", gene.id = "ensembl_gene_id",
+                                   transcript.id = "ensembl_transcript_id")
+head(yAnnoUI)
+@ 
+In this step we loose all of the additional columns of the
+\Robject{yAnno} object.
+
+
+\section*{OLD}
 
 With this amount of processing we are now able to do some high level
 analysis.  First we compute, for each annotated region, the number of
@@ -176,6 +356,12 @@ variable sequencing effort.
 <<gof,fig=TRUE,width=8,height=4>>=
 plot(regionGoodnessOfFit(geneCounts, groups = gsub("_[0-9]_f", "", colnames(geneCounts))),
      chisq = TRUE)
+@ 
+
+\section*{SessionInfo}
+
+<<sessionInfo,results=tex,echo=FALSE>>=
+toLatex(sessionInfo())
 @ 
 
 \end{document}

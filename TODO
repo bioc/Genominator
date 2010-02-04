@@ -1,14 +1,12 @@
-* DONE Revisit the creation functions to ensure that we do not write
-  anything with missing values of chr, strand, location. 
+* Include makeGeneRepresentation in vignette.
 
-* DONE Consider renaming the getDB function to something like getConnection.
+* INclude a discussion of the new importFromAlignedReads interface in
+  the vignette.
 
-* makeBackground should be developed.
-
-* Faster version of makeUIgene.
+* Expand the "with ShortRead" vignette.
 
 * Add in functionality for ROC like curves like the PLoS paper.
 
 * Make the interface to GenomeGraphs public.
-
+ 
 * Perhaps add citations to the analyses pages (a CITATION file has been added).

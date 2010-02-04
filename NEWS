@@ -10,10 +10,14 @@
 
 NEW FEATURES
 
+    o	validAnnotation is now public.
+    o	Initial rewrite of the "Working with the ShortRead package"
+	vignette which will contain a fully workable analysis of data
+	from the yeastRNASeq package.
     o	The NEWS files is now parsable by the R function call
 	news(package = "Genominator").
     o	Changed importFromAlignedReads to have only one argument 'x'
-	instead of 'alignedReads' and 'filenames'. 
+	instead of 'alignedReads' and 'filenames'.
     o	Added functionality to importFromAlignedReads so that it is
 	possible to immediately collapse several files together, at
 	the cost of having them all in memory at the same time (this
@@ -56,18 +60,18 @@ NEW FEATURES
 	of different lengths or paired end reads. This support is
 	preliminary, but should allow for a mix of representations.
     o	Added '$' and '[' methods to expData objects to directly query
-	the database. 
+	the database.
     o	Fixed vignette to more correctly describe splitByAnnotation.
     o	Added ability to filter the reads when importing an Eland export file.
     o	Added whereClause to summarizeExpData.
     o	Added sample = FALSE argument to plot function for goodness of
 	fit plots. This allows one to plot fewer than all of the
-	points for smaller pdfs.  
+	points for smaller pdfs.
     o	Added regionGoodnessOfFit.df to work with matrices or
 	data.frames.
     o	Added in-memory ordering to importToExpData; this speeds things
 	up considerably when indexing.
-	       	    
+
 BUG FIXES
 
     o	Fixed bug where colnames are trashed when preserveColnames = T
@@ -80,6 +84,6 @@ BUG FIXES
 	were lost.
 
 %%%% Local Variables:
-%%%% mode: text
+%%%% mode: change-log
 %%%% coding: utf-8
 %%%% End:

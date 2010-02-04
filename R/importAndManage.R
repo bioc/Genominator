@@ -9,6 +9,13 @@ importFromAlignedReads <- function(x, chrMap, dbFilename, tablename,
         stop("ShortRead package must be installed.")
     if(is.null(names(x)) || any(names(x) == ""))
         stop("'x' must have existing, non-empty names")
+    weights.AlignedRead <- function(object, ...) {
+        if("weights" %in% varLabels(alignData(object))) {
+            alignData(object)$"weights"
+        } else {
+            NULL
+        }
+    }
     switch(class(x),
            list = {
                if (!all(sapply(x, class) == "AlignedRead") || 
@@ -23,17 +30,26 @@ importFromAlignedReads <- function(x, chrMap, dbFilename, tablename,
            },
            stop("seems the 'x' argument is wrong")
            )
-
-       
+    
     importObject <- function(name, aln, verbose) {
         loc <- position(aln) + ifelse(strand(aln) == "-", width(aln) - 1, 0)
         str <- c(-1L, 0L, 1L)[match(strand(aln), c("-", "*", "+"))] 
         chr <- match(chromosome(aln), chrMap)
-        ed <- importToExpData(data.frame(chr = chr, location = loc, strand = str), dbFilename = dbFilename,
-                              tablename = name, overwrite = TRUE, verbose = verbose)
-        aggregateExpData(ed, colname = name, overwrite = TRUE, verbose = verbose)
+        if(is.null(weights(aln))) {
+            ed <- importToExpData(data.frame(chr = chr, location = loc, 
+                                             strand = str), dbFilename = dbFilename, tablename = name, 
+                                  overwrite = TRUE, verbose = verbose)
+            aggregateExpData(ed, colname = name, overwrite = TRUE, 
+                             verbose = verbose)
+        } else {
+            ed <- importToExpData(data.frame(chr = chr, location = loc, 
+                                             strand = str, weights = weights(aln)), dbFilename = dbFilename, tablename = name, 
+                                  overwrite = TRUE, verbose = verbose)
+            aggregateExpData(ed, colname = name, overwrite = TRUE, 
+                             verbose = verbose, aggregator = "total(weights)")
+        }
     }
-
+    
     switch(method,
            AlignedReadList = {
                laneNames <- names(x)
