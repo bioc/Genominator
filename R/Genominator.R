@@ -526,8 +526,7 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
     if (dropCols) {
         regions <- cbind(id = id, joinCols)
     } else {
-        regions <- cbind(id = id, joinCols,
-                         annoData[, -which(.ANNO.COLS %in% colnames(annoData)), drop = FALSE])
+        regions <- cbind(id = id, joinCols, annoData[, -which(colnames(annoData) %in% .ANNO.COLS), drop = FALSE])
     }
     con <- getDBConnection(expData)
   

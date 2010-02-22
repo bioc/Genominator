@@ -28,7 +28,9 @@ NEW FEATURES
     o	Added CITATION file.
 
 BUG FIXES
-
+	
+    o   Fixed two bugs discovered by Elizabeth Purdom regarding wrong
+	indexing in .writeRegionsTable and importToExpData. 
     o	Changed some internals of the plotting functionality to make
 	it work with a GenomeGraphs update.
     o	The new version of DBI (0.2-5) fixes the name mangling of the

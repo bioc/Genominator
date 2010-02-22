@@ -106,7 +106,7 @@ importToExpData <- function(df, dbFilename, tablename, overwrite = FALSE,
   df <- df[, c(COLS, setdiff(allCols, COLS))]
 
   ## now make the required columns integers.
-  for (i in length(COLS)) {
+  for (i in 1:length(COLS)) {
     if(!is.numeric(df[,i]))
       stop("df needs only numeric columns")
     if (!is.integer(df[,i]))
