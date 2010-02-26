@@ -217,6 +217,8 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
                               expand = FALSE, addOverStrands = FALSE,
                               verbose = getOption("verbose"))
 {
+  if (!validAnnotation(annoData))
+      stop("argument 'annoData' needs to be valid annotation data.")
   if (is.null(rownames(annoData)))
     stop("need uniqe rownames for the annoData object.")
 
@@ -345,7 +347,9 @@ splitByAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALS
 mergeWithAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FALSE, splitBy = NULL,
                                 verbose = getOption("verbose")) {
   
-    .timeAndPrint(.writeRegionsTable(expData, annoData, dropCols = FALSE),
+  if (!validAnnotation(annoData))
+      stop("argument 'annoData' needs to be valid annotation data.")
+  .timeAndPrint(.writeRegionsTable(expData, annoData, dropCols = FALSE),
                   txt = "writing regions table", print = verbose)
   
   if (what[1] != "*") {
@@ -368,7 +372,7 @@ mergeWithAnnotation <- function(expData, annoData, what = "*", ignoreStrand = FA
 summarizeExpData <- function(expData, what = getColnames(expData, all = FALSE), fxs = c("TOTAL"),
                              preserveColnames = TRUE, whereClause = "",
                              verbose = getOption("verbose")) {
-    originalWhat <- what
+   originalWhat <- what
     
     what <- paste(sapply(fxs, function(f) {
         paste(f, "(", what, ")", sep = "")
@@ -394,6 +398,9 @@ summarizeByAnnotation <- function(expData, annoData, what = getColnames(expData,
                                   ignoreStrand = FALSE, bindAnno = FALSE, preserveColnames = TRUE,
                                   verbose = getOption("verbose"))
 {
+    if (!validAnnotation(annoData))
+        stop("argument 'annoData' needs to be valid annotation data.")
+
     ## bindAnno = TRUE and groupBy != NULL is not compatible
     .timeAndPrint(.writeRegionsTable(expData, annoData, id = groupBy),
                   txt = "writing regions table", print = verbose)

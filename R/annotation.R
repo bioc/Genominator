@@ -52,7 +52,8 @@ makeGeneRepresentation <- function(annoData, type = c("UIgene", "Ugene", "ROCE",
                          start = unlist(lapply(rangesList, function(x) start(x))),
                          end = unlist(lapply(rangesList, function(x) end(x))),
                          strand = getColumn("strand"),
-                         rep(names(rangesList), times = reps))
+                         rep(names(rangesList), times = reps),
+                         stringsAsFactors = FALSE)
         names(df)[5] <- gene.id
         if(length(bindColumns) > 0) {
             names(bindColumns) <- bindColumns
@@ -134,7 +135,7 @@ makeGeneRepresentation <- function(annoData, type = c("UIgene", "Ugene", "ROCE",
         df <- data.frame(chr = chrAnno$chr[1],
                          strand = strand,
                          start = start(background),
-                         end = end(background))
+                         end = end(background), stringsAsFactors = FALSE)
         rownames(df) <- NULL
         df
     }
