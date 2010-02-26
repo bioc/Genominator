@@ -13,7 +13,7 @@ options(width=70)
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
 \newcommand{\Rmethod}[1]{{\texttt{#1}}}
-\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rfuncarg}[1]{{\texttt{#1}}}
 \newcommand{\Rclass}[1]{{\textit{#1}}}
 \newcommand{\Rcode}[1]{{\texttt{#1}}}
 \newcommand{\software}[1]{\textsf{#1}}
@@ -272,7 +272,7 @@ in the import step earlier) and \Rcode{strand} has values in
 $\{-1,1,0\}$ with $0$ indicating that there is no strand information
 (and hence $0$ matches both $1$ and $-1$). 
 <<yAnno>>=
-yAnno <- ensembl.transcript
+yAnno <- yeastAnno.sources$ensembl.transcript
 yAnno$chr <- match(yAnno$chr, c(as.character(as.roman(1:16)), "MT", "2-micron"))
 yAnno$start <- yAnno$start_position
 yAnno$end <- yAnno$end_position
@@ -328,10 +328,10 @@ being part of every transcript of the gene and that are not part of
 any transcript of any other gene.
 
 We may transform our annotation object into a UI representation by
-<<>>=
+<<makeGeneRep>>=
 yAnno.UI <- makeGeneRepresentation(yAnno, type = "UIgene", gene.id = "ensembl_gene_id",
                                    transcript.id = "ensembl_transcript_id")
-head(yAnnoUI)
+head(yAnno.UI)
 @ 
 In this step we loose all of the additional columns of the
 \Robject{yAnno} object.
@@ -344,7 +344,7 @@ analysis.  First we compute, for each annotated region, the number of
 reads hitting that region.  Note that we may double count reads, if
 two regions overlap (which they often do in yeast).
 
-<<geneCounts>>=
+<<geneCounts,eval=FALSE>>=
 geneCounts <- summarizeByAnnotation(eData, yeastAnno, ignoreStrand = TRUE)
 head(geneCounts)
 @ 
@@ -353,7 +353,7 @@ We can see how ``good'' the replicates are by assessing whether it
 fits the Poisson model of constant gene expression across lanes with
 variable sequencing effort. 
 
-<<gof,fig=TRUE,width=8,height=4>>=
+<<gof,fig=TRUE,width=8,height=4,eval=FALSE>>=
 plot(regionGoodnessOfFit(geneCounts, groups = gsub("_[0-9]_f", "", colnames(geneCounts))),
      chisq = TRUE)
 @ 
