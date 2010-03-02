@@ -66,14 +66,18 @@ importFromAlignedReads(x, chrMap, dbFilename,
   If there are duplicates in names of \code{x} the function requires
   enough memory to parse all files with the same column name at the same
   time.
+
+  If the \code{AlignedRead} class object has a \code{weights} column in
+  its \code{alignData} slot, this \code{weights} column is used as the
+  data to aggregate over.
 }
 \value{
   Outputs an object of class \code{ExpData} with a column for each
   element of the \code{x} argument.
 }
 \author{
-  James Bullard \email{bullard@stat.berkeley.edu},
-  Kasper Daniel Hansen \email{khansen@stat.berkeley}
+  James Bullard \email{bullard@berkeley.edu},
+  Kasper Daniel Hansen \email{khansen@jhsph.edu}
 }
 \seealso{
   See \code{Genominator} vignette for more information.

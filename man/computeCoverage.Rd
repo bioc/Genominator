@@ -72,8 +72,8 @@ computeCoverage(expData, annoData,
 }
 
 \author{
-  James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
-  Hansen \email{khansen@stat.berkeley}
+  James Bullard \email{bullard@berkeley.edu}, Kasper Daniel
+  Hansen \email{khansen@jhsph.edu}
 }
 \seealso{
   See the \code{\link{plot.genominator.coverage}} for the plotting

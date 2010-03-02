@@ -55,8 +55,8 @@ collapseExpData(expData, tablename = NULL,
   Returns an object of class \code{ExpData}.
 }
 
-\author{ James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
-  Hansen \email{khansen@stat.berkeley} }
+\author{ James Bullard \email{bullard@berkeley.edu}, Kasper Daniel
+  Hansen \email{khansen@jhsph.edu} }
 
 \seealso{ See \code{Genominator} vignette for more information.  }
 \examples{

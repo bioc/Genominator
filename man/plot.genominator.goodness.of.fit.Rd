@@ -59,8 +59,8 @@ plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE,
   This method is used for its side effect.
 }
 \author{
-  James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
-  Hansen \email{khansen@stat.berkeley}
+  James Bullard \email{bullard@berkeley.edu}, Kasper Daniel
+  Hansen \email{khansen@jhsph.edu}
 }
 \seealso{
   See \code{Genominator} vignette for more information. See also \code{\link{regionGoodnessOfFit}}.

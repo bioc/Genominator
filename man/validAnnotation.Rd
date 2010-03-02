@@ -19,8 +19,8 @@ validAnnotation(annoData)
   This function throws an error if the data.frame is not valid.
 }
 \author{
-  James Bullard <bullard@berkeley.edu>, Kasper Daniel Hansen
-  <khansen@stat.berkeley.edu> 
+  James Bullard \email{bullard@berkeley.edu}, Kasper Daniel Hansen
+  \email{khansen@berkeley.edu}
 }
 \seealso{
   The Genominator user guide.
@@ -29,4 +29,4 @@ validAnnotation(annoData)
 data(yeastAnno)
 validAnnotation(yeastAnno)
 }
-\keyword{ ~kwd1 }
+\keyword{methods}

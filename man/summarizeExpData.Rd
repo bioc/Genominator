@@ -48,8 +48,8 @@ summarizeExpData(expData, what = getColnames(expData, all = FALSE),
   \url{http://www.sqlite.org/lang_aggfunc.html}
 }
 \author{
-  James Bullard \email{bullard@stat.berkeley.edu},
-  Kasper Daniel Hansen \email{khansen@stat.berkeley}
+  James Bullard \email{bullard@berkeley.edu},
+  Kasper Daniel Hansen \email{khansen@jhsph.edu}
 }
 \seealso{
   See \code{Genominator} vignette for more information.

@@ -62,10 +62,11 @@ makeGeneRepresentation(annoData, type = c("UIgene", "Ugene", "ROCE",
   and possibly additional columns.
 }
 \author{
-  Kasper Daniel Hansen <khansen@stat.berkeley.edu>
+  James Bullard \email{bullard@berkeley.edu}, Kasper Daniel Hansen
+  \email{khansen@jhsph.edu}
 }
 \examples{
 data(yeastAnno)
 ui <- makeGeneRepresentation(yeastAnno, type = "background")
 }
-\keyword{ ~kwd1 }
+\keyword{manip}

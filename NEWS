@@ -10,6 +10,12 @@
 
 NEW FEATURES
 
+    o	Added computePrimingWeights and addPrimingWeights; this is a
+	method recentley developed by the authors to try to make RNA-Seq
+	reads more uniformly distributed across expressed transcripts.
+    o	makeGeneRepresentation has been added and made public.  This
+	function computes Union, Union-intersetion, Background and Regions
+	of constant expression (ROCEs) based on annotation.
     o	validAnnotation is now public.
     o	Initial rewrite of the "Working with the ShortRead package"
 	vignette which will contain a fully workable analysis of data

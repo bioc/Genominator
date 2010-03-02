@@ -73,7 +73,7 @@ the constructor function \code{ExpData(dbFilename = "filename.db", tablename
   }
 }
 
-\author{Jim Bullard <bullard@berkeley.edu> and Kasper Daniel Hansen <khansen@stat.berkeley.edu>}
+\author{James Bullard \email{bullard@berkeley.edu}, Kasper Daniel Hansen \email{khansen@jhsph.edu}}
 \seealso{
   The package vignettes.
 }

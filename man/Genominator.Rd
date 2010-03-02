@@ -23,5 +23,5 @@
   \code{citation("Genominator")}.
 }
 \author{James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
-  Hansen \email{khansen@stat.berkeley}}
+  Hansen \email{khansen@jhsph.edu}}
 \keyword{package}

@@ -81,8 +81,8 @@ summarizeByAnnotation(expData, annoData,
   mathematical functions are implemented.  }
 
 \author{
-  James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel
-  Hansen \email{khansen@stat.berkeley}
+  James Bullard \email{bullard@berkeley.edu}, Kasper Daniel
+  Hansen \email{khansen@jhsph.edu}
 }
 \seealso{
   See \code{Genominator} vignette for more information, as well as the \code{\link{ExpData-class}}.
