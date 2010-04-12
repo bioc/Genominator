@@ -4,11 +4,13 @@
 
 importFromAlignedReads <- function(x, chrMap, dbFilename, tablename,
                                    overwrite = TRUE, deleteIntermediates = TRUE,
+                                   readPosition = c("5prime", "left", "center"),
                                    verbose = getOption("verbose"), ...) {
     if (!require(ShortRead))
         stop("ShortRead package must be installed.")
     if(is.null(names(x)) || any(names(x) == ""))
         stop("'x' must have existing, non-empty names")
+    readPosition <- match.arg(readPosition)
     weights.AlignedRead <- function(object, ...) {
         if("weights" %in% varLabels(alignData(object))) {
             alignData(object)$"weights"
@@ -32,7 +34,17 @@ importFromAlignedReads <- function(x, chrMap, dbFilename, tablename,
            )
     
     importObject <- function(name, aln, verbose) {
-        loc <- position(aln) + ifelse(strand(aln) == "-", width(aln) - 1, 0)
+        switch(readPosition,
+               "5prime" = {
+                   loc <- position(aln) + ifelse(strand(aln) == "-", width(aln) - 1, 0)
+               },
+               "left" = {
+                   loc <- position(aln)
+               },
+               "center" = {
+                   loc <- position(aln) + ifelse(strand(aln) == "+", floor(width(aln) / 2) - 1,
+                                                 ceiling(width(aln) / 2) - 1)
+               })
         str <- c(-1L, 0L, 1L)[match(strand(aln), c("-", "*", "+"))] 
         chr <- match(chromosome(aln), chrMap)
         if("weights" %in% varLabels(alignData(aln))) {

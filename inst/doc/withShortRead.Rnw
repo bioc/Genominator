@@ -1,13 +1,16 @@
 %\VignetteIndexEntry{Working with the ShortRead Package}
 %\VignetteDepends{Genominator, ShortRead, yeastRNASeq}
 %\VignettePackage{Genominator}
-\documentclass[12pt]{article}
-<<echo=FALSE>>=
+\documentclass[letterpaper,pdf,english]{article}
+<<results=hide,echo=FALSE>>=
 options(width=70)
 @ 
-\SweaveOpts{eps=FALSE,echo=TRUE}
+\SweaveOpts{prefix.string=plots_withShortRead,eps=FALSE,echo=TRUE}
 \usepackage{times}
 \usepackage{hyperref}
+\usepackage{color}
+\usepackage{babel}
+\usepackage{graphicx}
 
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
@@ -19,11 +22,18 @@ options(width=70)
 \newcommand{\software}[1]{\textsf{#1}}
 \newcommand{\R}{\software{R}}
 
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{}
+\renewcommand{\footrulewidth}{\headrulewidth}
+
 \title{Working with the ShortRead Package}
-\author{James Bullard and Kasper Daniel Hansen}
-\date{Modified: January 15, 2010.  Compiled: \today}
+\author{James Bullard \and Kasper D.\ Hansen}
+\date{Modified: April 12, 2010.  Compiled: \today}
 \begin{document}
 \maketitle
+\thispagestyle{fancy}
 
 \section*{Importing data}
 
@@ -84,17 +94,22 @@ that does not appear in the \Rfuncarg{chrMap} vector, the
 corresponding reads are not imported.  This is often useful, but can
 also lead to loss of data.
 
-We construct the \Rfuncarg{chrMap} object by
+First we look at how the chromosomes look like in the alignment files
+<<yeastChr>>=
+unique(chromosome((yeastAligned[[1]])))
+@ 
+We now construct the \Rfuncarg{chrMap} object by
 <<chrMap>>=
 chrMap <- paste("Scchr", sprintf("%02d", 1:16), sep = "")
-unique(chromosome((yeastAligned[[1]])))
+chrMap
 @ 
 We see that by using this version of \Rfuncarg{chrMap} we will drop
 reads aligning to the mitochondrial chromosome.
 
 The other decision we need to make is how to map filenames to names of
-the columns of the resulting database.  Note that whatever choice we
-make is more or less permanent.  Usually we prefer short, descriptive
+the columns of the resulting database.  Note that one the database is
+created, it is not possible to change the columnnames, so whatever
+choice we make now, is ``permanent''.  Usually we prefer short, descriptive
 names.  It makes a lot of sense to construct these names
 programmatic from the filenames:
 <<filesArgument>>=
@@ -124,6 +139,14 @@ directory.  The reads are automatically associated to the genomic
 location corresponding to the 5' end of the read -- this is slightly
 different from some other programs that uses the lefternmost location
 of the read (the difference is in reads mapping to the reverse strand).
+
+\Rfunction{importFromAlignedReads} reads in the files using
+\Rfunction{readAligned} from \Rpackage{ShortRead}.  Additional
+arguments to \Rfunction{importFromAlignedReads} gets passed to
+\Rfunction{readAligned} -- in the example above we used \Rcode{type =
+  "Bowtie"}.  The function merges the different files into one big
+object and aggregates the reads so at each (stranded) position we know
+how many reads starts at this position.
 
 \section*{Annotation}
 

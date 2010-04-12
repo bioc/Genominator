@@ -47,24 +47,29 @@ addPrimingWeights <- function(aln, weights = NULL, overwrite = FALSE, ...) {
 }
 
 fixWeights <- function(wt, verbose = FALSE) {
-    if(verbose) cat("number of weights", length(wt), "\n")
+    if(verbose) cat("number of weights", length(wt),
+                    "\n", fill = TRUE)
     if(any(is.na(wt))) {
         wh.na <- which(is.na(wt))
-        if(verbose) cat("number of na weights", length(wh.na), "\n")
+        if(verbose) cat("number of na weights", length(wh.na),
+                        "\n", fill = TRUE)
         wt[wh.na] <- 0
         if(any(wt[-wh.na] == 0)) {
-            if(verbose) cat("number of zero weights", sum(wt[-wh.na] == 0), "\n")
+            if(verbose) cat("number of zero weights", sum(wt[-wh.na] == 0),
+                            "\n", fill = TRUE)
             wt[wt == 0] <- 1/100
             wt[wh.na] <- 0
         }
     } else {
         if(any(wt == 0)) {
-            if(verbose) cat("number of zero weights", sum(wt == 0), "\n")
+            if(verbose) cat("number of zero weights", sum(wt == 0),
+                            "\n", fill = TRUE)
             wt[wt == 0] <- 1/100
         }
     }
     if(any(wt == Inf)) {
-        if(verbose) cat("number of Inf weights", sum(wt == Inf), "\n")
+        if(verbose) cat("number of Inf weights", sum(wt == Inf),
+                        "\n", fill = TRUE)
         wt[wt == Inf] <- 100
     }
     wt

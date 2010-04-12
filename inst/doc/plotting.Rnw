@@ -1,83 +1,38 @@
 %\VignetteIndexEntry{Plotting with Genominator}
 %\VignetteDepends{Genominator, biomaRt}
 %\VignettePackage{Genominator}
-\documentclass[letterpaper,12pt]{article}
-
-<<echo=FALSE>>=
-options(width=70)
+\documentclass[letterpaper,english,12pt]{article}
+<<results=hide,echo=FALSE>>=
+options(width = 70)
 @ 
-
-%%%%%%%%%%%%%%%%%%%%%%%% Standard Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage{epsfig}
-\usepackage{graphicx}
-\usepackage{graphics}
-\usepackage{amssymb}
-\usepackage{amsmath}
-\usepackage{mathrsfs}
-\usepackage{fancyvrb}
-\usepackage{caption}
-\usepackage{comment}
-\usepackage{fancyhdr}
+\SweaveOpts{prefix.string=plots_Genominator,eps=FALSE,echo=TRUE}
+\usepackage{times}
 \usepackage{hyperref}
 \usepackage{color}
-
-%%%%%%%%%%%%%%%%%%%%%%%% Adapted from Sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\DefineVerbatimEnvironment{Rcode}{Verbatim}{fontshape=sl, frame=single, 
-  framesep=2mm, fontsize=\small, baselinestretch=.5}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%% My macros (which of course are borrowed from a million ... %%
-\def\argmax{\operatornamewithlimits{arg\,max}}
-\def\argmin{\operatornamewithlimits{arg\,min}}
+\usepackage{babel}
+\usepackage{graphicx}
 
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
-\newcommand{\myurl}[1]{\href{http://#1}{\textcolor{red}{\texttt{#1}}}}
-\newcommand{\myem}[1]{\structure{#1}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfuncarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\software{R}}
 
-%%%%%%%%%%%%%%%%%%%%%%%% Page and Document Setup %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\addtolength{\oddsidemargin}{-0.875in}
-\addtolength{\topmargin}{-0.875in}
-\addtolength{\textwidth}{1.75in}
-\addtolength{\textheight}{1.75in}
-
-\captionsetup{margin=15pt,font=small,labelfont=bf}
-
-\renewcommand{\topfraction}{0.9}        % max fraction of floats at top
-\renewcommand{\bottomfraction}{0.8}     % max fraction of floats at bottom
-
-% Parameters for TEXT pages (not float pages):
-\setcounter{topnumber}{2}
-\setcounter{bottomnumber}{2}
-\setcounter{totalnumber}{4}             % 2 may work better
-\setcounter{dbltopnumber}{2}            % for 2-column pages
-\renewcommand{\dbltopfraction}{0.9}     % fit big float above 2-col. text
-\renewcommand{\textfraction}{0.07}      % allow minimal text w. figs
-
-% Parameters for FLOAT pages (not text pages):
-\renewcommand{\floatpagefraction}{0.7}          % require fuller float pages
-
-% N.B.: floatpagefraction MUST be less than topfraction !!
-\renewcommand{\dblfloatpagefraction}{0.7}       % require fuller float pages
-
-%%%%%%%%%%%%%%%%%%%%%%% options for sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\SweaveOpts{prefix.string=plots_plotting,eps=FALSE}
-
-%%%%%%%%%%%%%%%%%%%%%% headers and footers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagestyle{fancy} 
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{}
 \renewcommand{\footrulewidth}{\headrulewidth}
 
-%%%%%%%%%%%%%%%%%%%%%%%%% bibliography  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliographystyle{plainnat}
-
-%%%%%%%%%%%%%%%%%%%%%%% opening %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Plotting using Genominator and GenomeGraphs (Beta)}
-\author{James Bullard, Kasper Daniel Hansen}
+\author{James Bullard \and Kasper Daniel Hansen}
 \begin{document}
 \maketitle
+\thispagestyle{fancy}
 \textcolor{red}{This vignette is preliminary, and should be viewed as
   subject to change. A number of the functions are not directly
   exported by the package -- there is a reason for that.}
@@ -135,15 +90,15 @@ is to use Ensembl to do the plotting of the annotation. Often, however,
 you will want to augment the annotation produced by Ensembl.
 
 <<fig=TRUE>>=
-annoFactory <- Genominator:::makeAnnoFactory.AnnoData(annoData, featureColumnName = "feature", 
-                                                      groupColumnName = NULL, idColumnName = NULL,
-                                                      dp = DisplayPars("gene" = "blue", 
-                                                        "intergenic" = "green"))
+annoFactory <- Genominator:::makeAnnoFactory(annoData, featureColumnName = "feature", 
+                                             groupColumnName = NULL, idColumnName = NULL,
+                                             dp = DisplayPars("gene" = "blue", 
+                                             "intergenic" = "green"))
 rp <- Genominator:::makeRegionPlotter(list("track.1" = list(expData = eData, what = "counts",
-                               dp = DisplayPars(lwd=.2, color = "grey")),
-                             "track.2" = list(expData = eData, what = "counts", 
-                               fx = log2, DisplayPars(lwd=.3, color = "black"))),
-                        annoFactory = annoFactory)
+                                           dp = DisplayPars(lwd=.2, color = "grey")),
+                                           "track.2" = list(expData = eData, what = "counts", 
+                                           fx = log2, DisplayPars(lwd=.3, color = "black"))),
+                                      annoFactory = annoFactory)
 rp(annoData[1,"chr"], annoData[1, "start"] - 100, annoData[1, "end"] + 100)
 @ 
 
@@ -157,7 +112,7 @@ numerals denoting the chromosomes).
 <<fig=TRUE>>=
 require("biomaRt")
 mart <- useMart("ensembl", dataset = "scerevisiae_gene_ensembl")
-annoFactory <- Genominator:::makeAnnoFactory.Biomart(mart, chrFunction = function(chr) as.roman(chr))
+annoFactory <- Genominator:::makeAnnoFactory(mart, chrFunction = function(chr) as.roman(chr))
 
 load(system.file("data", "chr1_yeast.rda", package = "Genominator"))
 head(chr1_yeast)

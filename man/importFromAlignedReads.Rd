@@ -13,6 +13,7 @@
 \usage{
 importFromAlignedReads(x, chrMap, dbFilename,
   tablename, overwrite = TRUE, deleteIntermediates = TRUE,
+  readPosition = c("5prime", "left", "center"),
   verbose = getOption("verbose"), \dots)
 }
 
@@ -48,6 +49,15 @@ importFromAlignedReads(x, chrMap, dbFilename,
     Logical indicating whether intermediate database tables constructed
     in the process should be removed. 
   }
+  \item{readPosition}{
+    How each read is assigned a unique genomic location.  Default is
+    \code{"5prime"} indicating that the location is the position of the
+    5' end of the reads, \code{"left"} indicates that the position of
+    the left part of the read is used (5' end for reads mapping to the
+    forward strand, 3' for reads mapping to the reverse strand),
+    \code{"center"} indicates that the position of the center of the
+    read is used.
+  }
   \item{verbose}{
     Logical indicating whether details should be printed.
   }
@@ -59,7 +69,8 @@ importFromAlignedReads(x, chrMap, dbFilename,
   The reads are aggregated and joined to form a database where each
   file/list element is a column.  Positions are stored as the position
   of the 5' end of the reads (note that this differs from the convention
-  for the \code{AlignedRead} class from \pkg{ShortRead}.
+  for the \code{AlignedRead} class from \pkg{ShortRead}.)  This can be
+  changed by the \code{readPosition} argument.
 
   If the \code{x} argument is a character vector of filenames, the
   function will require enough memory to parse each input file in turn.

@@ -18,7 +18,7 @@ emZeroInflated <- function(v, dfx, maxiter = 300, tol = 1e-5,
                            verbose = getOption("verbose")) {
     mu.start <- mean(v[v != 0]) 
     pi.start <- 1 - mean(v == 0)
-    if (verbose) cat("mu:", mu.start, "pi:", pi.start, "\n")
+    if (verbose) cat("mu:", mu.start, "pi:", pi.start, "\n", fill = TRUE)
 
     loop <- TRUE
     iter <- 1
@@ -44,7 +44,8 @@ emZeroInflated <- function(v, dfx, maxiter = 300, tol = 1e-5,
         iter <- 1 + iter 
         
         if (verbose) 
-            if (iter %% 20 == 0) cat("mu:", mu.start, "pi:", pi.start, "\n")
+            if (iter %% 20 == 0) cat("mu:", mu.start, "pi:", pi.start,
+                        "\n", fill = TRUE)
         
         if (iter >= maxiter) {
             warning("Failed to converge in EM.")

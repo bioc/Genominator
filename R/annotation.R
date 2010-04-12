@@ -158,6 +158,10 @@ makeGeneRepresentation <- function(annoData, type = c("UIgene", "Ugene", "ROCE",
                   bindOK)
         representation <- computeUorUI
     }, "Ugene" = {
+        if(is.null(gene.id)) {
+            gene.id <- "FAKE_GENE_ID"
+            annoData$"FAKE_GENE_ID" <- "A"
+        }
         stopifnot(gene.id %in% names(annoData),
                   bindOK)
         representation <- computeUorUI

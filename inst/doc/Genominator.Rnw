@@ -1,84 +1,39 @@
 %\VignetteIndexEntry{The Genominator User Guide}
 %\VignetteDepends{Genominator}
 %\VignettePackage{Genominator}
-\documentclass[letterpaper,12pt]{article}
-
-%%%%%%%%%%%%%%%%%%%%%%%% Standard Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage{epsfig}
-\usepackage{graphicx}
-\usepackage{graphics}
-\usepackage{amssymb}
-\usepackage{amsmath}
-\usepackage{mathrsfs}
-\usepackage{fancyvrb}
-\usepackage{caption}
-\usepackage{comment}
-\usepackage{fancyhdr}
-\usepackage{hyperref}
+\documentclass[letterpaper,pdf,english]{article}
+<<results=hide,echo=FALSE>>=
+options(width = 70)
+@ 
+\SweaveOpts{prefix.string=plots_Genominator,eps=FALSE,echo=TRUE}
 \usepackage{times}
+\usepackage{hyperref}
 \usepackage{color}
-
-%%%%%%%%%%%%%%%%%%%%%%%% Adapted from Sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\DefineVerbatimEnvironment{Rcode}{Verbatim}{fontshape=sl, frame=single, 
-  framesep=2mm, fontsize=\small, baselinestretch=.5}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%% My macros (which of course are borrowed from a million ... %%
-\def\argmax{\operatornamewithlimits{arg\,max}}
-\def\argmin{\operatornamewithlimits{arg\,min}}
+\usepackage{babel}
+\usepackage{graphicx}
 
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
-\newcommand{\myurl}[1]{\href{http://#1}{\textcolor{red}{\texttt{#1}}}}
-\newcommand{\myem}[1]{\structure{#1}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfuncarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\software{R}}
 
-%%%%%%%%%%%%%%%%%%%%%%%% Page and Document Setup %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\addtolength{\oddsidemargin}{-0.875in}
-\addtolength{\topmargin}{-0.875in}
-\addtolength{\textwidth}{1.75in}
-\addtolength{\textheight}{1.75in}
-
-\captionsetup{margin=15pt,font=small,labelfont=bf}
-
-\renewcommand{\topfraction}{0.9}        % max fraction of floats at top
-\renewcommand{\bottomfraction}{0.8}     % max fraction of floats at bottom
-
-% Parameters for TEXT pages (not float pages):
-\setcounter{topnumber}{2}
-\setcounter{bottomnumber}{2}
-\setcounter{totalnumber}{4}             % 2 may work better
-\setcounter{dbltopnumber}{2}            % for 2-column pages
-\renewcommand{\dbltopfraction}{0.9}     % fit big float above 2-col. text
-\renewcommand{\textfraction}{0.07}      % allow minimal text w. figs
-
-% Parameters for FLOAT pages (not text pages):
-\renewcommand{\floatpagefraction}{0.7}          % require fuller float pages
-
-% N.B.: floatpagefraction MUST be less than topfraction !!
-\renewcommand{\dblfloatpagefraction}{0.7}       % require fuller float pages
-
-%%%%%%%%%%%%%%%%%%%%%%% options for sweave %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\SweaveOpts{prefix.string=plots_genominator,eps=FALSE}
-
-%%%%%%%%%%%%%%%%%%%%%% headers and footers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagestyle{fancy} 
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{}
 \renewcommand{\footrulewidth}{\headrulewidth}
 
-%%%%%%%%%%%%%%%%%%%%%%%%% bibliography  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliographystyle{plainnat}
-
-%%%%%%%%%%%%%%%%%%%%%%% opening %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{The Genominator User Guide}
-\author{James Bullard, Kasper Daniel Hansen}
+\author{James Bullard \and Kasper D.\ Hansen}
+\date{Modified: April 12, 2010, Compiled: \today}
 \begin{document}
 \maketitle
-
-<<initialize,echo=FALSE,results=hide>>=
-options(width = 70)
-@ 
+\thispagestyle{fancy}
 
 <<debug>>=
 ## -- For Debugging / Timing 
@@ -233,7 +188,8 @@ vignette to illustrate other aspects of the package.
 
 For an example of importing ``real'' next generation sequence data,
 see the companion vignette on working with the \Rpackage{ShortRead}
-package.
+package, which illustrates the use of
+\Rfunction{importFromAlignedReads}.
 
 The data can be thought of as next generation sequencing data ($N$
 number of reads), in an organism with 16 chromosomes and a small
@@ -255,7 +211,8 @@ eDataRaw
 head(eDataRaw)
 @ 
 
-The \Robject{df} object contains unsorted reads.  \Robject{eDataRaw}
+The \Robject{df} object contains unsorted reads, which is imported
+using \Rfunction{importToExpData}.  \Robject{eDataRaw}
 is an example of an ExpData object, the core object in Genominator.
 Such an object essentially points to a specific table in a specific
 database (in SQLite a database is a file).  The data in
@@ -292,16 +249,16 @@ The input ExpData object points to table \texttt{ex\_tbl} in database
 \texttt{my.db}.  The output ExpData object (currently) always uses the
 same database as the input object, possibly with a different name (in
 this case \texttt{counts\_tbl}).  All functions that manipulate
-databases have the arguments \texttt{overwrite} and
-\texttt{deleteOriginal}.  If \texttt{deleteOriginal} is \texttt{TRUE},
-the original table (in this case \texttt{ex\_tbl}) is deleted.  If
-\texttt{tablename} is \texttt{NULL} (default), the function does a
-destructive in-place modification of the table.
+databases have the arguments \Rfuncarg{overwrite} and
+\Rfuncarg{deleteOriginal}.  If \Rcode{deleteOriginal = TRUE}, the
+original table (in this case \texttt{ex\_tbl}) is deleted.  If
+\Rcode{tablename = NULL} (default), the function does a destructive
+in-place modification of the table.
 
 It is possible to break ExpData objects.  For example, if we had used
-the \Rfunction{aggregateExpData} function with \texttt{deleteOriginal
+the \Rfunction{aggregateExpData} function with \Rcode{deleteOriginal
   = TRUE}, the table that \Robject{eDataRaw} points to would have been
-deleted.  Or, if the function had been used with \texttt{tablename =
+deleted.  Or, if the function had been used with \Rcode{tablename =
   NULL} (default), both \Robject{eDataRaw} and \Robject{eData} would
 point to the same table in the database, but the schema recorded in
 \Robject{eDataRaw} during instantiation would be out of date because
@@ -423,7 +380,7 @@ head(eDataJoin)
 
 In this example both \Robject{eData1} and \Robject{eData2} have a
 column named \texttt{counts} that we rename in the resulting object
-using the \texttt{fields} argument.  Also missing values are introduced
+using the \Rfuncarg{fields} argument.  Also missing values are introduced
 when the locations in one object are not present in the other.  Finally,
 the \Rfunction{joinExpData} function supports joining an arbitrary
 number of ExpData objects.
@@ -459,9 +416,9 @@ head(collapseExpData(eDataJoin, tablename = "collapsed", collapse = "weighted.av
 head(collapseExpData(eDataJoin, tablename = "collapsed", collapse = "avg", overwrite = TRUE))
 @ 
 
-In this case setting \texttt{collapse} equal to \texttt{avg} or
-\texttt{weighted.avg} respectively yields the exact same result,
-since the two experiments have the same number of reads.
+In this case setting \Rcode{collapse = "avg"} or \Rcode{collapse =
+  "weighted.avg"} respectively yields the exact same result, since the
+two experiments have the same number of reads.
 
 \section{Interface}
 
@@ -490,7 +447,7 @@ ss <- summarizeExpData(eData, what = "counts")
 ss
 @
 
-The \texttt{what} argument is present in many of the following
+The \Rfuncarg{what} argument is present in many of the following
 functions.  It refers to which columns are being used, and in general
 the default depends on the type of function.  If the function
 summarizes data, the default is ``all columns, except the genomic
@@ -498,8 +455,8 @@ location columns'', whereas if the function retrieves data, the
 default is ``all columns''.
 
 We can customize the summary by specifying the name of any SQLite
-function (\myurl{www.sqlite.org/lang\_aggfunc.html}) in the
-\texttt{fxs} argument
+function (\url{www.sqlite.org/lang\_aggfunc.html}) in the
+\Rfuncarg{fxs} argument
 
 <<sumEx2>>=
 summarizeExpData(eData, what = "counts", fxs = c("MIN", "MAX"))
@@ -554,14 +511,14 @@ head(summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("COUNT", "T
 @ 
 
 The result of \Rfunction{summarizeByAnnotation} is a
-\Robject{data.frame}.  We use \texttt{bindAnno = TRUE} in order to
+\Robject{data.frame}.  We use \Rcode{bindAnno = TRUE} in order to
 keep the annotation as part of the result, which is often very useful.
 
-The \texttt{fxs} argument takes the names of SQLite functions, see
-\myurl{www.sqlite.org/lang\_aggfunc.html}.  One important note
+The \Rfuncarg{fxs} argument takes the names of SQLite functions, see
+\url{www.sqlite.org/lang\_aggfunc.html}.  One important note
 regarding summation: the standard SQL function \texttt{SUM} handles
 the sum of only missing values, which in R is expressed as
-\texttt{sum(NA)}, differently from the SQLite specific function
+\Rcode{sum(NA)}, differently from the SQLite specific function
 \texttt{TOTAL}. In particular, the \texttt{SUM} function returns a
 missing value and the \texttt{TOTAL} function returns a zero.  This
 is relevant when summarizing over a genomic region containing no reads
@@ -590,18 +547,27 @@ lapply(res, head)
 @ 
 
 Finally, we might want to join the relevant annotation to the summaries
-using the \texttt{bindAnno} argument.
+using the \Rfuncarg{bindAnno} argument.
 <<summarizeByAnnotationExampleSplit2>>=
 res <- summarizeByAnnotation(eData, annoData, what = "counts", fxs = c("TOTAL", "COUNT"), 
                              splitBy = "feature", bindAnno = TRUE)
 lapply(res, head)
 @ 
-(Both of these example might require \texttt{ignoreStrand = TRUE} in a
+(Both of these example might require \Rcode{ignoreStrand = TRUE} in a
 real world application.)
 
 Unfortunately, the \Rfunction{summarizeByAnnotation} function is only
 able to utilize the very small set of SQLite functions, essentially
 limiting the function to computing very simple summaries.  
+
+We also mention the \Rfuncarg{groupBy} argument to
+\Rfunction{summarizeByAnnotation}.  This argument allows for an
+additional summarization level, used in the following way: assume that
+the \Robject{annoData} object has rows corresponding to exons and that
+there is an additional column (say \texttt{gene\_id}) describing how
+exons are grouped into genes.  If \Rcode{groupBy = "gene\_id"} the
+final object will have one line per gene, containing the summarized
+data over each set of exons.
 
 We will now examine the \Rfunction{splitByAnnotation} function that
 splits the data according to annotation and returns the ``raw'' data.
@@ -651,7 +617,7 @@ applyMapped(a, annoData, FUN = function(region, anno) {
 })[1:10]
 @ 
 This example computes the average number of reads per base, taking
-into account that bases without data exists.  Note that \texttt{FUN}
+into account that bases without data exists.  Note that \Rfuncarg{FUN}
 needs to be a function of two arguments.
 
 What we see is that some of our regions are not present. This is a

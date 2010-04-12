@@ -54,11 +54,11 @@ setClass("ExpData",
          prototype(indexColumns = c("chr", "location", "strand")))
 
 setMethod("show", "ExpData", function(object) {
-    cat("table:", getTablename(object), "\n")
-    cat("database file:", getDBFilename(object), "\n")
-    cat("index columns:", getIndexColumns(object), "\n")
-    cat("mode:", getMode(object), "\n")
-    cat("schema:\n")
+    cat("table:", getTablename(object), "\n", fill = TRUE)
+    cat("database file:", getDBFilename(object), "\n", fill = TRUE)
+    cat("index columns:", getIndexColumns(object), "\n", fill = TRUE)
+    cat("mode:", getMode(object), "\n", fill = TRUE)
+    cat("schema:\n", fill = TRUE)
     print(getSchema(object))
 })
 
@@ -483,13 +483,13 @@ applyMapped <- function(mapped, annoData, FUN, bindAnno = FALSE) {
 .timeAndPrint <- function(exp, txt, print = TRUE, query = NULL) {
     if (print) {
         if (!is.null(query))
-            cat(paste("SQL query:", query, "\n"), fill = TRUE)
-        cat(txt, ": ", sep = "")
+            cat("SQL query:", strsplit(query, " ")[[1]], "\n", fill = TRUE)
+        cat(txt, ": ", sep = "", fill = TRUE)
     }
     time <- round(system.time(exp)[3], 4)
 
     if (print) {
-        cat(time, "sec\n")
+        cat(time, "sec\n", fill = TRUE)
     }
 }
 
