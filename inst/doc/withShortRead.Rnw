@@ -3,7 +3,7 @@
 %\VignettePackage{Genominator}
 \documentclass[letterpaper,pdf,english]{article}
 <<results=hide,echo=FALSE>>=
-options(width=70)
+options(width=80)
 @ 
 \SweaveOpts{prefix.string=plots_withShortRead,eps=FALSE,echo=TRUE}
 \usepackage{times}
@@ -30,33 +30,34 @@ options(width=70)
 
 \title{Working with the ShortRead Package}
 \author{James Bullard \and Kasper D.\ Hansen}
-\date{Modified: April 12, 2010.  Compiled: \today}
+\date{Modified: April 18, 2010.  Compiled: \today}
 \begin{document}
 \maketitle
 \thispagestyle{fancy}
-
-\section*{Importing data}
 
 In this document we show how to use the \Rpackage{Genominator} package
 with the \Rpackage{ShortRead} package and conduct a simple
 differential expression analysis.
 
-<<packages,results=hide>>=
+\section{Importing data}
+
+<<packages>>=
 require(Genominator)
 require(ShortRead)
 require(yeastRNASeq)
 @ 
 
 The data we will use are described in the vignette of the
-\Rpackage{yeastRNASeq}.  But to summarize, we have data from two
-different yeasts, a wild-type strain (``\texttt{wt}'') and a mutant
-strain (``\texttt{mut}'').  Part of the RNA degradation pathway is
-knocked out in the mutant.  For each strain we have two lanes worth of
-data -- it is the exact same sample and library preparation sequenced
-in both lanes.  Only 500,000 raw reads from each lane is part of the
-\Rpackage{yeastRNASeq} package and they have been aligned with Bowtie,
-keeping only unique hits with up to two mismatches.  Since not all
-reads align, we will be working with a up to 500,000 reads per lane.
+\Rpackage{yeastRNASeq} and was originally published in \cite{Lee}.
+But to summarize, we have data from two different yeasts, a wild-type
+strain (``\texttt{wt}'') and a mutant strain (``\texttt{mut}'').  Part
+of the RNA degradation pathway is knocked out in the mutant.  For each
+strain we have two lanes worth of data -- it is the exact same sample
+and library preparation sequenced in both lanes.  Only 500,000 raw
+reads from each lane is part of the \Rpackage{yeastRNASeq} package and
+they have been aligned with Bowtie, keeping only unique hits with up
+to two mismatches.  Since not all reads align, we will be working with
+a up to 500,000 reads per lane.
 
 The data is available as a list of \Rclass{AlignedRead} class objects:
 <<yeastAligned>>=
@@ -94,22 +95,17 @@ that does not appear in the \Rfuncarg{chrMap} vector, the
 corresponding reads are not imported.  This is often useful, but can
 also lead to loss of data.
 
-First we look at how the chromosomes look like in the alignment files
-<<yeastChr>>=
-unique(chromosome((yeastAligned[[1]])))
-@ 
-We now construct the \Rfuncarg{chrMap} object by
+We construct the \Rfuncarg{chrMap} object by
 <<chrMap>>=
 chrMap <- paste("Scchr", sprintf("%02d", 1:16), sep = "")
-chrMap
+unique(chromosome((yeastAligned[[1]])))
 @ 
 We see that by using this version of \Rfuncarg{chrMap} we will drop
 reads aligning to the mitochondrial chromosome.
 
 The other decision we need to make is how to map filenames to names of
-the columns of the resulting database.  Note that one the database is
-created, it is not possible to change the columnnames, so whatever
-choice we make now, is ``permanent''.  Usually we prefer short, descriptive
+the columns of the resulting database.  Note that whatever choice we
+make is more or less permanent.  Usually we prefer short, descriptive
 names.  It makes a lot of sense to construct these names
 programmatic from the filenames:
 <<filesArgument>>=
@@ -140,15 +136,7 @@ location corresponding to the 5' end of the read -- this is slightly
 different from some other programs that uses the lefternmost location
 of the read (the difference is in reads mapping to the reverse strand).
 
-\Rfunction{importFromAlignedReads} reads in the files using
-\Rfunction{readAligned} from \Rpackage{ShortRead}.  Additional
-arguments to \Rfunction{importFromAlignedReads} gets passed to
-\Rfunction{readAligned} -- in the example above we used \Rcode{type =
-  "Bowtie"}.  The function merges the different files into one big
-object and aggregates the reads so at each (stranded) position we know
-how many reads starts at this position.
-
-\section*{Annotation}
+\section{Annotation}
 
 There are at least two easy ways to retrieve annotation using
 \software{Bioconductor}: the \Rpackage{biomaRt} package which accesses
@@ -156,7 +144,7 @@ Ensembl and the \Rpackage{rtracklayer} package which accesses the UCSC
 genome browser.  There are oftentimes species-specific databases (for
 yeast we have at least SGD) which is a third source of annotation.
 
-\subsection{Using biomaRt}
+\subsection*{Using biomaRt}
 
 We will use \Rpackage{biomaRt} to retrieve information from the
 Ensembl database.  We will illustrate a few pitfalls by comparing two
@@ -210,7 +198,7 @@ In this case, we would argue that the right object to use is
 \Robject{yeastAnno.transcripts}.  Below we will post-process this
 object for use with \Rpackage{Genominator}.
 
-\subsection{Using rtracklayer}
+\subsection*{Using rtracklayer}
 
 Here we will use the \Rpackage{rtracklayer} package to access the UCSC
 genome browser.  UCSC sometimes have different tables for a specific
@@ -303,12 +291,17 @@ rownames(yAnno) <- yAnno$ensembl_exon_id
 yAnno.simple <- yAnno[yAnno$chr %in% 1:16, c("chr", "start", "end", "strand")]
 head(yAnno.simple, n = 2)
 head(yAnno, n = 2)
-validAnnotation(yAnno)
 @ 
 (note that we remove all annotation on the mitochondria and the
 plasmid).
 
-\section*{Gene level counts}
+A useful function is \Rfunction{validAnnotation} that checks whether
+the produced \Robject{data.frame} satisfy the annotation assumptions
+<<validAnno>>=
+validAnnotation(yAnno)
+@ 
+
+\section{Gene level counts}
 
 It is easy to obtain region level counts for a given annotation object:
 <<geneCounts.1>>=
@@ -359,26 +352,82 @@ head(yAnno.UI)
 In this step we loose all of the additional columns of the
 \Robject{yAnno} object.
 
+\section{Statistical Analysis}
 
-\section*{OLD}
 
-With this amount of processing we are now able to do some high level
-analysis.  First we compute, for each annotated region, the number of
-reads hitting that region.  Note that we may double count reads, if
-two regions overlap (which they often do in yeast).
-
-<<geneCounts,eval=FALSE>>=
-geneCounts <- summarizeByAnnotation(eData, yeastAnno, ignoreStrand = TRUE)
-head(geneCounts)
-@ 
 
 We can see how ``good'' the replicates are by assessing whether it
 fits the Poisson model of constant gene expression across lanes with
 variable sequencing effort. 
 
 <<gof,fig=TRUE,width=8,height=4,eval=FALSE>>=
-plot(regionGoodnessOfFit(geneCounts, groups = gsub("_[0-9]_f", "", colnames(geneCounts))),
-     chisq = TRUE)
+groups <- gsub("_[0-9]_f", "", colnames(geneCounts))
+groups
+plot(regionGoodnessOfFit(geneCounts, groups), chisq = TRUE)
+@ 
+
+\section{Working with Priming Weights}
+
+In a recent publication \cite{Hansen} we describe how the use of
+random priming for Illumina RNA-Seq impacts the nucleotide content of
+the reads and we describe a method for alleviating this bias.
+
+The method associates a weight with each read and instead of counting
+the number of reads in a given genomic interval, the weights
+in the interval are summed.  Because of this, the use of weights
+happen at the data import step.
+
+Since our example data was generated using random priming, we
+illustrate the methodology.  The first step is to compute the weights
+using the function \Rfunction{computePrimingWeights} and an
+\Rclass{AlignedRead} object.  Next, the weights are associated with
+each read using \Rfunction{addPrimingWeights}.  Once reads have an
+associated weight, the \Rfunction{importFromAlignedReads} function
+uses these.  Because of the need to compute the weights, for now, it
+is not possible to have \Rfunction{importFromAlignedReads} work
+directly on filenames.
+
+We start with the \Robject{yeastAligned} object which was simply a list
+of \Rclass{AlignedRead}, generated using an \Rfunction{lapply} on a
+vector of filenames.
+
+In this case, we have around 410.000-430.000 reads per sample, with
+each read having a length of only 26 bases.  In order to compute the
+priming weights we need to assess the $k$-mer distribution at the end
+of the reads.  In \cite{Hansen}, the end is based on reads having at
+least 35 bases, so we need to modify this.  We also makes the weights
+a bit shorter (as described in Hansen et al., this does not change the
+effect much)
+
+<<computePrimingWeights>>=
+weightsList <- lapply(yeastAligned, computePrimingWeights, 
+                      unbiasedIndex = 20:21, weightsLength = 6L)
+sapply(weightsList, summary)
+@ 
+
+We will continue with a separate set of weights for each lane.
+
+<<addPrimingWeights>>=
+yeastAligned2 <- mapply(addPrimingWeights, yeastAligned, weightsList)
+alignData(yeastAligned2[[1]])
+head(alignData(yeastAligned2[[1]])$weights)
+@ 
+
+Now the weights have been added the \Rclass{AlignedRead} objects.
+Once this has happened, \Rfunction{importFromAlignedReads} will use
+them.
+
+<<importWithWeights>>=
+eData2 <- importFromAlignedReads(yeastAligned2, chrMap = chrMap,
+                                 dbFilename = "my.db", tablename = "weights")
+@ 
+
+We can now easily get the re-weighted gene level counts as usual.
+
+<<reweightedCounts>>=
+reweightedCounts <- summarizeByAnnotation(eData2, yAnno, ignoreStrand = TRUE, 
+                                          groupBy = "ensembl_gene_id")
+head(reweightedCounts)
 @ 
 
 \section*{SessionInfo}
@@ -386,5 +435,27 @@ plot(regionGoodnessOfFit(geneCounts, groups = gsub("_[0-9]_f", "", colnames(gene
 <<sessionInfo,results=tex,echo=FALSE>>=
 toLatex(sessionInfo())
 @ 
+
+
+\begin{thebibliography}{30}
+\bibitem{Lee}
+Lee,A., Hansen,K.D., Bullard,J., Dudoit,S. and Sherlock,G. (2008)
+Novel Low Abundance and Transient RNAs in Yeast Revealed by Tiling
+Microarrays and Ultra High-Throughput Sequencing Are Not Conserved
+Across Closely Related Yeast Species.
+\textit{PLoS Genet}, \textbf{4}e1000299.
+
+\bibitem{Bullard}
+Bullard,J.H., Purdom,E.A., Hansen,K.D., and Dudoit,S. (2010)
+Evaluation of statistical methods for normalization and differential
+expression in mRNA-Seq experiments.
+\textit{BMC Bioinformatics}, \textbf{11}, 94. 
+
+\bibitem{Hansen}
+Hansen,K.D., Brenner,S.E. and Dudoit,S. (2010)
+Biases in Illumina transcriptome sequencing caused by random
+hexamer priming.
+\textit{Nucleic Acids Res}, doi: 10.1093/nar/gkq224
+\end{thebibliography}
 
 \end{document}

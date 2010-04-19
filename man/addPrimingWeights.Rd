@@ -35,16 +35,25 @@ addPrimingWeights(aln, weights = NULL, overwrite = FALSE, ...)
 }
 \references{
   Hansen, K. D., Brenner, S. E. and Dudoit, S (2010) Biases in Illumina
-  transcriptome sequencing caused by random hexamer priming.
+  transcriptome sequencing caused by random hexamer priming.  Nucleic
+  Acids Res, doi:10.1093/nar/gkq224
 }
 \author{
   Kasper Daniel Hansen \email{khansen@jhsph.edu}.
 }
 
 \seealso{
-  \code{\link{computePrimingWeights}}
+  \code{\link{computePrimingWeights}} and the extended example in the
+  'Working with ShortRead' vignette.
 }
 \examples{
-
+if(require(ShortRead)) {
+  bwt.file <- system.file("extdata", "bowtie", "s_1_aligned_bowtie.txt",
+                          package="ShortRead")
+  aln <- readAligned(bwt.file, type = "Bowtie")
+  weights <- computePrimingWeights(aln, weightsLength = 2L)
+  aln <- addPrimingWeights(aln, weights = weights)
+  head(alignData(aln)$weights)
+}
 }
 \keyword{manip}

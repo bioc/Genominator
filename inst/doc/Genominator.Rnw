@@ -3,7 +3,7 @@
 %\VignettePackage{Genominator}
 \documentclass[letterpaper,pdf,english]{article}
 <<results=hide,echo=FALSE>>=
-options(width = 70)
+options(width = 80)
 @ 
 \SweaveOpts{prefix.string=plots_Genominator,eps=FALSE,echo=TRUE}
 \usepackage{times}
@@ -30,7 +30,7 @@ options(width = 70)
 
 \title{The Genominator User Guide}
 \author{James Bullard \and Kasper D.\ Hansen}
-\date{Modified: April 12, 2010, Compiled: \today}
+\date{Modified: April 18, 2010, Compiled: \today}
 \begin{document}
 \maketitle
 \thispagestyle{fancy}
@@ -68,6 +68,8 @@ possible to work with very large datasets in limited memory.  However,
 working with SQLite databases is limited by I/O (disk speed), and
 substantial performance gains are possible by using a fast disk.
 
+Work using this package should cite \cite{Bullard}.
+
 \subsection*{Limitations}
 
 While data may be stored in different ways using the experimental data
@@ -91,7 +93,7 @@ counting the number of reads falling in annotated exons.  In the
 following we describe what we mean by experimental and annotation
 data. 
 
-\subsection{Experimental data}
+\subsection*{Experimental data}
 
 The package utilizes \Rpackage{RSQLite} to store the data
 corresponding to an experiment. The SQL data model is:
@@ -142,7 +144,7 @@ chr, strand, location, counts
 \end{itemize}
 
 
-\subsection{Annotation data}
+\subsection*{Annotation data}
 
 Unlike experimental data, which is stored in an SQLite database, we
 represent annotation as an R \Robject{data.frame} with the following
@@ -178,7 +180,7 @@ summarize data and finally functions that operate on retrieved data
 In the next two sections we will generate experimental data and
 annotation data for use in later examples.
 
-\subsection{Creating Experimental Data}
+\subsection*{Creating Experimental Data}
 
 We are going to walk through a very simple example using simulated
 experimental data to present the data import pipeline.  This example
@@ -294,7 +296,7 @@ head(eData$chr)
 eData[1:3, 1:2]
 @ 
 
-\subsection{Creating Annotation}
+\subsection*{Creating Annotation}
 
 We now create a suitable annotation object.  As described in earlier
 sections, annotation consists of consecutive genomic regions that may
@@ -335,7 +337,7 @@ eData1 <- aggregateExpData(importToExpData(df, dbFilename = "my.db", tablename =
                                            overwrite = TRUE))
 @ 
 
-\subsection{Aggregation}
+\subsection*{Aggregation}
 
 Aggregation refers to aggregation over rows of the database.  This is
 typically used for sequencing data and is typically employed in order
@@ -346,7 +348,7 @@ default arguments creates a new column \texttt{counts} using an
 in the data.  Aggregation has also been discussed in an earlier
 section.
 
-\subsection{Merging}
+\subsection*{Merging}
 
 It is natural to store a number of experimental replicates in columns
 of a table. However, it is often the case that we receive the data in
@@ -396,7 +398,7 @@ where a read starts, and the ``avg'' column will be average number of
 reads at a given genomic location (removing the genomic locations that
 were not sequenced).
 
-\subsection{Collapsing}
+\subsection*{Collapsing}
 
 Another common operation is collapsing data across columns.  One use
 would be to join to experiments where the same sample was sequenced.
@@ -434,7 +436,7 @@ eData <- ExpData("my.db", tablename = "counts_tbl", mode = "r")
 eDataJoin <- ExpData("my.db", tablename = "allcounts", mode = "r")
 @ 
 
-\subsection{Summarizing experimental data}
+\subsection*{Summarizing experimental data}
 
 We can use the function \Rfunction{summarizeExpData} to summarize
 ExpData objects.  This function does not utilize annotation, so the
@@ -466,7 +468,7 @@ This yields the maximum/minimum number of reads mapped to a single
 location.  The minimum number of reads is not zero because we only
 store locations associated with reads.
 
-\subsection{Selecting a region}
+\subsection*{Selecting a region}
 
 We can access genomic data in a single genomic region using the
 function \Rfunction{getRegion}.
@@ -480,7 +482,7 @@ reg
 It is possible exclude either \texttt{start} or \texttt{end} in which
 case the default values are 0 and $1e12$. 
 
-\subsection{Using annotation with experimental data}
+\subsection*{Using annotation with experimental data}
 
 The two previous sections show useful functions, but in general we
 want to summarize data over many genomic regions simultaneously, in
@@ -683,6 +685,42 @@ x <- lapply(mergeWithAnnotation(eData, annoData, splitBy = "feature", what = "co
             })
 @ 
 
+\section{Annotation}
+
+Annotation has been defined earlier as a \Rcode{data.frame} satisfying
+certain requirements.  This may be checked using
+\Rfunction{validAnnotation} which return \Rcode{TRUE} or \Rcode{FALSE}.
+
+\Rpackage{Genominator} has a very useful function for dealing with
+annotation, \Rfunction{makeGeneRepresentation}.  The input is a
+\Rcode{data.frame} not unlike the result of a query to Ensembl or UCSC
+(using the \Rpackage{biomaRt} package of the \Rpackage{rtracklayer}
+package).  The output of this function is a new set of gene models
+satisfying certain requirements detailed in the following.  The
+typical output from such a query is an object where each row
+correspond to an exon and there are additional columns describing how
+exons are grouped into transcripts or genes.
+
+An \Rcode{Ugene} model (``Union gene'') consists of all bases annotated
+as belonging to a certain gene.  Bases that are annotated as belonging
+to other genes as well, are removed.
+
+An \Rcode{UIgene} model (``Union-intersection'') is an approach to
+summarize a gene protecting against different splice forms.  It
+consists of the bases that are annotated as belonging to every
+transcript of the gene.  Bases that are annotated as belonging to
+other genes as well, are removed.
+
+An \Rcode{ROCE} model (``Region of Constant Expression'') are maximal
+intervals such that every base in the interval belongs to the same set
+of transcripts from the same gene.  Bases that are annotated as
+belonging to other genes as well, are removed.
+
+Finally \Rcode{Background} models consists of the bases that are not
+annotated as belonging to any gene.  Note: this function does not
+require chromosome lengths, so you may have to add an additional
+interval (row) for each chromosome, consisting of the interval from
+the last annotated base to the end of the chromosome.
 
 \section{Analysis tools}
 
@@ -690,7 +728,7 @@ In the case of short read sequencing, the \Rpackage{Genominator}
 package offers a number of specific useful tools.  They are presented in no
 particular order.
 
-\subsection{Coverage}
+\subsection*{Coverage}
 
 The \Rfunction{computeCoverage} function can be used to assess the
 sequencing depth.  
@@ -701,7 +739,7 @@ coverage <- computeCoverage(eData, annoData, effort = seq(100, 1000, by = 5),
 plot(coverage, draw.legend = FALSE)
 @ 
 
-\subsection{Statistical Functions: Goodness of Fit}
+\subsection*{Statistical Functions: Goodness of Fit}
 
 You can conduct a goodness of fit analysis to the Poisson model across
 lanes using the following function.  The result is assessed by a
@@ -719,6 +757,18 @@ plot(regionGoodnessOfFit(as.data.frame(matrix(rpois(1000, 100), ncol = 10)),
                          groups = rep(c("A", "B"), 5), denominator = rep(1, 10)))
 @ 
 
+\section*{SessionInfo}
 
+<<sessionInfo,results=tex,echo=FALSE>>=
+toLatex(sessionInfo())
+@ 
+
+\begin{thebibliography}{30}
+\bibitem{Bullard}
+Bullard,J.H., Purdom,E.A., Hansen,K.D., and Dudoit,S. (2010)
+Evaluation of statistical methods for normalization and differential
+expression in mRNA-Seq experiments.
+\textit{BMC Bioinformatics}, \textbf{11}, 94. 
+\end{thebibliography}
 
 \end{document}

@@ -1,4 +1,4 @@
-computePrimingWeights <- function(aln, biasedIndex = 1:2, unbiasedIndex = 24:29, weightsLength = 7L){
+computePrimingWeights <- function(aln, biasedIndex = 1:2, unbiasedIndex = 24:29, weightsLength = 7L, returnSep = FALSE){
     if(!isTRUE(class(aln) == "AlignedRead"))
         stop("argument 'aln' needs to be of class 'AlignedRead'")
     if(!isTRUE(is.integer(weightsLength) && weightsLength > 0))
@@ -18,13 +18,19 @@ computePrimingWeights <- function(aln, biasedIndex = 1:2, unbiasedIndex = 24:29,
         out
     }
     p_biased <- rowMeans(do.call(cbind, lapply(biasedIndex, p.compute)))
+    if(max(unbiasedIndex) + weightsLength - 1 > width(aln)[1])
+        stop("The reads in 'aln' are too short for the chosen indexes")
     p_unbiased <- rowMeans(do.call(cbind, lapply(unbiasedIndex, p.compute)))
     if(any(is.na(p_biased) | p_biased < sqrt(.Machine$double.eps)))
         warning("weights might be degenerate")
     if(any(is.na(p_unbiased) | p_unbiased < sqrt(.Machine$double.eps)))
         warning("weights might be degenerate")
-    weights <- p_unbiased / p_biased
-    weights
+    if(returnSep) {
+        return(list(p_unbiased = p_unbiased, p_biased = p_biased))
+    } else {
+        weights <- p_unbiased / p_biased
+        return(weights)
+    }
 }
 
 addPrimingWeights <- function(aln, weights = NULL, overwrite = FALSE, ...) {
@@ -36,8 +42,8 @@ addPrimingWeights <- function(aln, weights = NULL, overwrite = FALSE, ...) {
     weightsLength <- nchar(names(weights[1]))
     readWeights <- as.numeric(weights[as.character(subseq(sread(aln), start = 1, width = weightsLength))])
     if("weights" %in% varLabels(alignData(aln))) {
-        alignData(aln)$"weights" <- readWeights
-        varMetadata(alignData(aln))["weights", "labelDescription"] <- "Priming weights"
+        aln@alignData$"weights" <- readWeights
+        aln@alignData@varMetadata["weights", "labelDescription"] <- "Priming weights"
     } else {
         aln@alignData <- AlignedDataFrame(data = cbind(pData(alignData(aln)), weights = readWeights),
                                           metadata = rbind(varMetadata(alignData(aln)),

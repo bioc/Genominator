@@ -10,6 +10,8 @@
 
 NEW FEATURES
 
+    o	Included an example on working with priming weights to the
+	vignette as well as a section on gene models.
     o	Added computePrimingWeights and addPrimingWeights; this is a
 	method recentley developed by the authors to try to make RNA-Seq
 	reads more uniformly distributed across expressed transcripts.

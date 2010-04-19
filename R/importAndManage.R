@@ -48,15 +48,15 @@ importFromAlignedReads <- function(x, chrMap, dbFilename, tablename,
         str <- c(-1L, 0L, 1L)[match(strand(aln), c("-", "*", "+"))] 
         chr <- match(chromosome(aln), chrMap)
         if("weights" %in% varLabels(alignData(aln))) {
-ed <- importToExpData(data.frame(chr = chr, location = loc, 
-                    strand = str, weights = alignData(aln)$weights),
+            ed <- importToExpData(data.frame(chr = chr, location = loc, 
+                                             strand = str, weights = alignData(aln)$weights),
                                   dbFilename = dbFilename, tablename = name,
                                   overwrite = TRUE, verbose = verbose)
             aggregateExpData(ed, colname = name, overwrite = TRUE, 
                              verbose = verbose, aggregator = "total(weights)")
         } else {
-            ed <- importToExpData(data.frame(chr = chr, location = loc, 
-                                             strand = str), dbFilename = dbFilename, tablename = name, 
+            ed <- importToExpData(data.frame(chr = chr, location = loc, strand = str),
+                                  dbFilename = dbFilename, tablename = name, 
                                   overwrite = TRUE, verbose = verbose)
             aggregateExpData(ed, colname = name, overwrite = TRUE, 
                              verbose = verbose)
@@ -66,7 +66,7 @@ ed <- importToExpData(data.frame(chr = chr, location = loc,
     switch(method,
            AlignedReadList = {
                laneNames <- names(x)
-               expDataList <- mapply(importObject, laneNames, x, MoreArgs = list(verbose = TRUE))
+               expDataList <- mapply(importObject, laneNames, x, MoreArgs = list(verbose = verbose))
            },
            filenames = {
                filenames <- x

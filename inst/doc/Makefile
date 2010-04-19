@@ -21,7 +21,7 @@ shortread : $(sfile:=.pdf)
 	R CMD Sweave $<
 
 %.pdf : %.tex
-	texi2dvi --pdf $<
+	texi2dvi -q --pdf $<
 
 clean : 
 	rm -rf ${gfile}.aux ${gfile}.log ${gfile}.tex ${gfile}.out ${gfile}.pdf \

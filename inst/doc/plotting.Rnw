@@ -1,9 +1,9 @@
 %\VignetteIndexEntry{Plotting with Genominator}
 %\VignetteDepends{Genominator, biomaRt}
 %\VignettePackage{Genominator}
-\documentclass[letterpaper,english,12pt]{article}
+\documentclass[letterpaper,pdf,english]{article}
 <<results=hide,echo=FALSE>>=
-options(width = 70)
+options(width = 80)
 @ 
 \SweaveOpts{prefix.string=plots_Genominator,eps=FALSE,echo=TRUE}
 \usepackage{times}
@@ -30,6 +30,7 @@ options(width = 70)
 
 \title{Plotting using Genominator and GenomeGraphs (Beta)}
 \author{James Bullard \and Kasper Daniel Hansen}
+\date{Modified: April 18, 2010, Compiled: \today}
 \begin{document}
 \maketitle
 \thispagestyle{fancy}
@@ -125,4 +126,11 @@ rp <- Genominator:::makeRegionPlotter(list("track.-" = list(expData = yData, wha
                                       annoFactory = annoFactory)
 rp(1, 20000, 50000)
 @ 
+
+\section*{SessionInfo}
+
+<<sessionInfo,results=tex,echo=FALSE>>=
+toLatex(sessionInfo())
+@ 
+
 \end{document}
