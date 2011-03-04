@@ -36,7 +36,10 @@ NEW FEATURES
     o	Added CITATION file.
 
 BUG FIXES
-	
+
+    o   Fixed an issue with the vignettes and Windows; caused by the presence
+        of a Makefile.  New version will be bigger, because it will contain the
+        example database.  Bummer, but unclear how to fix it.
     o   Fixed two bugs discovered by Elizabeth Purdom regarding wrong
 	indexing in .writeRegionsTable and importToExpData. 
     o	Changed some internals of the plotting functionality to make
