@@ -1,10 +1,10 @@
 Package: Genominator
-Version: 1.9.0
+Version: 1.9.1
 Title: Analyze, manage and store genomic data
 Description: Tools for storing, accessing, analyzing and visualizing genomic data.
 Author: James Bullard, Kasper Daniel Hansen
 Maintainer: James Bullard <bullard@stat.berkeley.edu>
-Depends: methods, RSQLite, DBI (>= 0.2-5), IRanges, GenomeGraphs
+Depends: methods, RSQLite, DBI (>= 0.2-5), BiocGenerics (>= 0.1.0), IRanges, GenomeGraphs
 Imports: graphics, stats, utils
 Suggests: biomaRt, ShortRead, yeastRNASeq
 Collate: Genominator.R importAndManage.R annotation.R goodnessOfFit.R plotRegion.R coverage.R diffExp.R emZero.R primingWeights.R

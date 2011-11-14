@@ -14,6 +14,7 @@ importFrom("stats", "convolve", "dnbinom", "dpois", "na.omit",
            "rnbinom", "rpois", "runif")
 
 importFrom("utils", "head", "read.table")
+import("BiocGenerics")
 import("IRanges")
 
 ##
