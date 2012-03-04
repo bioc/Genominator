@@ -9,7 +9,7 @@
   a chi-squared distribution.
 }
 \usage{
-plot.genominator.goodness.of.fit(x, chisq = FALSE, plotCol = TRUE,
+\method{plot}{genominator.goodness.of.fit}(x, chisq = FALSE, plotCol = TRUE,
   qqline = FALSE, xlab = "theoretical quantiles",
   ylab = "observed quantiles", main, pch = 16, cex = 0.75, \dots)
 }

@@ -8,7 +8,7 @@
   S3 method to plot \code{genominator.coverage} object.  Shows coverage as a function of plotting effort.
 }
 \usage{
-plot.genominator.coverage(x, type = "l", col = NULL,
+\method{plot}{genominator.coverage}(x, type = "l", col = NULL,
   draw.totals = TRUE, draw.legend = TRUE, legend.location = NULL, \dots)
 }
 

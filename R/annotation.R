@@ -27,13 +27,13 @@ makeGeneRepresentation <- function(annoData, type = c("UIgene", "Ugene", "ROCE",
         ## the rest of the IRanges
         reduced <- reduce(geneRanges)
         allReduced <- unlist(reduced)
-        overlaps <- matchMatrix(findOverlaps(allReduced, ignoreSelf = TRUE))
+        overlaps <- as.matrix(findOverlaps(allReduced, ignoreSelf = TRUE))
         geneNamesIdx <- seq(along = allReduced)
         names(geneNamesIdx) <- rep(names(reduced), times = sapply(reduced, length))
         relevantGeneOverlap <- do.call(IRangesList, lapply(names(reduced), function(nam) {
             geneIdx <- geneNamesIdx[names(geneNamesIdx) == nam]
-            relevantOverlaps <- overlaps[overlaps[, "query"] %in% geneIdx &
-                                         !overlaps[, "subject"] %in% geneIdx, "subject"]
+            relevantOverlaps <- overlaps[overlaps[, "queryHits"] %in% geneIdx &
+                                         !overlaps[, "subjectHits"] %in% geneIdx, "subjectHits"]
             out <- reduce(allReduced[relevantOverlaps])
             out
         }))

@@ -36,7 +36,8 @@ NEW FEATURES
     o	Added CITATION file.
 
 BUG FIXES
-	
+
+    o   Fixed a bug related to the deprecation of IRanges::matchMatrix.
     o   Fixed two bugs discovered by Elizabeth Purdom regarding wrong
 	indexing in .writeRegionsTable and importToExpData. 
     o	Changed some internals of the plotting functionality to make
