@@ -1,5 +1,5 @@
 Package: Genominator
-Version: 1.41.0
+Version: 1.41.1
 Title: Analyze, manage and store genomic data
 Description: Tools for storing, accessing, analyzing and visualizing genomic data.
 Author: James Bullard, Kasper Daniel Hansen
@@ -11,3 +11,4 @@ Collate: Genominator.R importAndManage.R annotation.R goodnessOfFit.R plotRegion
 License: Artistic-2.0
 LazyLoad: yes
 biocViews: Infrastructure
+PackageStatus: Deprecated
